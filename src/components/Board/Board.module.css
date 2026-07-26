@@ -1,0 +1,39 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(9, var(--square-size)) auto;
+  grid-template-rows: auto repeat(9, var(--square-size));
+  background: var(--board-bg);
+  border: 2px solid var(--board-border);
+  width: fit-content;
+}
+
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--board-line);
+  box-sizing: border-box;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.selected {
+  background: var(--selected-bg);
+}
+
+.highlighted {
+  box-shadow: inset 0 0 0 3px var(--highlight-color);
+}
+
+.fileLabel,
+.rankLabel,
+.cornerCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--label-color);
+}

@@ -1,18 +1,47 @@
-import { createSignal } from "solid-js";
+import { Board } from "./components/Board/Board";
+import { GameInfo } from "./components/GameInfo/GameInfo";
+import { Hand } from "./components/Hand/Hand";
+import { PromotionDialog } from "./components/PromotionDialog/PromotionDialog";
+import { gameStore } from "./state/gameStore";
+import { textTheme } from "./theme/textTheme";
 import "./App.css";
 
 function App() {
-  const [count, setCount] = createSignal(0);
+  const { state, selectSquare, selectHandPiece, confirmPromotion } = gameStore;
 
   return (
     <main>
-      <h1>vite-solid-template</h1>
-      <button type="button" onClick={() => setCount((c) => c + 1)}>
-        Count is {count()}
-      </button>
-      <p>
-        Edit <code>src/App.tsx</code> and save to test HMR
-      </p>
+      <div class="gameArea">
+        <GameInfo status={state.status} errorMessage={state.errorMessage} />
+        <Hand
+          color="white"
+          pieces={state.position.hands.white}
+          theme={textTheme}
+        />
+        <Board
+          position={state.position}
+          theme={textTheme}
+          selectedSquare={
+            state.selection?.kind === "square" ? state.selection.square : null
+          }
+          legalTargets={state.legalTargets}
+          onSquareClick={selectSquare}
+        />
+        <Hand
+          color="black"
+          pieces={state.position.hands.black}
+          theme={textTheme}
+          selectedPiece={
+            state.selection?.kind === "hand" ? state.selection.piece : null
+          }
+          onSelectPiece={
+            state.status === "playerTurn" ? selectHandPiece : undefined
+          }
+        />
+      </div>
+      {state.pendingPromotion && (
+        <PromotionDialog onChoose={confirmPromotion} />
+      )}
     </main>
   );
 }
