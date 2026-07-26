@@ -1,3 +1,4 @@
+import { onMount } from "solid-js";
 import { Board } from "./components/Board/Board";
 import { GameInfo } from "./components/GameInfo/GameInfo";
 import { Hand } from "./components/Hand/Hand";
@@ -7,7 +8,17 @@ import { textTheme } from "./theme/textTheme";
 import "./App.css";
 
 function App() {
-  const { state, selectSquare, selectHandPiece, confirmPromotion } = gameStore;
+  const {
+    state,
+    selectSquare,
+    selectHandPiece,
+    confirmPromotion,
+    startEngine,
+  } = gameStore;
+
+  onMount(() => {
+    void startEngine();
+  });
 
   return (
     <main>

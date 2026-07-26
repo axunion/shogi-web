@@ -10,8 +10,11 @@ const STATUS_LABEL: Record<GameStatus, string> = {
   loading: "エンジンを起動しています…",
   playerTurn: "あなたの番です",
   thinking: "エンジンが思考中です…",
-  playerWin: "あなたの勝ちです（エンジンが投了しました）",
-  playerLose: "あなたの負けです",
+  engineResigned: "あなたの勝ちです（エンジンが投了しました）",
+  engineMated: "あなたの勝ちです（詰み）",
+  playerMated: "あなたの負けです（詰み）",
+  playerResigned: "あなたの負けです（投了しました）",
+  engineDeclaredWin: "エンジンの勝ちです",
   error: "エラーが発生しました",
 };
 
