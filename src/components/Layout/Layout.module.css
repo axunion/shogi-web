@@ -1,0 +1,98 @@
+.layout {
+  --gap: 0.4rem;
+  --info-height: 2.75rem;
+  --controls-height: 3rem;
+  --hand-piece-scale: 0.8;
+  --hand-direction: row;
+  /* Vertical rows that scale with --square-size: board 9 + coord band 0.5 +
+     two hand rows 1.5 each = 12.5. */
+  --vertical-fixed: calc(
+    var(--info-height) +
+    var(--controls-height) +
+    var(--gap) *
+    4 +
+    1rem
+  );
+  --square-size: min(
+    calc((100vw - 1rem - var(--coord-band)) / 9),
+    calc((100svh - var(--vertical-fixed)) / 12.5),
+    64px
+  );
+
+  display: grid;
+  grid-template-areas:
+    "info"
+    "opponentHand"
+    "board"
+    "ownHand"
+    "controls";
+  justify-items: center;
+  gap: var(--gap);
+  padding: 0.5rem;
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  min-height: 100svh;
+  align-content: center;
+}
+
+.info {
+  grid-area: info;
+}
+
+.opponentHand {
+  grid-area: opponentHand;
+}
+
+.board {
+  grid-area: board;
+}
+
+.ownHand {
+  grid-area: ownHand;
+}
+
+.controls {
+  grid-area: controls;
+}
+
+.kifu {
+  grid-area: kifu;
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .layout {
+    --gap: 1rem;
+    --hand-piece-scale: 1;
+    --hand-direction: column;
+    --square-size: min(
+      calc((100svh - 6rem) / 10),
+      calc((100vw - 22rem) / 12),
+      96px
+    );
+    grid-template-columns: auto auto auto minmax(16rem, 22rem);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "info         info  info     kifu"
+      "opponentHand board ownHand  kifu";
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  .opponentHand {
+    align-self: start;
+  }
+
+  .ownHand {
+    align-self: end;
+  }
+
+  .controls {
+    grid-area: kifu;
+    align-self: end;
+  }
+
+  .kifu {
+    display: block;
+  }
+}

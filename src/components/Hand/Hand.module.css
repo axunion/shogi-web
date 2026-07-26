@@ -1,5 +1,6 @@
 .hand {
   display: flex;
+  flex-direction: var(--hand-direction, row);
   flex-wrap: wrap;
   gap: 0.5rem;
   min-height: calc(var(--square-size) * 1.2);
@@ -8,8 +9,8 @@
 
 .slot {
   position: relative;
-  width: var(--square-size);
-  height: var(--square-size);
+  width: calc(var(--square-size) * var(--hand-piece-scale, 1));
+  height: calc(var(--square-size) * var(--hand-piece-scale, 1));
   background: none;
   border: none;
   padding: 0;
