@@ -26,11 +26,13 @@
   },
   "dependencies": {
     "@kobalte/core": "^0.13.12",
+    "@mizarjp/yaneuraou.k-p": "7.6.3-alpha.0",
     "lucide-solid": "^1.23.0",
     "solid-js": "^1.9.13"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
+    "@types/emscripten": "^1.41.5",
     "@types/node": "^24.13.2",
     "jsdom": "^29.1.1",
     "lefthook": "^2.1.9",
