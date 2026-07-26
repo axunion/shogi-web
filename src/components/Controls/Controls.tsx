@@ -1,7 +1,10 @@
 import { AlertDialog } from "@kobalte/core/alert-dialog";
+import { Dialog } from "@kobalte/core/dialog";
 import { Volume2, VolumeX } from "lucide-solid";
 import { createSignal, For } from "solid-js";
+import type { MoveRecord } from "../../domain/types";
 import type { GameStatus } from "../../state/gameStore";
+import { KifuList } from "../Kifu/KifuList";
 import styles from "./Controls.module.css";
 
 const MOVETIME_OPTIONS: { value: number; label: string }[] = [
@@ -16,6 +19,7 @@ interface ControlsProps {
   canUndo: boolean;
   soundEnabled: boolean;
   movetimeMs: number;
+  records: MoveRecord[];
   onNewGame: () => void;
   onUndo: () => void;
   onResign: () => void;
@@ -26,6 +30,7 @@ interface ControlsProps {
 export function Controls(props: ControlsProps) {
   const [confirmNewGame, setConfirmNewGame] = createSignal(false);
   const [confirmResign, setConfirmResign] = createSignal(false);
+  const [kifuOpen, setKifuOpen] = createSignal(false);
 
   return (
     <div class={styles.controls}>
@@ -127,6 +132,26 @@ export function Controls(props: ControlsProps) {
           {(option) => <option value={option.value}>{option.label}</option>}
         </For>
       </select>
+
+      <button
+        type="button"
+        class={`${styles.button} ${styles.kifuButton}`}
+        onClick={() => setKifuOpen(true)}
+      >
+        棋譜
+      </button>
+      <Dialog open={kifuOpen()} onOpenChange={setKifuOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay class={styles.overlay} />
+          <Dialog.Content class={styles.sheet}>
+            <Dialog.Title class={styles.dialogTitle}>棋譜</Dialog.Title>
+            <KifuList records={props.records} />
+            <Dialog.CloseButton class={styles.button}>
+              閉じる
+            </Dialog.CloseButton>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog>
     </div>
   );
 }

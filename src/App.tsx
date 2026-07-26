@@ -4,6 +4,7 @@ import { Board } from "./components/Board/Board";
 import { Controls } from "./components/Controls/Controls";
 import { GameInfo } from "./components/GameInfo/GameInfo";
 import { Hand } from "./components/Hand/Hand";
+import { KifuList } from "./components/Kifu/KifuList";
 import { Layout } from "./components/Layout/Layout";
 import { PromotionDialog } from "./components/PromotionDialog/PromotionDialog";
 import { squareIndex } from "./domain/sfen";
@@ -117,6 +118,7 @@ function App() {
             canUndo={state.records.length > 0}
             soundEnabled={state.settings.soundEnabled}
             movetimeMs={state.settings.movetimeMs}
+            records={state.records}
             onNewGame={newGame}
             onUndo={undo}
             onResign={resign}
@@ -126,6 +128,7 @@ function App() {
             onMovetimeChange={(movetimeMs) => setSettings({ movetimeMs })}
           />
         }
+        kifu={<KifuList records={state.records} />}
       />
       {state.pendingPromotion && (
         <PromotionDialog onChoose={confirmPromotion} />
