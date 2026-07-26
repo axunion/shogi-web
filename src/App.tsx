@@ -1,48 +1,22 @@
 import { Board } from "./components/Board/Board";
+import { GameInfo } from "./components/GameInfo/GameInfo";
 import { Hand } from "./components/Hand/Hand";
 import { PromotionDialog } from "./components/PromotionDialog/PromotionDialog";
-// TODO(phase 3 debug): remove this import once phase 4 wires the engine into gameStore.
-import { UsiEngine } from "./engine/usiEngine";
 import { gameStore } from "./state/gameStore";
 import { textTheme } from "./theme/textTheme";
 import "./App.css";
-
-// TODO(phase 3 debug): remove this handler once phase 4 wires the engine into gameStore.
-async function debugEngineCheck() {
-  console.debug("crossOriginIsolated:", window.crossOriginIsolated);
-  const engine = new UsiEngine();
-  try {
-    await engine.launch();
-    const bestmove = await engine.search("position startpos", 1000);
-    console.debug("search resolved with:", bestmove);
-  } catch (error) {
-    console.error("debug engine check failed:", error);
-  }
-}
 
 function App() {
   const { state, selectSquare, selectHandPiece, confirmPromotion } = gameStore;
 
   return (
     <main>
-      {/* TODO(phase 3 debug): remove this button once phase 4 wires the engine into gameStore. */}
-      <button type="button" onClick={debugEngineCheck}>
-        Debug: launch engine and search
-      </button>
       <div class="gameArea">
+        <GameInfo status={state.status} errorMessage={state.errorMessage} />
         <Hand
           color="white"
           pieces={state.position.hands.white}
           theme={textTheme}
-          selectedPiece={
-            state.selection?.kind === "hand" &&
-            state.position.sideToMove === "white"
-              ? state.selection.piece
-              : null
-          }
-          onSelectPiece={
-            state.position.sideToMove === "white" ? selectHandPiece : undefined
-          }
         />
         <Board
           position={state.position}
@@ -58,13 +32,10 @@ function App() {
           pieces={state.position.hands.black}
           theme={textTheme}
           selectedPiece={
-            state.selection?.kind === "hand" &&
-            state.position.sideToMove === "black"
-              ? state.selection.piece
-              : null
+            state.selection?.kind === "hand" ? state.selection.piece : null
           }
           onSelectPiece={
-            state.position.sideToMove === "black" ? selectHandPiece : undefined
+            state.status === "playerTurn" ? selectHandPiece : undefined
           }
         />
       </div>

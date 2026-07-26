@@ -1,4 +1,4 @@
-import type { Color, Piece, PieceType, Position } from "./types";
+import type { Color, Move, Piece, PieceType, Position, Square } from "./types";
 
 const BOARD_SIZE = 9;
 
@@ -127,4 +127,35 @@ export function positionToSfen(position: Position): string {
   const handPart = handParts.length > 0 ? handParts.join("") : "-";
 
   return `${boardPart} ${sidePart} ${handPart} ${position.moveNumber}`;
+}
+
+function squareToUsi(square: Square): string {
+  return `${square.file}${String.fromCharCode("a".charCodeAt(0) + square.rank - 1)}`;
+}
+
+function squareFromUsi(usi: string): Square {
+  return {
+    file: Number(usi[0]),
+    rank: usi.charCodeAt(1) - "a".charCodeAt(0) + 1,
+  };
+}
+
+export function moveToUsi(move: Move): string {
+  if (move.kind === "drop") {
+    return `${move.piece}*${squareToUsi(move.to)}`;
+  }
+  return `${squareToUsi(move.from)}${squareToUsi(move.to)}${move.promote ? "+" : ""}`;
+}
+
+export function usiToMove(usi: string): Move {
+  if (usi.includes("*")) {
+    const [piece, to] = usi.split("*");
+    return { kind: "drop", piece: piece as PieceType, to: squareFromUsi(to) };
+  }
+  return {
+    kind: "move",
+    from: squareFromUsi(usi.slice(0, 2)),
+    to: squareFromUsi(usi.slice(2, 4)),
+    promote: usi.endsWith("+"),
+  };
 }

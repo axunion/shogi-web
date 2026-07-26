@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { parseSfen, positionToSfen, squareIndex } from "./sfen";
+import {
+  moveToUsi,
+  parseSfen,
+  positionToSfen,
+  squareIndex,
+  usiToMove,
+} from "./sfen";
+import type { Move } from "./types";
 
 const INITIAL_SFEN =
   "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
@@ -81,5 +88,37 @@ describe("SFEN round trip", () => {
   it.each(cases)("parses and re-serializes %s identically", (sfen) => {
     const position = parseSfen(sfen);
     expect(positionToSfen(position)).toBe(sfen);
+  });
+});
+
+describe("USI move conversion", () => {
+  const cases: { usi: string; move: Move }[] = [
+    {
+      usi: "7g7f",
+      move: {
+        kind: "move",
+        from: { file: 7, rank: 7 },
+        to: { file: 7, rank: 6 },
+        promote: false,
+      },
+    },
+    {
+      usi: "8h2b+",
+      move: {
+        kind: "move",
+        from: { file: 8, rank: 8 },
+        to: { file: 2, rank: 2 },
+        promote: true,
+      },
+    },
+    {
+      usi: "P*5e",
+      move: { kind: "drop", piece: "P", to: { file: 5, rank: 5 } },
+    },
+  ];
+
+  it.each(cases)("converts $usi to a Move and back", ({ usi, move }) => {
+    expect(usiToMove(usi)).toEqual(move);
+    expect(moveToUsi(move)).toBe(usi);
   });
 });

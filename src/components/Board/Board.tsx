@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For, Show } from "solid-js";
 import { squareIndex } from "../../domain/sfen";
 import type { Position, Square } from "../../domain/types";
 import type { PieceTheme } from "../../theme/types";
@@ -34,7 +34,8 @@ export function Board(props: BoardProps) {
             <For each={FILES}>
               {(file) => {
                 const square: Square = { file, rank };
-                const piece = props.position.board[squareIndex(file, rank)];
+                const piece = () =>
+                  props.position.board[squareIndex(file, rank)];
                 const selected = () =>
                   !!props.selectedSquare &&
                   sameSquare(props.selectedSquare, square);
@@ -52,7 +53,9 @@ export function Board(props: BoardProps) {
                     }}
                     onClick={() => props.onSquareClick?.(square)}
                   >
-                    {piece && <PieceView piece={piece} theme={props.theme} />}
+                    <Show when={piece()}>
+                      {(p) => <PieceView piece={p()} theme={props.theme} />}
+                    </Show>
                   </button>
                 );
               }}

@@ -16,6 +16,7 @@
   --count-text: #1a1a1a;
   --highlight-color: #6ab04c;
   --selected-bg: rgb(106 176 76 / 35%);
+  --error-text: #b00020;
 }
 
 *,

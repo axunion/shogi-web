@@ -1,0 +1,9 @@
+.info {
+  text-align: center;
+  min-height: 1.5em;
+}
+
+.error {
+  color: var(--error-text);
+  font-size: 0.85rem;
+}

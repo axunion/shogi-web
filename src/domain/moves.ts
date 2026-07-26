@@ -318,3 +318,21 @@ export function generateLegalMoves(
     ? generateLegalDrops(position, source)
     : generateLegalBoardMoves(position, source);
 }
+
+export function hasAnyLegalMoves(position: Position): boolean {
+  const color = position.sideToMove;
+  for (let index = 0; index < position.board.length; index++) {
+    const piece = position.board[index];
+    if (
+      piece &&
+      piece.color === color &&
+      generateLegalBoardMoves(position, squareFromIndex(index)).length > 0
+    ) {
+      return true;
+    }
+  }
+  for (const type of Object.keys(position.hands[color]) as PieceType[]) {
+    if (generateLegalDrops(position, type).length > 0) return true;
+  }
+  return false;
+}
