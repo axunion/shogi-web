@@ -10,6 +10,7 @@ import {
   createInitialPosition,
   isInCheck,
 } from "../domain/position";
+import { replayUsiMoves } from "../domain/replay";
 import { moveToUsi, squareIndex, usiToMove } from "../domain/sfen";
 import type {
   Move,
@@ -20,6 +21,13 @@ import type {
 } from "../domain/types";
 import { UsiEngine } from "../engine/usiEngine";
 import { rewind } from "./rewind";
+import {
+  clearGame,
+  loadGame,
+  loadSettings,
+  saveGame,
+  saveSettings,
+} from "./storage";
 
 export type GameStatus =
   | "loading" // engine starting up
@@ -51,7 +59,7 @@ interface PendingPromotion {
   to: Square;
 }
 
-interface Settings {
+export interface Settings {
   movetimeMs: number;
   soundEnabled: boolean;
 }
@@ -93,6 +101,10 @@ function lastMoveOf(move: Move): LastMove {
 function undoPlies(recordCount: number): number {
   if (recordCount === 0) return 0;
   return recordCount % 2 === 0 ? 2 : 1;
+}
+
+function matedStatus(position: Position): GameStatus {
+  return position.sideToMove === "black" ? "playerMated" : "engineMated";
 }
 
 function createGameStore() {
@@ -174,12 +186,14 @@ function createGameStore() {
       const positionBefore = state.position;
       const position = applyMove(positionBefore, move);
       const record: MoveRecord = { usi: token, move, positionBefore };
+      const records = [...state.records, record];
       setState({
         position,
-        records: [...state.records, record],
+        records,
         lastMove: lastMoveOf(move),
         status: hasAnyLegalMoves(position) ? "playerTurn" : "playerMated",
       });
+      saveGame(records.map((r) => r.usi));
     } catch (error) {
       if (generation !== startGeneration) return;
       setState({
@@ -194,6 +208,7 @@ function createGameStore() {
     const position = applyMove(positionBefore, move);
     const record: MoveRecord = { usi: moveToUsi(move), move, positionBefore };
     const records = [...state.records, record];
+    saveGame(records.map((r) => r.usi));
 
     if (!hasAnyLegalMoves(position)) {
       setState({
@@ -303,11 +318,16 @@ function createGameStore() {
       status: "playerTurn",
       errorMessage: null,
     });
+    saveGame([]);
   }
 
   function resign(): void {
     if (state.status !== "playerTurn") return;
     setState({ status: "playerResigned" });
+    saveGame(
+      state.records.map((r) => r.usi),
+      "player",
+    );
   }
 
   function undo(): void {
@@ -326,16 +346,61 @@ function createGameStore() {
       status: "playerTurn",
       errorMessage: null,
     });
+    saveGame(result.records.map((r) => r.usi));
   }
 
   function setSettings(patch: Partial<Settings>): void {
     setState("settings", patch);
+    saveSettings({ ...state.settings });
   }
 
   async function startEngine(): Promise<void> {
     try {
       await engine.launch();
+
+      const savedSettings = loadSettings();
+      if (savedSettings) {
+        setState("settings", savedSettings);
+      }
+
+      const saved = loadGame();
+      const replay = saved ? replayUsiMoves(saved.usiMoves) : null;
+      if (saved && !replay) {
+        clearGame();
+      }
+
       engine.newGame();
+
+      if (!replay) {
+        setState({ status: "playerTurn" });
+        return;
+      }
+
+      setState({
+        position: replay.position,
+        records: replay.records,
+        lastMove:
+          replay.records.length > 0
+            ? lastMoveOf(replay.records[replay.records.length - 1].move)
+            : null,
+      });
+
+      if (saved?.resigned === "player") {
+        setState({ status: "playerResigned" });
+        return;
+      }
+
+      if (!hasAnyLegalMoves(replay.position)) {
+        setState({ status: matedStatus(replay.position) });
+        return;
+      }
+
+      if (replay.position.sideToMove === "white") {
+        setState({ status: "thinking" });
+        void requestEngineMove();
+        return;
+      }
+
       setState({ status: "playerTurn" });
     } catch (error) {
       setState({
