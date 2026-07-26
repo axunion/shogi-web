@@ -1,9 +1,9 @@
 .board {
   display: grid;
-  grid-template-columns: repeat(9, var(--square-size)) auto;
-  grid-template-rows: auto repeat(9, var(--square-size));
+  grid-template-columns: repeat(9, var(--square-size)) var(--coord-band);
+  grid-template-rows: var(--coord-band) repeat(9, var(--square-size));
   background: var(--board-bg);
-  border: 2px solid var(--board-border);
+  border: 2px solid var(--board-edge);
   width: fit-content;
 }
 
@@ -34,6 +34,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: var(--coord-font-size);
   color: var(--label-color);
 }

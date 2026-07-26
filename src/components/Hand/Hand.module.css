@@ -8,6 +8,8 @@
 
 .slot {
   position: relative;
+  width: var(--square-size);
+  height: var(--square-size);
   background: none;
   border: none;
   padding: 0;
@@ -27,7 +29,7 @@
   position: absolute;
   bottom: -0.2rem;
   right: -0.2rem;
-  font-size: 0.75rem;
+  font-size: var(--count-font-size);
   background: var(--count-bg);
   color: var(--count-text);
   border-radius: 50%;

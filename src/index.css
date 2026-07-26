@@ -4,19 +4,65 @@
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 
+  /* Sole scaling knob. Layout overrides this per breakpoint. */
   --square-size: 56px;
+
+  /* Coordinate label band width/height. Not derived from --square-size
+     (phase 3's --square-size formula subtracts this value, so deriving it
+     would create a circular reference). Capped so the font fits the band. */
+  --coord-band: 1.6rem;
+  --coord-font-size: min(calc(var(--square-size) * 0.24), 0.9rem);
+
+  /* Dimensions derived from --square-size (no absolute values here). */
+  --piece-font-size: calc(var(--square-size) * 0.5);
+  --count-font-size: calc(var(--square-size) * 0.26);
+  --board-line-width: max(1px, calc(var(--square-size) * 0.018));
+  --board-edge-width: max(2px, calc(var(--square-size) * 0.045));
+
+  /* Colors: light */
+  --page-bg: #e9e2d4;
+  --page-bg-accent: #d9cfba;
+  --page-text: #241d14;
+  --panel-bg: #fffdf7;
+  --panel-text: #241d14;
+  --panel-border: #c9bda4;
   --board-bg: #dcb35c;
-  --board-border: #3a2a1a;
+  --board-bg-dark: #c99a41;
+  --board-edge: #6b4b23;
   --board-line: #3a2a1a;
-  --label-color: #333;
+  --stand-bg: #c69a5e;
+  --stand-edge: #6b4b23;
+  --label-color: #4a3c2a;
   --piece-bg: #f0d9a8;
-  --piece-border: #3a2a1a;
+  --piece-bg-dark: #dcbf85;
+  --piece-edge: #6b4b23;
   --piece-text: #1a1a1a;
-  --count-bg: #fff;
+  --count-bg: #fffdf7;
   --count-text: #1a1a1a;
-  --highlight-color: #6ab04c;
+  --highlight-color: #4c9a2a;
   --selected-bg: rgb(106 176 76 / 35%);
+  --target-dot: rgb(58 42 26 / 45%);
+  --last-move-bg: rgb(214 168 63 / 45%);
+  --check-color: #d0342c;
   --error-text: #b00020;
+  --dialog-bg: var(--panel-bg);
+  --dialog-text: var(--panel-text);
+  --focus-ring: #1a73e8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: #1b1814;
+    --page-bg-accent: #241f19;
+    --page-text: #ece4d6;
+    --panel-bg: #2a251e;
+    --panel-text: #ece4d6;
+    --panel-border: #4a4137;
+    --label-color: #cfc3ad;
+    --count-bg: #2a251e;
+    --count-text: #ece4d6;
+    --focus-ring: #8ab4f8;
+  }
 }
 
 *,
@@ -28,4 +74,6 @@
 body {
   margin: 0;
   min-height: 100svh;
+  background: var(--page-bg);
+  color: var(--page-text);
 }

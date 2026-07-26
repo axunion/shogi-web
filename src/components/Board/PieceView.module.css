@@ -6,7 +6,7 @@
   height: 88%;
   clip-path: polygon(50% 0%, 100% 25%, 100% 100%, 0% 100%, 0% 25%);
   background: var(--piece-bg);
-  border: 1px solid var(--piece-border);
+  border: 1px solid var(--piece-edge);
   user-select: none;
 }
 
@@ -15,7 +15,7 @@
 }
 
 .label {
-  font-size: 1.1rem;
+  font-size: var(--piece-font-size);
   font-weight: 600;
   color: var(--piece-text);
 }
