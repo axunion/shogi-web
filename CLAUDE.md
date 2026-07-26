@@ -5,9 +5,9 @@ tasks, use judgment.
 
 ## Approach
 
-- **Think before coding.** State assumptions; if uncertain, ask. When multiple
-  interpretations exist, surface them rather than silently picking one. If a simpler path
-  exists, say so and push back when warranted.
+- **Think before coding.** State assumptions. Make routine judgment calls yourself and
+  note them; ask only when different interpretations would lead to materially different
+  work. If a simpler path exists, say so and push back when warranted.
 - **Simplest thing that works.** Write the minimum code that solves the stated problem —
   nothing speculative. No unasked-for abstractions, flexibility, or error handling for
   impossible cases. If 200 lines could be 50, rewrite it.
@@ -17,14 +17,14 @@ tasks, use judgment.
   and mention it.
 - **Goal-driven.** Turn each task into a verifiable outcome ("fix the bug" → "write a
   failing test that reproduces it, then make it pass"). For multi-step work, state a brief
-  plan with a verification check per step, then loop until each check passes.
+  plan before starting.
 
 ## Language
 
 Write everything in **English** — in-code comments, console output, error and log
 messages, AI-readable instruction files, and docs meant for readers (README and the
-like). Sole exception: development-time planning notes follow the language the user is
-working in.
+like). This rule applies to artifacts, not conversation: chat replies and
+development-time planning notes follow the language the user is working in.
 
 ## Code Structure
 
@@ -43,23 +43,16 @@ working in.
 
 ## Commits
 
-Format:
+Format — plain prose, no prefixes or labels (`feat:`, `fix:`, and the like):
 
 ```
-<one-line summary>
+<summary: imperative mood, ≤70 chars, no trailing period>
 
-<one sentence explaining the motivation>
+<motivation: one sentence, only when not evident from the diff>
 
-- <change 1>
-- <change 2>
+- <change bullets: only for 2+ distinct changes>
 ```
 
-The angle brackets are placeholders — replace them entirely with your own prose. No line
-carries a prefix or label of any kind (`feat:`, `fix:`, and the like).
-
-- Summary: imperative mood, ≤70 chars, no trailing period.
-- Motivation sentence: include only when not evident from the diff alone.
-- Bullets: include only for 2+ distinct changes.
 - Never commit secrets (`*.key`, `*.pem`, `credentials*`).
-- Never use `--no-verify`. Never use `--amend` unless explicitly asked; default to a new
+- Never use `--no-verify`. Use `--amend` only when explicitly asked; default to a new
   commit.
