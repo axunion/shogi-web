@@ -22,7 +22,7 @@ const STATUS_LABEL: Record<GameStatus, string> = {
 
 export function GameInfo(props: GameInfoProps) {
   return (
-    <div class={styles.info}>
+    <div class={styles.info} aria-live="polite">
       <p>{STATUS_LABEL[props.status]}</p>
       {props.checked && !isGameOver(props.status) && (
         <p class={styles.check}>王手!</p>

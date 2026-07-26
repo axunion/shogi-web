@@ -45,6 +45,11 @@
   cursor: default;
 }
 
+.slot:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .selected {
   outline: 3px solid var(--highlight-color);
   border-radius: 4px;

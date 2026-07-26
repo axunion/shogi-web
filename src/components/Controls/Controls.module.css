@@ -21,6 +21,11 @@
   opacity: 0.5;
 }
 
+.button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .select {
   padding: 0.4em 0.6em;
   font: inherit;
@@ -28,6 +33,11 @@
   color: var(--panel-text);
   border: 1px solid var(--panel-border);
   border-radius: 0.3rem;
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .overlay {
@@ -73,6 +83,11 @@
   color: var(--panel-text);
   border: 1px solid var(--panel-border);
   border-radius: 0.3rem;
+}
+
+.dialogActions button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 /* Mobile-only: desktop shows the kifu panel statically, no sheet needed. */

@@ -27,6 +27,10 @@ export function Hand(props: HandProps) {
         <For each={entries()}>
           {(type) => {
             const piece: Piece = { type, color: props.color };
+            const label =
+              props.theme.kind === "text" && props.theme.label
+                ? props.theme.label(piece)
+                : type;
             return (
               <button
                 type="button"
@@ -34,6 +38,7 @@ export function Hand(props: HandProps) {
                 classList={{ [styles.selected]: props.selectedPiece === type }}
                 disabled={!props.onSelectPiece}
                 onClick={() => props.onSelectPiece?.(type)}
+                aria-label={`持ち駒 ${label} ${props.pieces[type]}枚`}
               >
                 <PieceView piece={piece} theme={props.theme} />
                 <span class={styles.count}>{props.pieces[type]}</span>
