@@ -1,9 +1,11 @@
 import type { GameStatus } from "../../state/gameStore";
+import { isGameOver } from "../../state/gameStore";
 import styles from "./GameInfo.module.css";
 
 interface GameInfoProps {
   status: GameStatus;
   errorMessage: string | null;
+  checked: boolean;
 }
 
 const STATUS_LABEL: Record<GameStatus, string> = {
@@ -22,6 +24,9 @@ export function GameInfo(props: GameInfoProps) {
   return (
     <div class={styles.info}>
       <p>{STATUS_LABEL[props.status]}</p>
+      {props.checked && !isGameOver(props.status) && (
+        <p class={styles.check}>王手!</p>
+      )}
       {props.status === "error" && props.errorMessage && (
         <p class={styles.error}>{props.errorMessage}</p>
       )}

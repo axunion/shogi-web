@@ -43,6 +43,7 @@
   --selected-bg: rgb(106 176 76 / 35%);
   --target-dot: rgb(58 42 26 / 45%);
   --last-move-bg: rgb(214 168 63 / 45%);
+  --last-move-bg-weak: rgb(214 168 63 / 20%);
   --check-color: #d0342c;
   --error-text: #b00020;
   --dialog-bg: var(--panel-bg);
@@ -76,4 +77,17 @@ body {
   min-height: 100svh;
   background: var(--page-bg);
   color: var(--page-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: must override every animation/transition regardless of its selector's specificity */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must override every animation/transition regardless of its selector's specificity */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must override every animation/transition regardless of its selector's specificity */
+    transition-duration: 0.01ms !important;
+  }
 }

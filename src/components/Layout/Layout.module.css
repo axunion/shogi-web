@@ -32,6 +32,15 @@
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   min-height: 100svh;
   align-content: center;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 10%) 100%),
+    repeating-linear-gradient(
+      45deg,
+      var(--page-bg) 0,
+      var(--page-bg) 2px,
+      var(--page-bg-accent) 2px,
+      var(--page-bg-accent) 3px
+    );
 }
 
 .info {

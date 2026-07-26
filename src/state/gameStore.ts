@@ -56,7 +56,7 @@ interface Settings {
   soundEnabled: boolean;
 }
 
-interface LastMove {
+export interface LastMove {
   from: Square | null;
   to: Square;
 }
