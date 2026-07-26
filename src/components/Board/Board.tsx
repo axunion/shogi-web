@@ -1,6 +1,6 @@
 import { For } from "solid-js";
 import { squareIndex } from "../../domain/sfen";
-import type { Position } from "../../domain/types";
+import type { Position, Square } from "../../domain/types";
 import type { PieceTheme } from "../../theme/types";
 import styles from "./Board.module.css";
 import { PieceView } from "./PieceView";
@@ -12,6 +12,13 @@ const RANKS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 interface BoardProps {
   position: Position;
   theme: PieceTheme;
+  selectedSquare?: Square | null;
+  legalTargets?: Square[];
+  onSquareClick?: (square: Square) => void;
+}
+
+function sameSquare(a: Square, b: Square): boolean {
+  return a.file === b.file && a.rank === b.rank;
 }
 
 export function Board(props: BoardProps) {
@@ -26,11 +33,27 @@ export function Board(props: BoardProps) {
           <>
             <For each={FILES}>
               {(file) => {
+                const square: Square = { file, rank };
                 const piece = props.position.board[squareIndex(file, rank)];
+                const selected = () =>
+                  !!props.selectedSquare &&
+                  sameSquare(props.selectedSquare, square);
+                const highlighted = () =>
+                  !!props.legalTargets?.some((target) =>
+                    sameSquare(target, square),
+                  );
                 return (
-                  <div class={styles.square}>
+                  <button
+                    type="button"
+                    class={styles.square}
+                    classList={{
+                      [styles.selected]: selected(),
+                      [styles.highlighted]: highlighted(),
+                    }}
+                    onClick={() => props.onSquareClick?.(square)}
+                  >
                     {piece && <PieceView piece={piece} theme={props.theme} />}
-                  </div>
+                  </button>
                 );
               }}
             </For>

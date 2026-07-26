@@ -10,6 +10,8 @@ interface HandProps {
   color: Color;
   pieces: Partial<Record<PieceType, number>>;
   theme: PieceTheme;
+  selectedPiece?: PieceType | null;
+  onSelectPiece?: (piece: PieceType) => void;
 }
 
 export function Hand(props: HandProps) {
@@ -22,10 +24,16 @@ export function Hand(props: HandProps) {
         {(type) => {
           const piece: Piece = { type, color: props.color };
           return (
-            <div class={styles.slot}>
+            <button
+              type="button"
+              class={styles.slot}
+              classList={{ [styles.selected]: props.selectedPiece === type }}
+              disabled={!props.onSelectPiece}
+              onClick={() => props.onSelectPiece?.(type)}
+            >
               <PieceView piece={piece} theme={props.theme} />
               <span class={styles.count}>{props.pieces[type]}</span>
-            </div>
+            </button>
           );
         }}
       </For>
