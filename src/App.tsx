@@ -1,18 +1,19 @@
-import { createSignal } from "solid-js";
+import { Board } from "./components/Board/Board";
+import { Hand } from "./components/Hand/Hand";
+import { createInitialPosition } from "./domain/position";
+import { textTheme } from "./theme/textTheme";
 import "./App.css";
 
 function App() {
-  const [count, setCount] = createSignal(0);
+  const position = createInitialPosition();
 
   return (
     <main>
-      <h1>vite-solid-template</h1>
-      <button type="button" onClick={() => setCount((c) => c + 1)}>
-        Count is {count()}
-      </button>
-      <p>
-        Edit <code>src/App.tsx</code> and save to test HMR
-      </p>
+      <div class="gameArea">
+        <Hand color="white" pieces={position.hands.white} theme={textTheme} />
+        <Board position={position} theme={textTheme} />
+        <Hand color="black" pieces={position.hands.black} theme={textTheme} />
+      </div>
     </main>
   );
 }

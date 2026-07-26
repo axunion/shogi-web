@@ -1,0 +1,22 @@
+.hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: calc(var(--square-size) * 1.2);
+  padding: 0.5rem;
+}
+
+.slot {
+  position: relative;
+}
+
+.count {
+  position: absolute;
+  bottom: -0.2rem;
+  right: -0.2rem;
+  font-size: 0.75rem;
+  background: var(--count-bg);
+  color: var(--count-text);
+  border-radius: 50%;
+  padding: 0 0.35rem;
+}

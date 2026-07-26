@@ -3,6 +3,18 @@
   font-family: system-ui, sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+
+  --square-size: 56px;
+  --board-bg: #dcb35c;
+  --board-border: #3a2a1a;
+  --board-line: #3a2a1a;
+  --label-color: #333;
+  --piece-bg: #f0d9a8;
+  --piece-border: #3a2a1a;
+  --piece-text: #1a1a1a;
+  --count-bg: #fff;
+  --count-text: #1a1a1a;
+  --highlight-color: #6ab04c;
 }
 
 *,
