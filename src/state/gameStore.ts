@@ -110,6 +110,13 @@ function matedStatus(position: Position): GameStatus {
 function createGameStore() {
   const engine = new UsiEngine();
   let generation = 0;
+  let pendingSearch: AbortController | null = null;
+
+  /** Aborts any in-flight engine search so its bestmove can never resolve a later one. */
+  function cancelPendingSearch(): void {
+    pendingSearch?.abort();
+    pendingSearch = null;
+  }
 
   const [state, setState] = createStore<GameState>({
     position: createInitialPosition(),
@@ -166,11 +173,15 @@ function createGameStore() {
 
   async function requestEngineMove() {
     const startGeneration = generation;
+    const controller = new AbortController();
+    pendingSearch = controller;
     try {
       const token = await engine.search(
         usiPositionCommand(),
         state.settings.movetimeMs,
+        controller.signal,
       );
+      if (pendingSearch === controller) pendingSearch = null;
       if (generation !== startGeneration) return;
 
       if (token === "resign") {
@@ -195,6 +206,7 @@ function createGameStore() {
       });
       saveGame(records.map((r) => r.usi));
     } catch (error) {
+      if (pendingSearch === controller) pendingSearch = null;
       if (generation !== startGeneration) return;
       setState({
         status: "error",
@@ -306,6 +318,7 @@ function createGameStore() {
   }
 
   function newGame(): void {
+    cancelPendingSearch();
     generation++;
     engine.newGame();
     setState({
@@ -334,6 +347,7 @@ function createGameStore() {
     const result = rewind(state.records, undoPlies(state.records.length));
     if (!result) return;
 
+    cancelPendingSearch();
     generation++;
     const lastRecord = result.records[result.records.length - 1];
     setState({

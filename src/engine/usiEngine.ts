@@ -50,21 +50,49 @@ export class UsiEngine {
     this.send("usinewgame");
   }
 
-  search(usiPosition: string, movetimeMs: number): Promise<string> {
+  /**
+   * Runs a search. If `signal` aborts before a bestmove arrives, the pending
+   * listener is removed immediately (so a late bestmove line from this search
+   * can never be picked up by a subsequent, unrelated search) and "stop" is
+   * sent so the engine actually halts instead of burning CPU in the background.
+   */
+  search(
+    usiPosition: string,
+    movetimeMs: number,
+    signal?: AbortSignal,
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
+      if (signal?.aborted) {
+        reject(new Error("Search aborted"));
+        return;
+      }
+
+      const cleanup = () => {
+        clearTimeout(timeout);
         this.bestmoveListeners.delete(listener);
+        signal?.removeEventListener("abort", onAbort);
+      };
+
+      const timeout = setTimeout(() => {
+        cleanup();
         reject(new Error("Engine search timed out"));
       }, SEARCH_TIMEOUT_MS);
 
       const listener = (line: string) => {
         if (!line.startsWith("bestmove")) return;
-        clearTimeout(timeout);
-        this.bestmoveListeners.delete(listener);
+        cleanup();
         const [, move] = line.split(" ");
         resolve(move);
       };
+
+      const onAbort = () => {
+        cleanup();
+        this.send("stop");
+        reject(new Error("Search aborted"));
+      };
+
       this.bestmoveListeners.add(listener);
+      signal?.addEventListener("abort", onAbort);
 
       this.send(usiPosition);
       this.send(`go movetime ${movetimeMs}`);
