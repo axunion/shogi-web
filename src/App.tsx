@@ -7,6 +7,7 @@ import { Hand } from "./components/Hand/Hand";
 import { KifuList } from "./components/Kifu/KifuList";
 import { Layout } from "./components/Layout/Layout";
 import { PromotionDialog } from "./components/PromotionDialog/PromotionDialog";
+import { ResultOverlay } from "./components/ResultOverlay/ResultOverlay";
 import { squareIndex } from "./domain/sfen";
 import type { MoveRecord } from "./domain/types";
 import { gameStore } from "./state/gameStore";
@@ -133,6 +134,7 @@ function App() {
       {state.pendingPromotion && (
         <PromotionDialog onChoose={confirmPromotion} />
       )}
+      <ResultOverlay status={state.status} onRematch={newGame} />
     </>
   );
 }
