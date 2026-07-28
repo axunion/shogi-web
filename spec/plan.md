@@ -1,4 +1,4 @@
-# web-shogi 改善計画書
+# shogi-web 改善計画書
 
 第 1 期（盤 UI / 合法手判定 / USI 通信 / エンジン結合）と第 2 期（フェーズ 1〜7:
 `--square-size` 単一化・対局ライフサイクル・レイアウト・ビジュアル/効果音・棋譜表示・
@@ -231,7 +231,7 @@ gameStore ──(Promise API)── UsiEngine ──(postMessage)── engine.w
 次の指示をそのまま Claude Code に渡して実装を開始する:
 
 ```
-spec/plan.md を読んで、web-shogi の第 3 期（フェーズ 8）を実装してください。
+spec/plan.md を読んで、shogi-web の第 3 期（フェーズ 8）を実装してください。
 
 ルール:
 - spec/plan.md の §0 座標規約・依存方向（components → state → domain / engine）に従うこと。

@@ -1,4 +1,4 @@
-# web-shogi
+# shogi-web
 
 A browser-based shogi (Japanese chess) game. Play against
 [YaneuraOu](https://github.com/mizarjp/YaneuraOu) running locally as

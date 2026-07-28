@@ -1,7 +1,7 @@
 import type { Settings } from "./gameStore";
 
-const GAME_KEY = "web-shogi:game";
-const SETTINGS_KEY = "web-shogi:settings";
+const GAME_KEY = "shogi-web:game";
+const SETTINGS_KEY = "shogi-web:settings";
 const SCHEMA_VERSION = 1;
 
 const USI_MOVE_RE = /^(?:[1-9][a-i][1-9][a-i]\+?|[PLNSGBR]\*[1-9][a-i])$/;
