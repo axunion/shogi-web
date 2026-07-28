@@ -1,5 +1,5 @@
-import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
+import { defineConfig } from "vitest/config";
 
 // Required for SharedArrayBuffer, which the YaneuraOu.wasm engine needs for
 // WebAssembly threads. Must also be set by the production host.
@@ -21,5 +21,10 @@ export default defineConfig({
   },
   preview: {
     headers: crossOriginIsolationHeaders,
+  },
+  // vite-plugin-solid defaults test.environment to "jsdom" when unset.
+  // Pin it explicitly to happy-dom (lighter/faster) instead.
+  test: {
+    environment: "happy-dom",
   },
 });

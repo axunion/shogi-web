@@ -1,0 +1,25 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--panel-bg);
+  color: var(--panel-text);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.list li {
+  padding: 0.15rem 0.3rem;
+}
+
+.latest {
+  background: var(--selected-bg);
+  border-radius: 0.2rem;
+  font-weight: 600;
+}

@@ -1,0 +1,119 @@
+.layout {
+  --gap: 0.4rem;
+  --info-height: 2.75rem;
+  --controls-height: 3rem;
+  --hand-piece-scale: 0.8;
+  --hand-direction: row;
+  /* Vertical rows that scale with --square-size: board 9 + coord band 0.5 +
+     two hand rows 1.5 each = 12.5. The 9 board rows grow slightly faster
+     than --square-size (Board.module.css's grid gap and border also scale
+     with it: 9 row-gaps * 0.018 + 2 border-widths * 0.045 = +0.252 per row),
+     so the divisor is 12.752 rather than the naive 12.5. Same correction
+     applies to the width divisor below (9 -> 9.252). */
+  --vertical-fixed: calc(
+    var(--info-height) +
+    var(--controls-height) +
+    var(--gap) *
+    4 +
+    1rem
+  );
+  --square-size: min(
+    calc((100vw - 1rem - var(--coord-band)) / 9.252),
+    calc((100svh - var(--vertical-fixed)) / 12.752),
+    64px
+  );
+
+  display: grid;
+  grid-template-areas:
+    "info"
+    "opponentHand"
+    "board"
+    "ownHand"
+    "controls";
+  justify-items: center;
+  gap: var(--gap);
+  padding: 0.5rem;
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  min-height: 100svh;
+  align-content: center;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 10%) 100%),
+    repeating-linear-gradient(
+      45deg,
+      var(--page-bg) 0,
+      var(--page-bg) 2px,
+      var(--page-bg-accent) 2px,
+      var(--page-bg-accent) 3px
+    );
+}
+
+.info {
+  grid-area: info;
+}
+
+.opponentHand {
+  grid-area: opponentHand;
+}
+
+.board {
+  grid-area: board;
+}
+
+.ownHand {
+  grid-area: ownHand;
+}
+
+.controls {
+  grid-area: controls;
+}
+
+.kifu {
+  grid-area: kifu;
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .layout {
+    --gap: 1rem;
+    --hand-piece-scale: 1;
+    --hand-direction: column;
+    /* Same board grid-gap/border correction as the mobile formula above:
+       divisors are 10.252 / 12.252 instead of 10 / 12. The vertical reserve
+       (5.7rem, close to the ~5.5rem measured fixed chrome) is tuned to keep
+       844x390 landscape from overflowing; that leaves 1440x900 at ~79px per
+       square, just under the 80px target — preferred over a scrollbar. */
+    --square-size: min(
+      calc((100svh - 5.7rem) / 10.252),
+      calc((100vw - 22rem) / 12.252),
+      96px
+    );
+    grid-template-columns: auto auto auto minmax(16rem, 22rem);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "info         info  info     kifu"
+      "opponentHand board ownHand  kifu";
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  .opponentHand {
+    align-self: start;
+  }
+
+  .ownHand {
+    align-self: end;
+  }
+
+  .controls {
+    grid-area: kifu;
+    align-self: end;
+    min-width: 0;
+  }
+
+  .kifu {
+    display: block;
+    align-self: stretch;
+    min-height: 0;
+  }
+}

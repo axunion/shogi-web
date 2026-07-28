@@ -10,6 +10,8 @@ interface HandProps {
   color: Color;
   pieces: Partial<Record<PieceType, number>>;
   theme: PieceTheme;
+  label: string;
+  active?: boolean;
   selectedPiece?: PieceType | null;
   onSelectPiece?: (piece: PieceType) => void;
 }
@@ -19,24 +21,32 @@ export function Hand(props: HandProps) {
     HAND_ORDER.filter((type) => (props.pieces[type] ?? 0) > 0);
 
   return (
-    <div class={styles.hand}>
-      <For each={entries()}>
-        {(type) => {
-          const piece: Piece = { type, color: props.color };
-          return (
-            <button
-              type="button"
-              class={styles.slot}
-              classList={{ [styles.selected]: props.selectedPiece === type }}
-              disabled={!props.onSelectPiece}
-              onClick={() => props.onSelectPiece?.(type)}
-            >
-              <PieceView piece={piece} theme={props.theme} />
-              <span class={styles.count}>{props.pieces[type]}</span>
-            </button>
-          );
-        }}
-      </For>
+    <div class={styles.hand} classList={{ [styles.active]: !!props.active }}>
+      <span class={styles.label}>{props.label}</span>
+      <div class={styles.slots}>
+        <For each={entries()}>
+          {(type) => {
+            const piece: Piece = { type, color: props.color };
+            const label =
+              props.theme.kind === "text" && props.theme.label
+                ? props.theme.label(piece)
+                : type;
+            return (
+              <button
+                type="button"
+                class={styles.slot}
+                classList={{ [styles.selected]: props.selectedPiece === type }}
+                disabled={!props.onSelectPiece}
+                onClick={() => props.onSelectPiece?.(type)}
+                aria-label={`持ち駒 ${label} ${props.pieces[type]}枚`}
+              >
+                <PieceView piece={piece} theme={props.theme} />
+                <span class={styles.count}>{props.pieces[type]}</span>
+              </button>
+            );
+          }}
+        </For>
+      </div>
     </div>
   );
 }

@@ -11,7 +11,7 @@
     },
     "packageManager": {
       "name": "pnpm",
-      "version": "11.9.0",
+      "version": "11.17.0",
       "onFail": "download"
     }
   },
@@ -34,7 +34,7 @@
     "@biomejs/biome": "2.5.2",
     "@types/emscripten": "^1.41.5",
     "@types/node": "^24.13.2",
-    "jsdom": "^29.1.1",
+    "happy-dom": "^20.11.1",
     "lefthook": "^2.1.9",
     "typescript": "~6.0.2",
     "vite": "^8.1.1",

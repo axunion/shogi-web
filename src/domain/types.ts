@@ -37,3 +37,9 @@ export interface Position {
   sideToMove: Color;
   moveNumber: number; // 1-based, matches SFEN 4th field
 }
+
+export interface MoveRecord {
+  usi: string;
+  move: Move;
+  positionBefore: Position; // used for kifu formatting and undo
+}

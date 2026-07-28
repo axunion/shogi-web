@@ -1,31 +1,114 @@
 .board {
   display: grid;
-  grid-template-columns: repeat(9, var(--square-size)) auto;
-  grid-template-rows: auto repeat(9, var(--square-size));
-  background: var(--board-bg);
-  border: 2px solid var(--board-border);
+  grid-template-columns: repeat(9, var(--square-size)) var(--coord-band);
+  grid-template-rows: var(--coord-band) repeat(9, var(--square-size));
+  gap: var(--board-line-width);
+  background: var(--board-line);
+  border: var(--board-edge-width) solid var(--board-edge);
+  box-shadow: 0 calc(var(--square-size) * 0.12) calc(var(--square-size) * 0.3)
+    rgb(0 0 0 / 35%);
   width: fit-content;
 }
 
 .square {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--board-line);
   box-sizing: border-box;
-  background: none;
+  background: linear-gradient(135deg, var(--board-bg), var(--board-bg-dark));
+  border: none;
   padding: 0;
   margin: 0;
   font: inherit;
   cursor: pointer;
 }
 
+.square:hover,
+.square:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.lastMoveFrom {
+  background:
+    linear-gradient(var(--last-move-bg-weak), var(--last-move-bg-weak)),
+    linear-gradient(135deg, var(--board-bg), var(--board-bg-dark));
+}
+
+.lastMoveTo {
+  background:
+    linear-gradient(var(--last-move-bg), var(--last-move-bg)),
+    linear-gradient(135deg, var(--board-bg), var(--board-bg-dark));
+}
+
+/* Comes after lastMove* so an in-progress selection always wins over the
+   previous move's tint when a square happens to be both. */
 .selected {
   background: var(--selected-bg);
 }
 
-.highlighted {
-  box-shadow: inset 0 0 0 3px var(--highlight-color);
+.lastMoveTo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--last-move-bg);
+  animation: flash 500ms ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes flash {
+  from {
+    opacity: 0.9;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.checked {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 3px var(--check-color);
+  }
+
+  50% {
+    box-shadow: inset 0 0 0 6px var(--check-color);
+  }
+}
+
+.targetEmpty::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--square-size) * 0.22);
+  height: calc(var(--square-size) * 0.22);
+  border-radius: 50%;
+  background: var(--target-dot);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.targetCapture {
+  box-shadow: inset 0 0 0 3px var(--target-dot);
+}
+
+.starPoint {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: calc(var(--square-size) * 0.12);
+  height: calc(var(--square-size) * 0.12);
+  border-radius: 50%;
+  background: var(--board-line);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .fileLabel,
@@ -34,6 +117,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: var(--coord-font-size);
   color: var(--label-color);
+  background: transparent;
 }
