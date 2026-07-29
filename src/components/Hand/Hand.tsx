@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For, Show } from "solid-js";
 import type { Color, Piece, PieceType } from "../../domain/types";
 import type { PieceTheme } from "../../theme/types";
 import { PieceView } from "../Board/PieceView";
@@ -17,32 +17,37 @@ interface HandProps {
 }
 
 export function Hand(props: HandProps) {
-  const entries = () =>
-    HAND_ORDER.filter((type) => (props.pieces[type] ?? 0) > 0);
-
   return (
     <div class={styles.hand} classList={{ [styles.active]: !!props.active }}>
       <span class={styles.label}>{props.label}</span>
       <div class={styles.slots}>
-        <For each={entries()}>
+        <For each={HAND_ORDER}>
           {(type) => {
+            const count = () => props.pieces[type] ?? 0;
             const piece: Piece = { type, color: props.color };
             const label =
               props.theme.kind === "text" && props.theme.label
                 ? props.theme.label(piece)
                 : type;
             return (
-              <button
-                type="button"
-                class={styles.slot}
-                classList={{ [styles.selected]: props.selectedPiece === type }}
-                disabled={!props.onSelectPiece}
-                onClick={() => props.onSelectPiece?.(type)}
-                aria-label={`持ち駒 ${label} ${props.pieces[type]}枚`}
+              <Show
+                when={count() > 0}
+                fallback={<div class={styles.emptySlot} aria-hidden="true" />}
               >
-                <PieceView piece={piece} theme={props.theme} />
-                <span class={styles.count}>{props.pieces[type]}</span>
-              </button>
+                <button
+                  type="button"
+                  class={styles.slot}
+                  classList={{
+                    [styles.selected]: props.selectedPiece === type,
+                  }}
+                  disabled={!props.onSelectPiece}
+                  onClick={() => props.onSelectPiece?.(type)}
+                  aria-label={`持ち駒 ${label} ${count()}枚`}
+                >
+                  <PieceView piece={piece} theme={props.theme} />
+                  <span class={styles.count}>{count()}</span>
+                </button>
+              </Show>
             );
           }}
         </For>
