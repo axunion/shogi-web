@@ -19,11 +19,11 @@ export function PromotionDialog(props: PromotionDialogProps) {
           <Dialog.Content class={styles.dialog}>
             <Dialog.Title class={styles.title}>成りますか?</Dialog.Title>
             <div class={styles.actions}>
-              <button type="button" onClick={() => props.onChoose(true)}>
-                成る
-              </button>
               <button type="button" onClick={() => props.onChoose(false)}>
                 成らない
+              </button>
+              <button type="button" onClick={() => props.onChoose(true)}>
+                成る
               </button>
             </div>
           </Dialog.Content>

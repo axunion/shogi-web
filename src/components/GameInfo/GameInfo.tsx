@@ -21,15 +21,21 @@ const STATUS_LABEL: Record<GameStatus, string> = {
 };
 
 export function GameInfo(props: GameInfoProps) {
+  const isChecked = () => props.checked && !isGameOver(props.status);
+  const hasError = () => props.status === "error" && !!props.errorMessage;
+
   return (
     <div class={styles.info} aria-live="polite">
       <p>{STATUS_LABEL[props.status]}</p>
-      {props.checked && !isGameOver(props.status) && (
-        <p class={styles.check}>王手!</p>
-      )}
-      {props.status === "error" && props.errorMessage && (
-        <p class={styles.error}>{props.errorMessage}</p>
-      )}
+      <p
+        class={styles.secondary}
+        classList={{
+          [styles.check]: isChecked(),
+          [styles.error]: hasError(),
+        }}
+      >
+        {isChecked() ? "王手!" : hasError() ? props.errorMessage : ""}
+      </p>
     </div>
   );
 }

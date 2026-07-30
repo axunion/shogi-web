@@ -10,8 +10,8 @@
   /* Coordinate label band width/height. Not derived from --square-size
      (phase 3's --square-size formula subtracts this value, so deriving it
      would create a circular reference). Capped so the font fits the band. */
-  --coord-band: 1.6rem;
-  --coord-font-size: min(calc(var(--square-size) * 0.24), 0.9rem);
+  --coord-band: 1.3rem;
+  --coord-font-size: min(calc(var(--square-size) * 0.24), 0.75rem);
 
   /* Dimensions derived from --square-size (no absolute values here). */
   --piece-font-size: calc(var(--square-size) * 0.5);
@@ -33,10 +33,13 @@
   --stand-bg: #c69a5e;
   --stand-edge: #6b4b23;
   --label-color: #4a3c2a;
-  --piece-bg: #f0d9a8;
-  --piece-bg-dark: #dcbf85;
-  --piece-edge: #6b4b23;
+  --piece-bg: #f2ddb0;
+  --piece-bg-dark: #ddc088;
+  --piece-edge: #5c3f1f;
   --piece-text: #1a1a1a;
+  --piece-text-promoted: #a83232;
+  --piece-bevel-light: rgb(255 255 255 / 35%);
+  --piece-bevel-dark: rgb(0 0 0 / 30%);
   --count-bg: #fffdf7;
   --count-text: #1a1a1a;
   --highlight-color: #4c9a2a;

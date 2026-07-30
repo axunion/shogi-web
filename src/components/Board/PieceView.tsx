@@ -1,4 +1,6 @@
+import { demotedType } from "../../domain/moves";
 import type { Piece } from "../../domain/types";
+import { PIECE_SIZE_SCALE } from "../../theme/pieceSize";
 import type { PieceTheme } from "../../theme/types";
 import styles from "./PieceView.module.css";
 
@@ -10,6 +12,12 @@ interface PieceViewProps {
 }
 
 export function PieceView(props: PieceViewProps) {
+  const scale = () =>
+    PIECE_SIZE_SCALE[
+      demotedType(props.piece.type) as keyof typeof PIECE_SIZE_SCALE
+    ];
+  const isPromoted = () => props.piece.type.startsWith("+");
+
   return (
     <span
       classList={{
@@ -17,7 +25,9 @@ export function PieceView(props: PieceViewProps) {
         [styles.rotated]: props.piece.color === "white",
         [styles.selected]: !!props.selected,
         [styles.placed]: !!props.placed,
+        [styles.promoted]: isPromoted(),
       }}
+      style={{ "--piece-scale": String(scale()) }}
     >
       <span class={styles.shape}>
         <span class={styles.face}>

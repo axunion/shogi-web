@@ -54,8 +54,10 @@
 }
 
 .actions button {
+  min-width: 7rem;
   padding: 0.5em 1.25em;
   font: inherit;
+  white-space: nowrap;
   cursor: pointer;
   background: var(--panel-bg);
   color: var(--panel-text);
