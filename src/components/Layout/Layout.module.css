@@ -65,6 +65,12 @@
   grid-area: ownHand;
 }
 
+/* Mobile: no wrapper box — .controls (fixed bottom bar) and .kifu (hidden)
+   behave exactly as if they were direct children of .layout. */
+.sidePanel {
+  display: contents;
+}
+
 .controls {
   position: fixed;
   right: 0;
@@ -80,7 +86,6 @@
 }
 
 .kifu {
-  grid-area: kifu;
   display: none;
 }
 
@@ -121,19 +126,37 @@
     align-self: end;
   }
 
+  /* Desktop: one card — the control buttons form a header toolbar and the
+     history list fills the rest, both sized within the existing "kifu"
+     track (no extra grid row), so this can't grow the page height and
+     force a scrollbar. align-self: stretch is required here because
+     .layout sets align-items: center for the row-2 track, which would
+     otherwise shrink this panel to its content height (letting it grow
+     move-by-move as the list fills in) instead of claiming the full
+     track height up front. */
+  .sidePanel {
+    display: flex;
+    flex-direction: column;
+    grid-area: kifu;
+    align-self: stretch;
+    min-height: 0;
+  }
+
   .controls {
     position: static;
-    grid-area: kifu;
-    align-self: end;
+    justify-content: flex-start;
+    flex: 0 0 auto;
     min-width: 0;
-    padding: 0;
+    padding: 0 0 0.5rem;
     background: none;
     border-top: none;
+    border-bottom: 1px solid var(--panel-border);
   }
 
   .kifu {
     display: block;
-    align-self: stretch;
+    flex: 1;
     min-height: 0;
+    padding-top: 0.5rem;
   }
 }

@@ -1,4 +1,4 @@
-import { createEffect, For } from "solid-js";
+import { createEffect, For, Show } from "solid-js";
 import { formatMove } from "../../domain/notation";
 import type { MoveRecord } from "../../domain/types";
 import styles from "./KifuList.module.css";
@@ -17,17 +17,22 @@ export function KifuList(props: KifuListProps) {
 
   return (
     <ol class={styles.list} ref={listRef}>
-      <For each={props.records}>
-        {(record, index) => (
-          <li
-            classList={{
-              [styles.latest]: index() === props.records.length - 1,
-            }}
-          >
-            {index() + 1} {formatMove(record.positionBefore, record.move)}
-          </li>
-        )}
-      </For>
+      <Show
+        when={props.records.length > 0}
+        fallback={<li class={styles.empty}>まだ指し手はありません</li>}
+      >
+        <For each={props.records}>
+          {(record, index) => (
+            <li
+              classList={{
+                [styles.latest]: index() === props.records.length - 1,
+              }}
+            >
+              {index() + 1} {formatMove(record.positionBefore, record.move)}
+            </li>
+          )}
+        </For>
+      </Show>
     </ol>
   );
 }

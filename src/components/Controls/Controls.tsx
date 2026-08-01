@@ -1,7 +1,7 @@
 import { AlertDialog } from "@kobalte/core/alert-dialog";
 import { Dialog } from "@kobalte/core/dialog";
 import { Popover } from "@kobalte/core/popover";
-import { Menu, RotateCw, Volume2, VolumeX } from "lucide-solid";
+import { Flag, Menu, RotateCw, Undo2, Volume2, VolumeX, X } from "lucide-solid";
 import { createEffect, createSignal, For, Show } from "solid-js";
 import type { MoveRecord } from "../../domain/types";
 import type { GameMode, GameStatus } from "../../state/gameStore";
@@ -85,15 +85,17 @@ export function Controls(props: ControlsProps) {
         disabled={!props.canUndo}
         onClick={props.onUndo}
       >
-        待った
+        <Undo2 size={16} />
+        <span class={styles.buttonLabel}>待った</span>
       </button>
 
       <AlertDialog open={confirmResign()} onOpenChange={setConfirmResign}>
         <AlertDialog.Trigger
-          class={styles.button}
+          class={`${styles.button} ${styles.buttonDanger}`}
           disabled={props.status !== "playerTurn"}
         >
-          投了
+          <Flag size={16} />
+          <span class={styles.buttonLabel}>投了</span>
         </AlertDialog.Trigger>
         <AlertDialog.Portal>
           <AlertDialog.Overlay class={styles.overlay} />
@@ -128,10 +130,12 @@ export function Controls(props: ControlsProps) {
         open={menuOpen()}
         onOpenChange={setMenuOpen}
         modal={false}
+        placement="bottom"
         gutter={8}
       >
-        <Popover.Trigger class={styles.button} aria-label="メニュー">
-          <Menu size={18} />
+        <Popover.Trigger class={`${styles.button} ${styles.buttonAccent}`}>
+          <Menu size={16} />
+          <span class={styles.buttonLabel}>メニュー</span>
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content class={styles.menuPanel}>
@@ -269,13 +273,17 @@ export function Controls(props: ControlsProps) {
 
       <Dialog open={kifuOpen()} onOpenChange={setKifuOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay class={styles.overlay} />
-          <Dialog.Content class={styles.sheet}>
-            <Dialog.Title class={styles.dialogTitle}>棋譜</Dialog.Title>
+          <Dialog.Content class={styles.fullscreen}>
+            <div class={styles.fullscreenHeader}>
+              <Dialog.Title class={styles.dialogTitle}>棋譜</Dialog.Title>
+              <Dialog.CloseButton
+                class={styles.fullscreenClose}
+                aria-label="閉じる"
+              >
+                <X size={20} />
+              </Dialog.CloseButton>
+            </div>
             <KifuList records={props.records} />
-            <Dialog.CloseButton class={styles.button}>
-              閉じる
-            </Dialog.CloseButton>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog>

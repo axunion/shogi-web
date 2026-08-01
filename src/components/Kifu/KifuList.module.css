@@ -7,6 +7,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   background: var(--panel-bg);
   color: var(--panel-text);
   border: 1px solid var(--panel-border);
@@ -22,4 +23,11 @@
   background: var(--selected-bg);
   border-radius: 0.2rem;
   font-weight: 600;
+}
+
+.empty {
+  padding: 0.6rem 0.3rem;
+  color: var(--panel-text);
+  opacity: 0.6;
+  font-style: italic;
 }
