@@ -26,7 +26,7 @@ function squareFromIndex(index: number): Square {
   };
 }
 
-function sameSquare(a: Square, b: Square): boolean {
+export function sameSquare(a: Square, b: Square): boolean {
   return a.file === b.file && a.rank === b.rank;
 }
 

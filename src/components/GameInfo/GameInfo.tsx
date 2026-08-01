@@ -1,3 +1,4 @@
+import { colorLabel } from "../../domain/notation";
 import type { Color } from "../../domain/types";
 import type { GameMode, GameStatus } from "../../state/gameStore";
 import { isGameOver } from "../../state/gameStore";
@@ -28,7 +29,7 @@ const STATUS_LABEL: Record<GameStatus, string> = {
 };
 
 function turnLabel(sideToMove: Color): string {
-  return sideToMove === "black" ? "先手の番です" : "後手の番です";
+  return `${colorLabel(sideToMove)}の番です`;
 }
 
 export function GameInfo(props: GameInfoProps) {

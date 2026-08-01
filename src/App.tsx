@@ -8,6 +8,7 @@ import { KifuList } from "./components/Kifu/KifuList";
 import { Layout } from "./components/Layout/Layout";
 import { PromotionDialog } from "./components/PromotionDialog/PromotionDialog";
 import { ResultOverlay } from "./components/ResultOverlay/ResultOverlay";
+import { colorLabel, colorSymbol } from "./domain/notation";
 import { squareIndex } from "./domain/sfen";
 import type { Color, MoveRecord, PieceType } from "./domain/types";
 import { gameStore } from "./state/gameStore";
@@ -107,7 +108,7 @@ function App() {
             color={opponentColor()}
             pieces={state.position.hands[opponentColor()]}
             theme={textTheme}
-            label={opponentColor() === "white" ? "☖後手" : "☗先手"}
+            label={`${colorSymbol(opponentColor())}${colorLabel(opponentColor())}`}
             active={state.position.sideToMove === opponentColor()}
             selectedPiece={selectedPieceFor(opponentColor())}
             onSelectPiece={
@@ -135,7 +136,7 @@ function App() {
             color={ownColor()}
             pieces={state.position.hands[ownColor()]}
             theme={textTheme}
-            label={ownColor() === "black" ? "☗先手" : "☖後手"}
+            label={`${colorSymbol(ownColor())}${colorLabel(ownColor())}`}
             active={state.position.sideToMove === ownColor()}
             selectedPiece={selectedPieceFor(ownColor())}
             onSelectPiece={

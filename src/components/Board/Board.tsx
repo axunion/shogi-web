@@ -1,4 +1,6 @@
 import { For, Show } from "solid-js";
+import { sameSquare } from "../../domain/moves";
+import { colorLabel, RANK_KANJI } from "../../domain/notation";
 import { squareIndex } from "../../domain/sfen";
 import type { Piece, Position, Square } from "../../domain/types";
 import type { LastMove } from "../../state/gameStore";
@@ -6,7 +8,6 @@ import type { PieceTheme } from "../../theme/types";
 import styles from "./Board.module.css";
 import { PieceView } from "./PieceView";
 
-const RANK_LABELS = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
 const FILES = [9, 8, 7, 6, 5, 4, 3, 2, 1];
 const RANKS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const STAR_POINT_FILES = [3, 7];
@@ -21,10 +22,6 @@ interface BoardProps {
   checkSquare?: Square | null;
   flipped?: boolean;
   onSquareClick?: (square: Square) => void;
-}
-
-function sameSquare(a: Square, b: Square): boolean {
-  return a.file === b.file && a.rank === b.rank;
 }
 
 // Board-flip mode keeps the coordinate bands fixed on screen (top/right) so
@@ -50,10 +47,9 @@ function squareAriaLabel(
   piece: Piece | null,
   theme: PieceTheme,
 ): string {
-  const position = `${square.file}${RANK_LABELS[square.rank - 1]}`;
+  const position = `${square.file}${RANK_KANJI[square.rank - 1]}`;
   if (!piece) return `${position} 空`;
-  const colorLabel = piece.color === "black" ? "先手" : "後手";
-  return `${position} ${colorLabel} ${pieceLabel(piece, theme)}`;
+  return `${position} ${colorLabel(piece.color)} ${pieceLabel(piece, theme)}`;
 }
 
 export function Board(props: BoardProps) {
@@ -119,7 +115,7 @@ export function Board(props: BoardProps) {
                 );
               }}
             </For>
-            <div class={styles.rankLabel}>{RANK_LABELS[rank - 1]}</div>
+            <div class={styles.rankLabel}>{RANK_KANJI[rank - 1]}</div>
           </>
         )}
       </For>

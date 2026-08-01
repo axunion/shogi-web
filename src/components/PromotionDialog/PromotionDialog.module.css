@@ -1,17 +1,3 @@
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgb(0 0 0 / 40%);
-}
-
-.positioner {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .dialog {
   display: flex;
   flex-direction: column;

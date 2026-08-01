@@ -2,9 +2,12 @@ import { AlertDialog } from "@kobalte/core/alert-dialog";
 import { Dialog } from "@kobalte/core/dialog";
 import { Popover } from "@kobalte/core/popover";
 import { Flag, Menu, RotateCw, Undo2, Volume2, VolumeX, X } from "lucide-solid";
+import type { JSX } from "solid-js";
 import { createEffect, createSignal, For, Show } from "solid-js";
 import type { MoveRecord } from "../../domain/types";
 import type { GameMode, GameStatus } from "../../state/gameStore";
+import { ConfirmDialog } from "../Dialog/ConfirmDialog";
+import dialogStyles from "../Dialog/Dialog.module.css";
 import { KifuList } from "../Kifu/KifuList";
 import styles from "./Controls.module.css";
 
@@ -19,6 +22,15 @@ const MODE_OPTIONS: { value: GameMode; label: string }[] = [
   { value: "engine", label: "対エンジン" },
   { value: "human", label: "人対人（対面）" },
 ];
+
+function ButtonContent(props: { icon: JSX.Element; label: string }) {
+  return (
+    <>
+      {props.icon}
+      <span class={styles.buttonLabel}>{props.label}</span>
+    </>
+  );
+}
 
 interface ControlsProps {
   status: GameStatus;
@@ -41,7 +53,6 @@ export function Controls(props: ControlsProps) {
   const [confirmNewGame, setConfirmNewGame] = createSignal(false);
   const [confirmResign, setConfirmResign] = createSignal(false);
   const [confirmModeChange, setConfirmModeChange] = createSignal(false);
-  const [pendingMode, setPendingMode] = createSignal<GameMode>(props.mode);
   // Mirrors props.mode so the <select>'s displayed value can be snapped back
   // on cancel even when props.mode itself never changes.
   const [displayMode, setDisplayMode] = createSignal<GameMode>(props.mode);
@@ -62,7 +73,6 @@ export function Controls(props: ControlsProps) {
   function requestModeChange(mode: GameMode) {
     setDisplayMode(mode);
     if (mode === props.mode) return;
-    setPendingMode(mode);
     setMenuOpen(false);
     setConfirmModeChange(true);
   }
@@ -73,7 +83,7 @@ export function Controls(props: ControlsProps) {
   }
 
   function confirmModeChangeAction() {
-    props.onModeChange(pendingMode());
+    props.onModeChange(displayMode());
     setConfirmModeChange(false);
   }
 
@@ -85,46 +95,28 @@ export function Controls(props: ControlsProps) {
         disabled={!props.canUndo}
         onClick={props.onUndo}
       >
-        <Undo2 size={16} />
-        <span class={styles.buttonLabel}>待った</span>
+        <ButtonContent icon={<Undo2 size={16} />} label="待った" />
       </button>
 
-      <AlertDialog open={confirmResign()} onOpenChange={setConfirmResign}>
-        <AlertDialog.Trigger
-          class={`${styles.button} ${styles.buttonDanger}`}
-          disabled={props.status !== "playerTurn"}
-        >
-          <Flag size={16} />
-          <span class={styles.buttonLabel}>投了</span>
-        </AlertDialog.Trigger>
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay class={styles.overlay} />
-          <div class={styles.dialogPositioner}>
-            <AlertDialog.Content class={styles.dialog}>
-              <AlertDialog.Title class={styles.dialogTitle}>
-                投了
-              </AlertDialog.Title>
-              <AlertDialog.Description>
-                投了します。よろしいですか?
-              </AlertDialog.Description>
-              <div class={styles.dialogActions}>
-                <button type="button" onClick={() => setConfirmResign(false)}>
-                  キャンセル
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    props.onResign();
-                    setConfirmResign(false);
-                  }}
-                >
-                  投了する
-                </button>
-              </div>
-            </AlertDialog.Content>
-          </div>
-        </AlertDialog.Portal>
-      </AlertDialog>
+      <ConfirmDialog
+        open={confirmResign()}
+        onOpenChange={setConfirmResign}
+        title="投了"
+        description="投了します。よろしいですか?"
+        confirmLabel="投了する"
+        onConfirm={() => {
+          props.onResign();
+          setConfirmResign(false);
+        }}
+        trigger={() => (
+          <AlertDialog.Trigger
+            class={`${styles.button} ${styles.buttonDanger}`}
+            disabled={props.status !== "playerTurn"}
+          >
+            <ButtonContent icon={<Flag size={16} />} label="投了" />
+          </AlertDialog.Trigger>
+        )}
+      />
 
       <Popover
         open={menuOpen()}
@@ -134,8 +126,7 @@ export function Controls(props: ControlsProps) {
         gutter={8}
       >
         <Popover.Trigger class={`${styles.button} ${styles.buttonAccent}`}>
-          <Menu size={16} />
-          <span class={styles.buttonLabel}>メニュー</span>
+          <ButtonContent icon={<Menu size={16} />} label="メニュー" />
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content class={styles.menuPanel}>
@@ -212,72 +203,36 @@ export function Controls(props: ControlsProps) {
         </Popover.Portal>
       </Popover>
 
-      <AlertDialog open={confirmNewGame()} onOpenChange={setConfirmNewGame}>
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay class={styles.overlay} />
-          <div class={styles.dialogPositioner}>
-            <AlertDialog.Content class={styles.dialog}>
-              <AlertDialog.Title class={styles.dialogTitle}>
-                新規対局
-              </AlertDialog.Title>
-              <AlertDialog.Description>
-                現在の対局をやめて新しく始めますか?
-              </AlertDialog.Description>
-              <div class={styles.dialogActions}>
-                <button type="button" onClick={() => setConfirmNewGame(false)}>
-                  キャンセル
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    props.onNewGame();
-                    setConfirmNewGame(false);
-                  }}
-                >
-                  新規対局する
-                </button>
-              </div>
-            </AlertDialog.Content>
-          </div>
-        </AlertDialog.Portal>
-      </AlertDialog>
+      <ConfirmDialog
+        open={confirmNewGame()}
+        onOpenChange={setConfirmNewGame}
+        title="新規対局"
+        description="現在の対局をやめて新しく始めますか?"
+        confirmLabel="新規対局する"
+        onConfirm={() => {
+          props.onNewGame();
+          setConfirmNewGame(false);
+        }}
+      />
 
-      <AlertDialog
+      <ConfirmDialog
         open={confirmModeChange()}
         onOpenChange={(open) => {
           if (!open) cancelModeChange();
         }}
-      >
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay class={styles.overlay} />
-          <div class={styles.dialogPositioner}>
-            <AlertDialog.Content class={styles.dialog}>
-              <AlertDialog.Title class={styles.dialogTitle}>
-                対局モードの変更
-              </AlertDialog.Title>
-              <AlertDialog.Description>
-                モードを切り替えると現在の対局をやめて新しく始めます。よろしいですか?
-              </AlertDialog.Description>
-              <div class={styles.dialogActions}>
-                <button type="button" onClick={cancelModeChange}>
-                  キャンセル
-                </button>
-                <button type="button" onClick={confirmModeChangeAction}>
-                  切り替える
-                </button>
-              </div>
-            </AlertDialog.Content>
-          </div>
-        </AlertDialog.Portal>
-      </AlertDialog>
+        title="対局モードの変更"
+        description="モードを切り替えると現在の対局をやめて新しく始めます。よろしいですか?"
+        confirmLabel="切り替える"
+        onConfirm={confirmModeChangeAction}
+      />
 
       <Dialog open={kifuOpen()} onOpenChange={setKifuOpen}>
         <Dialog.Portal>
           <Dialog.Content class={styles.fullscreen}>
             <div class={styles.fullscreenHeader}>
-              <Dialog.Title class={styles.dialogTitle}>棋譜</Dialog.Title>
+              <Dialog.Title class={dialogStyles.title}>棋譜</Dialog.Title>
               <Dialog.CloseButton
-                class={styles.fullscreenClose}
+                class={`${styles.button} ${styles.fullscreenClose}`}
                 aria-label="閉じる"
               >
                 <X size={20} />

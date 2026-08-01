@@ -4,6 +4,7 @@ import {
   findKing,
   generateLegalMoves,
   hasAnyLegalMoves,
+  sameSquare,
 } from "../domain/moves";
 import {
   applyMove,
@@ -21,6 +22,7 @@ import type {
 } from "../domain/types";
 import { UsiEngine } from "../engine/usiEngine";
 import { rewind, undoPlies } from "./rewind";
+import type { ResignedBy } from "./storage";
 import {
   clearGame,
   loadGame,
@@ -45,6 +47,12 @@ export type GameStatus =
   | "blackResigned" // human mode: black resigned
   | "whiteResigned" // human mode: white resigned
   | "error";
+
+const RESIGNED_STATUS: Record<ResignedBy, GameStatus> = {
+  player: "playerResigned",
+  black: "blackResigned",
+  white: "whiteResigned",
+};
 
 export function isGameOver(status: GameStatus): boolean {
   return (
@@ -99,10 +107,6 @@ const DEFAULT_SETTINGS: Settings = {
   mode: "engine",
   boardFlip: false,
 };
-
-function sameSquare(a: Square, b: Square): boolean {
-  return a.file === b.file && a.rank === b.rank;
-}
 
 function lastMoveOf(move: Move): LastMove {
   return move.kind === "move"
@@ -352,17 +356,11 @@ function createGameStore() {
       setState({
         status: side === "black" ? "blackResigned" : "whiteResigned",
       });
-      saveGame(
-        state.records.map((r) => r.usi),
-        side,
-      );
+      saveGame(usiMoves(), side);
       return;
     }
     setState({ status: "playerResigned" });
-    saveGame(
-      state.records.map((r) => r.usi),
-      "player",
-    );
+    saveGame(usiMoves(), "player");
   }
 
   function undo(): void {
@@ -385,7 +383,7 @@ function createGameStore() {
       status: "playerTurn",
       errorMessage: null,
     });
-    saveGame(result.records.map((r) => r.usi));
+    saveGame(usiMoves());
   }
 
   function setSettings(patch: Partial<Settings>): void {
@@ -431,16 +429,8 @@ function createGameStore() {
             : null,
       });
 
-      if (saved?.resigned === "player") {
-        setState({ status: "playerResigned" });
-        return;
-      }
-      if (saved?.resigned === "black") {
-        setState({ status: "blackResigned" });
-        return;
-      }
-      if (saved?.resigned === "white") {
-        setState({ status: "whiteResigned" });
+      if (saved?.resigned) {
+        setState({ status: RESIGNED_STATUS[saved.resigned] });
         return;
       }
 

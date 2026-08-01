@@ -2,6 +2,7 @@ import { Dialog } from "@kobalte/core/dialog";
 import { createEffect, createSignal, on } from "solid-js";
 import type { GameStatus } from "../../state/gameStore";
 import { isGameOver } from "../../state/gameStore";
+import dialogStyles from "../Dialog/Dialog.module.css";
 import styles from "./ResultOverlay.module.css";
 
 interface ResultOverlayProps {
@@ -52,8 +53,8 @@ export function ResultOverlay(props: ResultOverlayProps) {
   return (
     <Dialog open={open()} onOpenChange={setOpen}>
       <Dialog.Portal>
-        <Dialog.Overlay class={styles.overlay} />
-        <div class={styles.positioner}>
+        <Dialog.Overlay class={dialogStyles.overlay} />
+        <div class={dialogStyles.positioner}>
           <Dialog.Content class={styles.dialog}>
             <Dialog.Title class={styles.title}>
               {RESULT_LABEL[props.status]}

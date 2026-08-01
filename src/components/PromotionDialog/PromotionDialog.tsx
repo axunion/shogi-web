@@ -1,4 +1,5 @@
 import { Dialog } from "@kobalte/core/dialog";
+import dialogStyles from "../Dialog/Dialog.module.css";
 import styles from "./PromotionDialog.module.css";
 
 interface PromotionDialogProps {
@@ -14,8 +15,8 @@ export function PromotionDialog(props: PromotionDialogProps) {
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay class={styles.overlay} />
-        <div class={styles.positioner}>
+        <Dialog.Overlay class={dialogStyles.overlay} />
+        <div class={dialogStyles.positioner}>
           <Dialog.Content class={styles.dialog}>
             <Dialog.Title class={styles.title}>成りますか?</Dialog.Title>
             <div class={styles.actions}>

@@ -1,8 +1,26 @@
 import { canPromote } from "./moves";
 import { squareIndex } from "./sfen";
-import type { Move, Piece, PieceType, Position } from "./types";
+import type { Color, Move, Piece, PieceType, Position } from "./types";
 
-const RANK_KANJI = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
+export const RANK_KANJI = [
+  "一",
+  "二",
+  "三",
+  "四",
+  "五",
+  "六",
+  "七",
+  "八",
+  "九",
+];
+
+export function colorLabel(color: Color): string {
+  return color === "black" ? "先手" : "後手";
+}
+
+export function colorSymbol(color: Color): string {
+  return color === "black" ? "☗" : "☖";
+}
 
 // Kifu piece names — a separate table from the board's 1-character labels
 // (theme/textTheme.ts), e.g. +R is "竜" here but "龍" on the board.
