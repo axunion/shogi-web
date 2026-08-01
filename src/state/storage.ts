@@ -6,16 +6,18 @@ const SCHEMA_VERSION = 1;
 
 const USI_MOVE_RE = /^(?:[1-9][a-i][1-9][a-i]\+?|[PLNSGBR]\*[1-9][a-i])$/;
 
+export type ResignedBy = "player" | "black" | "white";
+
 interface SavedGame {
   version: number;
   usiMoves: string[];
   savedAt: string;
-  resigned?: "player";
+  resigned?: ResignedBy;
 }
 
 export interface ParsedSavedGame {
   usiMoves: string[];
-  resigned?: "player";
+  resigned?: ResignedBy;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -44,9 +46,16 @@ export function parseSavedGame(raw: string | null): ParsedSavedGame | null {
   ) {
     return null;
   }
-  if (resigned !== undefined && resigned !== "player") return null;
+  if (
+    resigned !== undefined &&
+    resigned !== "player" &&
+    resigned !== "black" &&
+    resigned !== "white"
+  ) {
+    return null;
+  }
 
-  return resigned === "player" ? { usiMoves, resigned } : { usiMoves };
+  return resigned !== undefined ? { usiMoves, resigned } : { usiMoves };
 }
 
 /** Pure: validates settings JSON. Returns null when unusable. */
@@ -70,6 +79,12 @@ export function parseSavedSettings(
   if (typeof parsed.soundEnabled === "boolean") {
     result.soundEnabled = parsed.soundEnabled;
   }
+  if (parsed.mode === "engine" || parsed.mode === "human") {
+    result.mode = parsed.mode;
+  }
+  if (typeof parsed.boardFlip === "boolean") {
+    result.boardFlip = parsed.boardFlip;
+  }
   return result;
 }
 
@@ -81,7 +96,7 @@ export function loadGame(): ParsedSavedGame | null {
   }
 }
 
-export function saveGame(usiMoves: string[], resigned?: "player"): void {
+export function saveGame(usiMoves: string[], resigned?: ResignedBy): void {
   try {
     const saved: SavedGame = {
       version: SCHEMA_VERSION,

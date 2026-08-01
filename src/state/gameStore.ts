@@ -20,7 +20,7 @@ import type {
   Square,
 } from "../domain/types";
 import { UsiEngine } from "../engine/usiEngine";
-import { rewind } from "./rewind";
+import { rewind, undoPlies } from "./rewind";
 import {
   clearGame,
   loadGame,
@@ -28,6 +28,8 @@ import {
   saveGame,
   saveSettings,
 } from "./storage";
+
+export type GameMode = "engine" | "human";
 
 export type GameStatus =
   | "loading" // engine starting up
@@ -38,6 +40,10 @@ export type GameStatus =
   | "playerMated" // player loses: player is checkmated
   | "playerResigned" // player loses: player resigned
   | "engineDeclaredWin" // bestmove win
+  | "blackMated" // human mode: black is checkmated
+  | "whiteMated" // human mode: white is checkmated
+  | "blackResigned" // human mode: black resigned
+  | "whiteResigned" // human mode: white resigned
   | "error";
 
 export function isGameOver(status: GameStatus): boolean {
@@ -46,7 +52,11 @@ export function isGameOver(status: GameStatus): boolean {
     status === "engineMated" ||
     status === "playerMated" ||
     status === "playerResigned" ||
-    status === "engineDeclaredWin"
+    status === "engineDeclaredWin" ||
+    status === "blackMated" ||
+    status === "whiteMated" ||
+    status === "blackResigned" ||
+    status === "whiteResigned"
   );
 }
 
@@ -62,6 +72,8 @@ interface PendingPromotion {
 export interface Settings {
   movetimeMs: number;
   soundEnabled: boolean;
+  mode: GameMode;
+  boardFlip: boolean;
 }
 
 export interface LastMove {
@@ -84,6 +96,8 @@ interface GameState {
 const DEFAULT_SETTINGS: Settings = {
   movetimeMs: 1000,
   soundEnabled: true,
+  mode: "engine",
+  boardFlip: false,
 };
 
 function sameSquare(a: Square, b: Square): boolean {
@@ -96,14 +110,10 @@ function lastMoveOf(move: Move): LastMove {
     : { from: null, to: move.to };
 }
 
-/** Plies to drop for a single "undo": 2 for a completed player+engine pair,
- * 1 while only the player's move is recorded (engine still thinking), 0 if empty. */
-function undoPlies(recordCount: number): number {
-  if (recordCount === 0) return 0;
-  return recordCount % 2 === 0 ? 2 : 1;
-}
-
-function matedStatus(position: Position): GameStatus {
+function matedStatus(position: Position, mode: GameMode): GameStatus {
+  if (mode === "human") {
+    return position.sideToMove === "black" ? "blackMated" : "whiteMated";
+  }
   return position.sideToMove === "black" ? "playerMated" : "engineMated";
 }
 
@@ -230,11 +240,12 @@ function createGameStore() {
         selection: null,
         legalTargets: [],
         pendingPromotion: null,
-        status: "engineMated",
+        status: matedStatus(position, state.settings.mode),
       });
       return;
     }
 
+    const isHuman = state.settings.mode === "human";
     setState({
       position,
       records,
@@ -242,9 +253,9 @@ function createGameStore() {
       selection: null,
       legalTargets: [],
       pendingPromotion: null,
-      status: "thinking",
+      status: isHuman ? "playerTurn" : "thinking",
     });
-    void requestEngineMove();
+    if (!isHuman) void requestEngineMove();
   }
 
   function commitMove(candidates: Move[], to: Square) {
@@ -320,7 +331,7 @@ function createGameStore() {
   function newGame(): void {
     cancelPendingSearch();
     generation++;
-    engine.newGame();
+    if (state.settings.mode === "engine") engine.newGame();
     setState({
       position: createInitialPosition(),
       records: [],
@@ -336,6 +347,17 @@ function createGameStore() {
 
   function resign(): void {
     if (state.status !== "playerTurn") return;
+    if (state.settings.mode === "human") {
+      const side = state.position.sideToMove;
+      setState({
+        status: side === "black" ? "blackResigned" : "whiteResigned",
+      });
+      saveGame(
+        state.records.map((r) => r.usi),
+        side,
+      );
+      return;
+    }
     setState({ status: "playerResigned" });
     saveGame(
       state.records.map((r) => r.usi),
@@ -344,7 +366,10 @@ function createGameStore() {
   }
 
   function undo(): void {
-    const result = rewind(state.records, undoPlies(state.records.length));
+    const result = rewind(
+      state.records,
+      undoPlies(state.records.length, state.settings.mode),
+    );
     if (!result) return;
 
     cancelPendingSearch();
@@ -368,6 +393,11 @@ function createGameStore() {
     saveSettings({ ...state.settings });
   }
 
+  function setGameMode(mode: GameMode): void {
+    setSettings({ mode });
+    newGame();
+  }
+
   async function startEngine(): Promise<void> {
     try {
       await engine.launch();
@@ -377,13 +407,15 @@ function createGameStore() {
         setState("settings", savedSettings);
       }
 
+      const mode = state.settings.mode;
+
       const saved = loadGame();
       const replay = saved ? replayUsiMoves(saved.usiMoves) : null;
       if (saved && !replay) {
         clearGame();
       }
 
-      engine.newGame();
+      if (mode === "engine") engine.newGame();
 
       if (!replay) {
         setState({ status: "playerTurn" });
@@ -403,13 +435,21 @@ function createGameStore() {
         setState({ status: "playerResigned" });
         return;
       }
-
-      if (!hasAnyLegalMoves(replay.position)) {
-        setState({ status: matedStatus(replay.position) });
+      if (saved?.resigned === "black") {
+        setState({ status: "blackResigned" });
+        return;
+      }
+      if (saved?.resigned === "white") {
+        setState({ status: "whiteResigned" });
         return;
       }
 
-      if (replay.position.sideToMove === "white") {
+      if (!hasAnyLegalMoves(replay.position)) {
+        setState({ status: matedStatus(replay.position, mode) });
+        return;
+      }
+
+      if (mode === "engine" && replay.position.sideToMove === "white") {
         setState({ status: "thinking" });
         void requestEngineMove();
         return;
@@ -436,6 +476,7 @@ function createGameStore() {
     resign,
     undo,
     setSettings,
+    setGameMode,
   };
 }
 

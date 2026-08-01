@@ -14,6 +14,7 @@ interface HandProps {
   active?: boolean;
   selectedPiece?: PieceType | null;
   onSelectPiece?: (piece: PieceType) => void;
+  rotated?: boolean;
 }
 
 export function Hand(props: HandProps) {
@@ -44,7 +45,11 @@ export function Hand(props: HandProps) {
                   onClick={() => props.onSelectPiece?.(type)}
                   aria-label={`持ち駒 ${label} ${count()}枚`}
                 >
-                  <PieceView piece={piece} theme={props.theme} />
+                  <PieceView
+                    piece={piece}
+                    theme={props.theme}
+                    rotated={props.rotated}
+                  />
                   <span class={styles.count}>{count()}</span>
                 </button>
               </Show>

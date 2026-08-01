@@ -19,11 +19,19 @@ interface BoardProps {
   legalTargets?: Square[];
   lastMove?: LastMove | null;
   checkSquare?: Square | null;
+  flipped?: boolean;
   onSquareClick?: (square: Square) => void;
 }
 
 function sameSquare(a: Square, b: Square): boolean {
   return a.file === b.file && a.rank === b.rank;
+}
+
+// Board-flip mode keeps the coordinate bands fixed on screen (top/right) so
+// flipping never shifts layout; only the square order and piece orientation
+// reverse to represent "my side at the bottom" for the current mover.
+function pieceRotated(piece: Piece, flipped: boolean): boolean {
+  return flipped ? piece.color === "black" : piece.color === "white";
 }
 
 function isStarPoint(square: Square): boolean {
@@ -49,16 +57,19 @@ function squareAriaLabel(
 }
 
 export function Board(props: BoardProps) {
+  const orderedFiles = () => (props.flipped ? [...FILES].reverse() : FILES);
+  const orderedRanks = () => (props.flipped ? [...RANKS].reverse() : RANKS);
+
   return (
     <div class={styles.board}>
-      <For each={FILES}>
+      <For each={orderedFiles()}>
         {(file) => <div class={styles.fileLabel}>{file}</div>}
       </For>
       <div class={styles.cornerCell} />
-      <For each={RANKS}>
+      <For each={orderedRanks()}>
         {(rank) => (
           <>
-            <For each={FILES}>
+            <For each={orderedFiles()}>
               {(file) => {
                 const square: Square = { file, rank };
                 const piece = () =>
@@ -100,6 +111,7 @@ export function Board(props: BoardProps) {
                           theme={props.theme}
                           selected={selected()}
                           placed={isLastMoveTo()}
+                          rotated={pieceRotated(p(), !!props.flipped)}
                         />
                       )}
                     </Show>

@@ -1,10 +1,10 @@
 import { AlertDialog } from "@kobalte/core/alert-dialog";
 import { Dialog } from "@kobalte/core/dialog";
 import { Popover } from "@kobalte/core/popover";
-import { Menu, Volume2, VolumeX } from "lucide-solid";
-import { createSignal, For } from "solid-js";
+import { Menu, RotateCw, Volume2, VolumeX } from "lucide-solid";
+import { createEffect, createSignal, For, Show } from "solid-js";
 import type { MoveRecord } from "../../domain/types";
-import type { GameStatus } from "../../state/gameStore";
+import type { GameMode, GameStatus } from "../../state/gameStore";
 import { KifuList } from "../Kifu/KifuList";
 import styles from "./Controls.module.css";
 
@@ -15,22 +15,37 @@ const MOVETIME_OPTIONS: { value: number; label: string }[] = [
   { value: 8000, label: "最強(8秒)" },
 ];
 
+const MODE_OPTIONS: { value: GameMode; label: string }[] = [
+  { value: "engine", label: "対エンジン" },
+  { value: "human", label: "人対人（対面）" },
+];
+
 interface ControlsProps {
   status: GameStatus;
   canUndo: boolean;
   soundEnabled: boolean;
   movetimeMs: number;
+  mode: GameMode;
+  boardFlip: boolean;
   records: MoveRecord[];
   onNewGame: () => void;
   onUndo: () => void;
   onResign: () => void;
   onToggleSound: () => void;
   onMovetimeChange: (movetimeMs: number) => void;
+  onModeChange: (mode: GameMode) => void;
+  onToggleBoardFlip: () => void;
 }
 
 export function Controls(props: ControlsProps) {
   const [confirmNewGame, setConfirmNewGame] = createSignal(false);
   const [confirmResign, setConfirmResign] = createSignal(false);
+  const [confirmModeChange, setConfirmModeChange] = createSignal(false);
+  const [pendingMode, setPendingMode] = createSignal<GameMode>(props.mode);
+  // Mirrors props.mode so the <select>'s displayed value can be snapped back
+  // on cancel even when props.mode itself never changes.
+  const [displayMode, setDisplayMode] = createSignal<GameMode>(props.mode);
+  createEffect(() => setDisplayMode(props.mode));
   const [kifuOpen, setKifuOpen] = createSignal(false);
   const [menuOpen, setMenuOpen] = createSignal(false);
 
@@ -42,6 +57,24 @@ export function Controls(props: ControlsProps) {
   function openKifuDialog() {
     setMenuOpen(false);
     setKifuOpen(true);
+  }
+
+  function requestModeChange(mode: GameMode) {
+    setDisplayMode(mode);
+    if (mode === props.mode) return;
+    setPendingMode(mode);
+    setMenuOpen(false);
+    setConfirmModeChange(true);
+  }
+
+  function cancelModeChange() {
+    setDisplayMode(props.mode);
+    setConfirmModeChange(false);
+  }
+
+  function confirmModeChangeAction() {
+    props.onModeChange(pendingMode());
+    setConfirmModeChange(false);
   }
 
   return (
@@ -125,17 +158,44 @@ export function Controls(props: ControlsProps) {
 
             <select
               class={styles.select}
-              value={props.movetimeMs}
+              value={displayMode()}
               onChange={(event) =>
-                props.onMovetimeChange(Number(event.currentTarget.value))
+                requestModeChange(event.currentTarget.value as GameMode)
               }
             >
-              <For each={MOVETIME_OPTIONS}>
+              <For each={MODE_OPTIONS}>
                 {(option) => (
                   <option value={option.value}>{option.label}</option>
                 )}
               </For>
             </select>
+
+            <Show when={props.mode === "engine"}>
+              <select
+                class={styles.select}
+                value={props.movetimeMs}
+                onChange={(event) =>
+                  props.onMovetimeChange(Number(event.currentTarget.value))
+                }
+              >
+                <For each={MOVETIME_OPTIONS}>
+                  {(option) => (
+                    <option value={option.value}>{option.label}</option>
+                  )}
+                </For>
+              </select>
+            </Show>
+
+            <Show when={props.mode === "human"}>
+              <button
+                type="button"
+                class={styles.menuItem}
+                onClick={props.onToggleBoardFlip}
+              >
+                <RotateCw size={18} />
+                {props.boardFlip ? "盤面回転:オン" : "盤面回転:オフ"}
+              </button>
+            </Show>
 
             <button
               type="button"
@@ -171,6 +231,35 @@ export function Controls(props: ControlsProps) {
                   }}
                 >
                   新規対局する
+                </button>
+              </div>
+            </AlertDialog.Content>
+          </div>
+        </AlertDialog.Portal>
+      </AlertDialog>
+
+      <AlertDialog
+        open={confirmModeChange()}
+        onOpenChange={(open) => {
+          if (!open) cancelModeChange();
+        }}
+      >
+        <AlertDialog.Portal>
+          <AlertDialog.Overlay class={styles.overlay} />
+          <div class={styles.dialogPositioner}>
+            <AlertDialog.Content class={styles.dialog}>
+              <AlertDialog.Title class={styles.dialogTitle}>
+                対局モードの変更
+              </AlertDialog.Title>
+              <AlertDialog.Description>
+                モードを切り替えると現在の対局をやめて新しく始めます。よろしいですか?
+              </AlertDialog.Description>
+              <div class={styles.dialogActions}>
+                <button type="button" onClick={cancelModeChange}>
+                  キャンセル
+                </button>
+                <button type="button" onClick={confirmModeChangeAction}>
+                  切り替える
                 </button>
               </div>
             </AlertDialog.Content>

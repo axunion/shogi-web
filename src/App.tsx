@@ -9,7 +9,7 @@ import { Layout } from "./components/Layout/Layout";
 import { PromotionDialog } from "./components/PromotionDialog/PromotionDialog";
 import { ResultOverlay } from "./components/ResultOverlay/ResultOverlay";
 import { squareIndex } from "./domain/sfen";
-import type { MoveRecord } from "./domain/types";
+import type { Color, MoveRecord, PieceType } from "./domain/types";
 import { gameStore } from "./state/gameStore";
 import { textTheme } from "./theme/textTheme";
 
@@ -31,7 +31,31 @@ function App() {
     resign,
     undo,
     setSettings,
+    setGameMode,
   } = gameStore;
+
+  const flipModeActive = () =>
+    state.settings.mode === "human" && state.settings.boardFlip;
+  const flipped = () =>
+    flipModeActive() && state.position.sideToMove === "white";
+  const opponentColor = (): Color => (flipped() ? "black" : "white");
+  const ownColor = (): Color => (flipped() ? "white" : "black");
+
+  function handClickable(color: Color): boolean {
+    return state.status === "playerTurn" && state.position.sideToMove === color;
+  }
+
+  function selectedPieceFor(color: Color): PieceType | null {
+    if (state.selection?.kind !== "hand") return null;
+    return state.position.sideToMove === color ? state.selection.piece : null;
+  }
+
+  // In board-flip mode, "own vs opponent" (not black vs white) determines
+  // which hand pieces should read as upright to the current mover.
+  function handRotated(color: Color): boolean | undefined {
+    if (!flipModeActive()) return undefined;
+    return state.position.sideToMove !== color;
+  }
 
   onMount(() => {
     void startEngine();
@@ -72,17 +96,24 @@ function App() {
         info={
           <GameInfo
             status={state.status}
+            mode={state.settings.mode}
+            sideToMove={state.position.sideToMove}
             errorMessage={state.errorMessage}
             checked={checkedKingSquare() !== null}
           />
         }
         opponentHand={
           <Hand
-            color="white"
-            pieces={state.position.hands.white}
+            color={opponentColor()}
+            pieces={state.position.hands[opponentColor()]}
             theme={textTheme}
-            label="☖後手"
-            active={state.position.sideToMove === "white"}
+            label={opponentColor() === "white" ? "☖後手" : "☗先手"}
+            active={state.position.sideToMove === opponentColor()}
+            selectedPiece={selectedPieceFor(opponentColor())}
+            onSelectPiece={
+              handClickable(opponentColor()) ? handleHandPieceClick : undefined
+            }
+            rotated={handRotated(opponentColor())}
           />
         }
         board={
@@ -95,22 +126,22 @@ function App() {
             legalTargets={state.legalTargets}
             lastMove={state.lastMove}
             checkSquare={checkedKingSquare()}
+            flipped={flipped()}
             onSquareClick={handleSquareClick}
           />
         }
         ownHand={
           <Hand
-            color="black"
-            pieces={state.position.hands.black}
+            color={ownColor()}
+            pieces={state.position.hands[ownColor()]}
             theme={textTheme}
-            label="☗先手"
-            active={state.position.sideToMove === "black"}
-            selectedPiece={
-              state.selection?.kind === "hand" ? state.selection.piece : null
-            }
+            label={ownColor() === "black" ? "☗先手" : "☖後手"}
+            active={state.position.sideToMove === ownColor()}
+            selectedPiece={selectedPieceFor(ownColor())}
             onSelectPiece={
-              state.status === "playerTurn" ? handleHandPieceClick : undefined
+              handClickable(ownColor()) ? handleHandPieceClick : undefined
             }
+            rotated={handRotated(ownColor())}
           />
         }
         controls={
@@ -119,6 +150,8 @@ function App() {
             canUndo={state.records.length > 0}
             soundEnabled={state.settings.soundEnabled}
             movetimeMs={state.settings.movetimeMs}
+            mode={state.settings.mode}
+            boardFlip={state.settings.boardFlip}
             records={state.records}
             onNewGame={newGame}
             onUndo={undo}
@@ -127,6 +160,10 @@ function App() {
               setSettings({ soundEnabled: !state.settings.soundEnabled })
             }
             onMovetimeChange={(movetimeMs) => setSettings({ movetimeMs })}
+            onModeChange={setGameMode}
+            onToggleBoardFlip={() =>
+              setSettings({ boardFlip: !state.settings.boardFlip })
+            }
           />
         }
         kifu={<KifuList records={state.records} />}

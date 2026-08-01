@@ -15,6 +15,10 @@ const RESULT_LABEL: Partial<Record<GameStatus, string>> = {
   playerMated: "あなたの負けです",
   playerResigned: "あなたの負けです",
   engineDeclaredWin: "エンジンの勝ちです",
+  blackMated: "後手の勝ちです",
+  whiteMated: "先手の勝ちです",
+  blackResigned: "後手の勝ちです",
+  whiteResigned: "先手の勝ちです",
 };
 
 const RESULT_REASON: Partial<Record<GameStatus, string>> = {
@@ -22,6 +26,10 @@ const RESULT_REASON: Partial<Record<GameStatus, string>> = {
   engineMated: "詰みです",
   playerMated: "詰みです",
   playerResigned: "投了しました",
+  blackMated: "詰みです",
+  whiteMated: "詰みです",
+  blackResigned: "先手が投了しました",
+  whiteResigned: "後手が投了しました",
 };
 
 export function ResultOverlay(props: ResultOverlayProps) {

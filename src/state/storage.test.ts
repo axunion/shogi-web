@@ -25,6 +25,20 @@ describe("parseSavedGame", () => {
     expect(result?.resigned).toBe("player");
   });
 
+  it("accepts a black resignation (human mode)", () => {
+    const result = parseSavedGame(saved({ resigned: "black" }));
+    expect(result?.resigned).toBe("black");
+  });
+
+  it("accepts a white resignation (human mode)", () => {
+    const result = parseSavedGame(saved({ resigned: "white" }));
+    expect(result?.resigned).toBe("white");
+  });
+
+  it("rejects an invalid resigned value", () => {
+    expect(parseSavedGame(saved({ resigned: "engine" }))).toBeNull();
+  });
+
   it("rejects a schema version mismatch", () => {
     expect(parseSavedGame(saved({ version: 2 }))).toBeNull();
   });
@@ -73,5 +87,15 @@ describe("parseSavedSettings", () => {
         JSON.stringify({ movetimeMs: "fast", soundEnabled: false }),
       ),
     ).toEqual({ soundEnabled: false });
+  });
+
+  it("accepts mode and boardFlip", () => {
+    expect(
+      parseSavedSettings(JSON.stringify({ mode: "human", boardFlip: true })),
+    ).toEqual({ mode: "human", boardFlip: true });
+  });
+
+  it("rejects an invalid mode value", () => {
+    expect(parseSavedSettings(JSON.stringify({ mode: "invalid" }))).toEqual({});
   });
 });

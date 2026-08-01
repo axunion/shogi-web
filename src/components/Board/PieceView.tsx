@@ -9,6 +9,10 @@ interface PieceViewProps {
   theme: PieceTheme;
   selected?: boolean;
   placed?: boolean;
+  /** Overrides the default color-based rotation (white=180deg). Used by
+   * hand slots in board-flip mode, where "own vs opponent" rather than
+   * "black vs white" determines which pieces should read as upright. */
+  rotated?: boolean;
 }
 
 export function PieceView(props: PieceViewProps) {
@@ -17,12 +21,13 @@ export function PieceView(props: PieceViewProps) {
       demotedType(props.piece.type) as keyof typeof PIECE_SIZE_SCALE
     ];
   const isPromoted = () => props.piece.type.startsWith("+");
+  const isRotated = () => props.rotated ?? props.piece.color === "white";
 
   return (
     <span
       classList={{
         [styles.piece]: true,
-        [styles.rotated]: props.piece.color === "white",
+        [styles.rotated]: isRotated(),
         [styles.selected]: !!props.selected,
         [styles.placed]: !!props.placed,
         [styles.promoted]: isPromoted(),

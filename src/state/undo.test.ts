@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { applyMove, createInitialPosition } from "../domain/position";
 import { positionToSfen, usiToMove } from "../domain/sfen";
 import type { MoveRecord } from "../domain/types";
-import { rewind } from "./rewind";
+import { rewind, undoPlies } from "./rewind";
 
 const INITIAL_SFEN =
   "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
@@ -48,5 +48,28 @@ describe("rewind", () => {
 
   it("is a no-op when there are no records", () => {
     expect(rewind([], 0)).toBeNull();
+  });
+});
+
+describe("undoPlies", () => {
+  it("drops 0 plies for an empty history regardless of mode", () => {
+    expect(undoPlies(0, "engine")).toBe(0);
+    expect(undoPlies(0, "human")).toBe(0);
+  });
+
+  it("engine mode: drops 2 plies for a completed player+engine pair", () => {
+    expect(undoPlies(2, "engine")).toBe(2);
+    expect(undoPlies(4, "engine")).toBe(2);
+  });
+
+  it("engine mode: drops 1 ply while the engine is still thinking", () => {
+    expect(undoPlies(1, "engine")).toBe(1);
+    expect(undoPlies(3, "engine")).toBe(1);
+  });
+
+  it("human mode: always drops exactly 1 ply", () => {
+    expect(undoPlies(1, "human")).toBe(1);
+    expect(undoPlies(2, "human")).toBe(1);
+    expect(undoPlies(3, "human")).toBe(1);
   });
 });
