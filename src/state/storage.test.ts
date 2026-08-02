@@ -118,4 +118,14 @@ describe("parseSavedSettings", () => {
   it("rejects an invalid mode value", () => {
     expect(parseSavedSettings(JSON.stringify({ mode: "invalid" }))).toEqual({});
   });
+
+  it("accepts a pieceTheme id string", () => {
+    expect(
+      parseSavedSettings(JSON.stringify({ pieceTheme: "lishogi-kanji-light" })),
+    ).toEqual({ pieceTheme: "lishogi-kanji-light" });
+  });
+
+  it("drops a non-string pieceTheme", () => {
+    expect(parseSavedSettings(JSON.stringify({ pieceTheme: 123 }))).toEqual({});
+  });
 });

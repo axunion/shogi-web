@@ -12,6 +12,7 @@ import { colorLabel, colorSymbol } from "./domain/notation";
 import { squareIndex } from "./domain/sfen";
 import type { Color, MoveRecord, PieceType } from "./domain/types";
 import { gameStore } from "./state/gameStore";
+import { pieceThemeById } from "./theme/registry";
 import { textTheme } from "./theme/textTheme";
 
 function wasCapture(record: MoveRecord): boolean {
@@ -34,6 +35,9 @@ function App() {
     setSettings,
     setGameMode,
   } = gameStore;
+
+  const selectedTheme = () =>
+    pieceThemeById(state.settings.pieceTheme) ?? textTheme;
 
   const flipModeActive = () =>
     state.settings.mode === "human" && state.settings.boardFlip;
@@ -107,7 +111,7 @@ function App() {
           <Hand
             color={opponentColor()}
             pieces={state.position.hands[opponentColor()]}
-            theme={textTheme}
+            theme={selectedTheme()}
             label={`${colorSymbol(opponentColor())}${colorLabel(opponentColor())}`}
             active={state.position.sideToMove === opponentColor()}
             selectedPiece={selectedPieceFor(opponentColor())}
@@ -120,7 +124,7 @@ function App() {
         board={
           <Board
             position={state.position}
-            theme={textTheme}
+            theme={selectedTheme()}
             selectedSquare={
               state.selection?.kind === "square" ? state.selection.square : null
             }
@@ -135,7 +139,7 @@ function App() {
           <Hand
             color={ownColor()}
             pieces={state.position.hands[ownColor()]}
-            theme={textTheme}
+            theme={selectedTheme()}
             label={`${colorSymbol(ownColor())}${colorLabel(ownColor())}`}
             active={state.position.sideToMove === ownColor()}
             selectedPiece={selectedPieceFor(ownColor())}
@@ -153,6 +157,7 @@ function App() {
             movetimeMs={state.settings.movetimeMs}
             mode={state.settings.mode}
             boardFlip={state.settings.boardFlip}
+            pieceTheme={state.settings.pieceTheme}
             records={state.records}
             onNewGame={newGame}
             onUndo={undo}
@@ -165,6 +170,7 @@ function App() {
             onToggleBoardFlip={() =>
               setSettings({ boardFlip: !state.settings.boardFlip })
             }
+            onPieceThemeChange={(pieceTheme) => setSettings({ pieceTheme })}
           />
         }
         kifu={<KifuList records={state.records} />}

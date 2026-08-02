@@ -1,5 +1,6 @@
 import { demotedType } from "../../domain/moves";
 import type { Piece } from "../../domain/types";
+import { kanjiLabel } from "../../theme/kanjiLabels";
 import { PIECE_SIZE_SCALE } from "../../theme/pieceSize";
 import type { PieceTheme } from "../../theme/types";
 import styles from "./PieceView.module.css";
@@ -17,9 +18,11 @@ interface PieceViewProps {
 
 export function PieceView(props: PieceViewProps) {
   const scale = () =>
-    PIECE_SIZE_SCALE[
-      demotedType(props.piece.type) as keyof typeof PIECE_SIZE_SCALE
-    ];
+    props.theme.kind === "image"
+      ? 1
+      : PIECE_SIZE_SCALE[
+          demotedType(props.piece.type) as keyof typeof PIECE_SIZE_SCALE
+        ];
   const isPromoted = () => props.piece.type.startsWith("+");
   const isRotated = () => props.rotated ?? props.piece.color === "white";
 
@@ -34,20 +37,19 @@ export function PieceView(props: PieceViewProps) {
       }}
       style={{ "--piece-scale": String(scale()) }}
     >
-      <span class={styles.shape}>
-        <span class={styles.face}>
-          {props.theme.kind === "text" && props.theme.label && (
+      {props.theme.kind === "image" ? (
+        <img
+          class={styles.image}
+          src={props.theme.imageUrl(props.piece)}
+          alt={kanjiLabel(props.piece)}
+        />
+      ) : (
+        <span class={styles.shape}>
+          <span class={styles.face}>
             <span class={styles.label}>{props.theme.label(props.piece)}</span>
-          )}
-          {props.theme.kind === "image" && props.theme.imageUrl && (
-            <img
-              class={styles.image}
-              src={props.theme.imageUrl(props.piece)}
-              alt={props.piece.type}
-            />
-          )}
+          </span>
         </span>
-      </span>
+      )}
     </span>
   );
 }

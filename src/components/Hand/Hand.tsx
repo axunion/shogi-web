@@ -1,5 +1,6 @@
 import { For, Show } from "solid-js";
 import type { Color, Piece, PieceType } from "../../domain/types";
+import { kanjiLabel } from "../../theme/kanjiLabels";
 import type { PieceTheme } from "../../theme/types";
 import { PieceView } from "../Board/PieceView";
 import styles from "./Hand.module.css";
@@ -26,10 +27,7 @@ export function Hand(props: HandProps) {
           {(type) => {
             const count = () => props.pieces[type] ?? 0;
             const piece: Piece = { type, color: props.color };
-            const label =
-              props.theme.kind === "text" && props.theme.label
-                ? props.theme.label(piece)
-                : type;
+            const label = kanjiLabel(piece);
             return (
               <Show
                 when={count() > 0}

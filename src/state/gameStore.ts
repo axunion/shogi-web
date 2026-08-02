@@ -21,6 +21,8 @@ import type {
   Square,
 } from "../domain/types";
 import { UsiEngine } from "../engine/usiEngine";
+import { pieceThemeById } from "../theme/registry";
+import { textTheme } from "../theme/textTheme";
 import { rewind, undoPlies } from "./rewind";
 import type { ResignedBy } from "./storage";
 import {
@@ -84,6 +86,7 @@ export interface Settings {
   soundEnabled: boolean;
   mode: GameMode;
   boardFlip: boolean;
+  pieceTheme: string;
 }
 
 export interface LastMove {
@@ -108,6 +111,7 @@ const DEFAULT_SETTINGS: Settings = {
   soundEnabled: true,
   mode: "engine",
   boardFlip: false,
+  pieceTheme: textTheme.id,
 };
 
 function lastMoveOf(move: Move): LastMove {
@@ -416,6 +420,12 @@ function createGameStore() {
 
     const savedSettings = loadSettings();
     if (savedSettings) {
+      if (
+        savedSettings.pieceTheme !== undefined &&
+        !pieceThemeById(savedSettings.pieceTheme)
+      ) {
+        savedSettings.pieceTheme = textTheme.id;
+      }
       setState("settings", savedSettings);
     }
 

@@ -91,6 +91,9 @@ export function parseSavedSettings(
   if (typeof parsed.boardFlip === "boolean") {
     result.boardFlip = parsed.boardFlip;
   }
+  if (typeof parsed.pieceTheme === "string") {
+    result.pieceTheme = parsed.pieceTheme;
+  }
   return result;
 }
 

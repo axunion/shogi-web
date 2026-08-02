@@ -1,8 +1,19 @@
 import type { Piece } from "../domain/types";
 
-export interface PieceTheme {
-  kind: "text" | "image";
-  // text: piece type -> display label (e.g. "P" -> "歩"). image: piece -> image URL
-  label?: (piece: Piece) => string;
-  imageUrl?: (piece: Piece) => string;
+export interface PieceThemeAttribution {
+  name: string;
+  author: string;
+  authorUrl?: string;
+  sourceUrl: string;
+  licenseName: string;
+  licenseUrl: string;
 }
+
+export type PieceTheme =
+  | { kind: "text"; id: string; label: (piece: Piece) => string }
+  | {
+      kind: "image";
+      id: string;
+      imageUrl: (piece: Piece) => string;
+      attribution: PieceThemeAttribution;
+    };

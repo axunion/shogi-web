@@ -6,6 +6,10 @@ import type { JSX } from "solid-js";
 import { createEffect, createSignal, For, Show } from "solid-js";
 import type { MoveRecord } from "../../domain/types";
 import type { GameMode, GameStatus } from "../../state/gameStore";
+import { lishogiKanjiLightTheme } from "../../theme/lishogiKanjiLightTheme";
+import { pieceThemeById } from "../../theme/registry";
+import { textTheme } from "../../theme/textTheme";
+import type { PieceThemeAttribution } from "../../theme/types";
 import { ConfirmDialog } from "../Dialog/ConfirmDialog";
 import dialogStyles from "../Dialog/Dialog.module.css";
 import { KifuList } from "../Kifu/KifuList";
@@ -23,6 +27,16 @@ const MODE_OPTIONS: { value: GameMode; label: string }[] = [
   { value: "human", label: "人対人（対面）" },
 ];
 
+const PIECE_THEME_OPTIONS: { value: string; label: string }[] = [
+  { value: textTheme.id, label: "文字駒" },
+  { value: lishogiKanjiLightTheme.id, label: "画像駒（Kanji Light）" },
+];
+
+function imageAttribution(pieceThemeId: string): PieceThemeAttribution | null {
+  const theme = pieceThemeById(pieceThemeId);
+  return theme?.kind === "image" ? theme.attribution : null;
+}
+
 function ButtonContent(props: { icon: JSX.Element; label: string }) {
   return (
     <>
@@ -39,6 +53,7 @@ interface ControlsProps {
   movetimeMs: number;
   mode: GameMode;
   boardFlip: boolean;
+  pieceTheme: string;
   records: MoveRecord[];
   onNewGame: () => void;
   onUndo: () => void;
@@ -47,6 +62,7 @@ interface ControlsProps {
   onMovetimeChange: (movetimeMs: number) => void;
   onModeChange: (mode: GameMode) => void;
   onToggleBoardFlip: () => void;
+  onPieceThemeChange: (pieceTheme: string) => void;
 }
 
 export function Controls(props: ControlsProps) {
@@ -179,6 +195,36 @@ export function Controls(props: ControlsProps) {
                   )}
                 </For>
               </select>
+            </Show>
+
+            <select
+              class={styles.select}
+              value={props.pieceTheme}
+              onChange={(event) =>
+                props.onPieceThemeChange(event.currentTarget.value)
+              }
+            >
+              <For each={PIECE_THEME_OPTIONS}>
+                {(option) => (
+                  <option value={option.value}>{option.label}</option>
+                )}
+              </For>
+            </select>
+
+            <Show when={imageAttribution(props.pieceTheme)}>
+              {(attribution) => (
+                <p class={styles.attribution}>
+                  駒画像: {attribution().name} by {attribution().author} (
+                  <a
+                    href={attribution().licenseUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {attribution().licenseName}
+                  </a>
+                  )
+                </p>
+              )}
             </Show>
 
             <Show when={props.mode === "human"}>
