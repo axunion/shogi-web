@@ -146,6 +146,15 @@ describe("promotion rules", () => {
     );
     expect(moves).toHaveLength(2);
   });
+
+  it("never offers promotion for an already-promoted piece moving within the zone", () => {
+    const position = parseSfen("9/9/9/4+P4/9/9/9/9/9 b - 1");
+    const moves = generateLegalMoves(position, { file: 5, rank: 4 });
+    expect(moves.length).toBeGreaterThan(0);
+    expect(moves.every((move) => move.kind === "move" && !move.promote)).toBe(
+      true,
+    );
+  });
 });
 
 describe("drop restrictions", () => {
