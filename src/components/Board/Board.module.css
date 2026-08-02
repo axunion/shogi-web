@@ -1,13 +1,59 @@
 .board {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(9, var(--square-size)) var(--coord-band);
   grid-template-rows: var(--coord-band) repeat(9, var(--square-size));
   gap: var(--board-line-width);
-  background: var(--board-line);
+  background:
+/* Wood-grain streaks: thin, uneven-width bands running the long axis. */
+    repeating-linear-gradient(
+      90deg,
+      rgb(255 255 255 / 6%) 0,
+      transparent 2px,
+      transparent 7px,
+      rgb(0 0 0 / 5%) 9px,
+      transparent 13px
+    ),
+    linear-gradient(135deg, var(--board-bg), var(--board-bg-dark));
   border: var(--board-edge-width) solid var(--board-edge);
   box-shadow: 0 calc(var(--square-size) * 0.12) calc(var(--square-size) * 0.3)
     rgb(0 0 0 / 35%);
   width: fit-content;
+}
+
+/* Ruled grid lines: a generated overlay covering just the 9x9 square area,
+   painted over the grid `gap` positions (mostly transparent elsewhere) so
+   the line color fills the gap that .square's transparent background can't
+   reach, while leaving the continuous wood-grain texture on .board
+   undisturbed. Kept off .square (and its box-shadow) so it never fights
+   with the .checked / .targetCapture highlight rings for that property.
+   Positioned absolutely (instead of given an explicit grid-column/row) so
+   it never takes part in .board's grid auto-placement — otherwise the 81
+   real .square buttons, which rely on implicit auto-placement, would be
+   squeezed out of the area this overlay explicitly claims. */
+.board::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--coord-band) + var(--board-line-width));
+  left: 0;
+  width: calc(var(--square-size) * 9 + var(--board-line-width) * 8);
+  height: calc(var(--square-size) * 9 + var(--board-line-width) * 8);
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent var(--square-size),
+      var(--board-line) var(--square-size),
+      var(--board-line) calc(var(--square-size) + var(--board-line-width))
+    ),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0,
+      transparent var(--square-size),
+      var(--board-line) var(--square-size),
+      var(--board-line) calc(var(--square-size) + var(--board-line-width))
+    );
 }
 
 .square {
@@ -16,7 +62,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  background: linear-gradient(135deg, var(--board-bg), var(--board-bg-dark));
+  background: transparent;
   border: none;
   padding: 0;
   margin: 0;
@@ -31,15 +77,11 @@
 }
 
 .lastMoveFrom {
-  background:
-    linear-gradient(var(--last-move-bg-weak), var(--last-move-bg-weak)),
-    linear-gradient(135deg, var(--board-bg), var(--board-bg-dark));
+  background: var(--last-move-bg-weak);
 }
 
 .lastMoveTo {
-  background:
-    linear-gradient(var(--last-move-bg), var(--last-move-bg)),
-    linear-gradient(135deg, var(--board-bg), var(--board-bg-dark));
+  background: var(--last-move-bg);
 }
 
 /* Comes after lastMove* so an in-progress selection always wins over the

@@ -4,6 +4,7 @@ import { colorLabel, RANK_KANJI } from "../../domain/notation";
 import { squareIndex } from "../../domain/sfen";
 import type { Piece, Position, Square } from "../../domain/types";
 import type { LastMove } from "../../state/gameStore";
+import { kanjiLabel } from "../../theme/kanjiLabels";
 import type { PieceTheme } from "../../theme/types";
 import styles from "./Board.module.css";
 import { PieceView } from "./PieceView";
@@ -38,18 +39,10 @@ function isStarPoint(square: Square): boolean {
   );
 }
 
-function pieceLabel(piece: Piece, theme: PieceTheme): string {
-  return theme.kind === "text" && theme.label ? theme.label(piece) : piece.type;
-}
-
-function squareAriaLabel(
-  square: Square,
-  piece: Piece | null,
-  theme: PieceTheme,
-): string {
+function squareAriaLabel(square: Square, piece: Piece | null): string {
   const position = `${square.file}${RANK_KANJI[square.rank - 1]}`;
   if (!piece) return `${position} 空`;
-  return `${position} ${colorLabel(piece.color)} ${pieceLabel(piece, theme)}`;
+  return `${position} ${colorLabel(piece.color)} ${kanjiLabel(piece)}`;
 }
 
 export function Board(props: BoardProps) {
@@ -97,7 +90,7 @@ export function Board(props: BoardProps) {
                       [styles.selected]: selected(),
                     }}
                     onClick={() => props.onSquareClick?.(square)}
-                    aria-label={squareAriaLabel(square, piece(), props.theme)}
+                    aria-label={squareAriaLabel(square, piece())}
                   >
                     {isStarPoint(square) && <span class={styles.starPoint} />}
                     <Show when={piece()}>

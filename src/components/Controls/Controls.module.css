@@ -104,6 +104,17 @@
   outline-offset: 2px;
 }
 
+.attribution {
+  margin: 0;
+  padding: 0 0.25em;
+  font-size: 0.75rem;
+  color: var(--label-color);
+}
+
+.attribution a {
+  color: inherit;
+}
+
 /* Mobile-only: desktop shows the kifu panel statically, no sheet needed. */
 @media (min-width: 48rem) {
   .kifuButton {
