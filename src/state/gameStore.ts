@@ -52,6 +52,8 @@ const RESIGNED_STATUS: Record<ResignedBy, GameStatus> = {
   player: "playerResigned",
   black: "blackResigned",
   white: "whiteResigned",
+  engine: "engineResigned",
+  engineWin: "engineDeclaredWin",
 };
 
 export function isGameOver(status: GameStatus): boolean {
@@ -200,10 +202,12 @@ function createGameStore() {
 
       if (token === "resign") {
         setState({ status: "engineResigned" });
+        saveGame(usiMoves(), "engine");
         return;
       }
       if (token === "win") {
         setState({ status: "engineDeclaredWin" });
+        saveGame(usiMoves(), "engineWin");
         return;
       }
 
@@ -383,7 +387,7 @@ function createGameStore() {
       status: "playerTurn",
       errorMessage: null,
     });
-    saveGame(usiMoves());
+    saveGame(result.records.map((r) => r.usi));
   }
 
   function setSettings(patch: Partial<Settings>): void {
@@ -397,29 +401,33 @@ function createGameStore() {
   }
 
   async function startEngine(): Promise<void> {
+    // The engine is always launched (mode may switch to "engine" later in
+    // the session, and that switch never retries a launch), but a launch
+    // failure must not discard settings or a saved game the player never
+    // got a chance to finish: those are restored regardless, and the
+    // failure only turns into a visible error if the restored mode needs
+    // the engine.
+    let launchError: unknown = null;
     try {
       await engine.launch();
+    } catch (error) {
+      launchError = error;
+    }
 
-      const savedSettings = loadSettings();
-      if (savedSettings) {
-        setState("settings", savedSettings);
-      }
+    const savedSettings = loadSettings();
+    if (savedSettings) {
+      setState("settings", savedSettings);
+    }
 
-      const mode = state.settings.mode;
+    const mode = state.settings.mode;
 
-      const saved = loadGame();
-      const replay = saved ? replayUsiMoves(saved.usiMoves) : null;
-      if (saved && !replay) {
-        clearGame();
-      }
+    const saved = loadGame();
+    const replay = saved ? replayUsiMoves(saved.usiMoves) : null;
+    if (saved && !replay) {
+      clearGame();
+    }
 
-      if (mode === "engine") engine.newGame();
-
-      if (!replay) {
-        setState({ status: "playerTurn" });
-        return;
-      }
-
+    if (replay) {
       setState({
         position: replay.position,
         records: replay.records,
@@ -428,30 +436,43 @@ function createGameStore() {
             ? lastMoveOf(replay.records[replay.records.length - 1].move)
             : null,
       });
+    }
 
-      if (saved?.resigned) {
-        setState({ status: RESIGNED_STATUS[saved.resigned] });
-        return;
-      }
-
-      if (!hasAnyLegalMoves(replay.position)) {
-        setState({ status: matedStatus(replay.position, mode) });
-        return;
-      }
-
-      if (mode === "engine" && replay.position.sideToMove === "white") {
-        setState({ status: "thinking" });
-        void requestEngineMove();
-        return;
-      }
-
-      setState({ status: "playerTurn" });
-    } catch (error) {
+    if (mode === "engine" && launchError) {
       setState({
         status: "error",
-        errorMessage: error instanceof Error ? error.message : String(error),
+        errorMessage:
+          launchError instanceof Error
+            ? launchError.message
+            : String(launchError),
       });
+      return;
     }
+
+    if (mode === "engine") engine.newGame();
+
+    if (!replay) {
+      setState({ status: "playerTurn" });
+      return;
+    }
+
+    if (saved?.resigned) {
+      setState({ status: RESIGNED_STATUS[saved.resigned] });
+      return;
+    }
+
+    if (!hasAnyLegalMoves(replay.position)) {
+      setState({ status: matedStatus(replay.position, mode) });
+      return;
+    }
+
+    if (mode === "engine" && replay.position.sideToMove === "white") {
+      setState({ status: "thinking" });
+      void requestEngineMove();
+      return;
+    }
+
+    setState({ status: "playerTurn" });
   }
 
   return {

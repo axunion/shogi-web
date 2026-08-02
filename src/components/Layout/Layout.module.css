@@ -91,6 +91,12 @@
 
 @media (min-width: 48rem) {
   .layout {
+    /* Bound the grid to the viewport so the "1fr" kifu row has a definite
+       height to distribute instead of growing with the move list — without
+       this, an indefinite-height grid container sizes "1fr" tracks by
+       content (like max-content), so a long kifu list would keep expanding
+       the whole page instead of scrolling inside its own panel. */
+    height: 100svh;
     --gap: 1rem;
     --hand-piece-scale: 1;
     --hand-direction: column;

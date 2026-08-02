@@ -6,7 +6,7 @@ const SCHEMA_VERSION = 1;
 
 const USI_MOVE_RE = /^(?:[1-9][a-i][1-9][a-i]\+?|[PLNSGBR]\*[1-9][a-i])$/;
 
-export type ResignedBy = "player" | "black" | "white";
+export type ResignedBy = "player" | "black" | "white" | "engine" | "engineWin";
 
 interface SavedGame {
   version: number;
@@ -50,7 +50,9 @@ export function parseSavedGame(raw: string | null): ParsedSavedGame | null {
     resigned !== undefined &&
     resigned !== "player" &&
     resigned !== "black" &&
-    resigned !== "white"
+    resigned !== "white" &&
+    resigned !== "engine" &&
+    resigned !== "engineWin"
   ) {
     return null;
   }
@@ -73,7 +75,11 @@ export function parseSavedSettings(
   if (!isRecord(parsed)) return null;
 
   const result: Partial<Settings> = {};
-  if (typeof parsed.movetimeMs === "number") {
+  if (
+    typeof parsed.movetimeMs === "number" &&
+    Number.isFinite(parsed.movetimeMs) &&
+    parsed.movetimeMs > 0
+  ) {
     result.movetimeMs = parsed.movetimeMs;
   }
   if (typeof parsed.soundEnabled === "boolean") {

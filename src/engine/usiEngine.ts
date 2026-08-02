@@ -1,10 +1,18 @@
 import type { MainToWorkerMessage, WorkerToMainMessage } from "./messages";
 
 const SEARCH_TIMEOUT_MS = 30_000;
+const LAUNCH_TIMEOUT_MS = 30_000;
 
 export class UsiEngine {
   private worker: Worker | null = null;
   private readonly bestmoveListeners = new Set<(line: string) => void>();
+  // Incremented when a search is aborted before its bestmove arrives: the
+  // engine still replies to "stop" with a bestmove for the aborted search,
+  // and that line must be swallowed here rather than dispatched to whatever
+  // listener happens to be registered by the time it shows up (bestmoveListeners
+  // carries no per-search tag, so a later, unrelated search's listener would
+  // otherwise resolve with a stale move).
+  private pendingStaleBestmoves = 0;
 
   launch(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -16,7 +24,12 @@ export class UsiEngine {
 
       let usiokReceived = false;
 
+      const timeout = setTimeout(() => {
+        reject(new Error("Engine launch timed out"));
+      }, LAUNCH_TIMEOUT_MS);
+
       worker.onerror = (event: ErrorEvent) => {
+        clearTimeout(timeout);
         reject(new Error(event.message));
       };
 
@@ -27,17 +40,26 @@ export class UsiEngine {
           return;
         }
         if (message.type === "error") {
+          clearTimeout(timeout);
           reject(new Error(message.message));
           return;
         }
 
         console.debug(`< ${message.line}`);
+        if (
+          this.pendingStaleBestmoves > 0 &&
+          message.line.startsWith("bestmove")
+        ) {
+          this.pendingStaleBestmoves--;
+          return;
+        }
         for (const listener of this.bestmoveListeners) listener(message.line);
 
         if (!usiokReceived && message.line === "usiok") {
           usiokReceived = true;
           this.send("isready");
         } else if (usiokReceived && message.line === "readyok") {
+          clearTimeout(timeout);
           resolve();
         }
       };
@@ -52,9 +74,10 @@ export class UsiEngine {
 
   /**
    * Runs a search. If `signal` aborts before a bestmove arrives, the pending
-   * listener is removed immediately (so a late bestmove line from this search
-   * can never be picked up by a subsequent, unrelated search) and "stop" is
-   * sent so the engine actually halts instead of burning CPU in the background.
+   * listener is removed immediately and "stop" is sent so the engine actually
+   * halts instead of burning CPU in the background. The engine still replies
+   * to "stop" with a bestmove for the aborted search; `pendingStaleBestmoves`
+   * ensures that reply is swallowed instead of resolving a later search.
    */
   search(
     usiPosition: string,
@@ -87,6 +110,7 @@ export class UsiEngine {
 
       const onAbort = () => {
         cleanup();
+        this.pendingStaleBestmoves++;
         this.send("stop");
         reject(new Error("Search aborted"));
       };

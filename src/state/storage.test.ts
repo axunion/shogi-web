@@ -35,8 +35,18 @@ describe("parseSavedGame", () => {
     expect(result?.resigned).toBe("white");
   });
 
+  it("accepts an engine resignation", () => {
+    const result = parseSavedGame(saved({ resigned: "engine" }));
+    expect(result?.resigned).toBe("engine");
+  });
+
+  it("accepts an engine-declared win", () => {
+    const result = parseSavedGame(saved({ resigned: "engineWin" }));
+    expect(result?.resigned).toBe("engineWin");
+  });
+
   it("rejects an invalid resigned value", () => {
-    expect(parseSavedGame(saved({ resigned: "engine" }))).toBeNull();
+    expect(parseSavedGame(saved({ resigned: "invalid" }))).toBeNull();
   });
 
   it("rejects a schema version mismatch", () => {
@@ -87,6 +97,16 @@ describe("parseSavedSettings", () => {
         JSON.stringify({ movetimeMs: "fast", soundEnabled: false }),
       ),
     ).toEqual({ soundEnabled: false });
+  });
+
+  it("drops a non-positive or non-finite movetimeMs", () => {
+    expect(parseSavedSettings(JSON.stringify({ movetimeMs: -1 }))).toEqual({});
+    expect(parseSavedSettings(JSON.stringify({ movetimeMs: 0 }))).toEqual({});
+    expect(
+      parseSavedSettings(
+        JSON.stringify({ movetimeMs: Number.POSITIVE_INFINITY }),
+      ),
+    ).toEqual({});
   });
 
   it("accepts mode and boardFlip", () => {
