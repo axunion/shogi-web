@@ -50,14 +50,16 @@ export function Board(props: BoardProps) {
   const orderedRanks = () => (props.flipped ? [...RANKS].reverse() : RANKS);
 
   return (
-    <div class={styles.board}>
-      <For each={orderedFiles()}>
-        {(file) => <div class={styles.fileLabel}>{file}</div>}
-      </For>
+    <div class={styles.wrapper}>
+      <div class={styles.fileLabels}>
+        <For each={orderedFiles()}>
+          {(file) => <div class={styles.fileLabel}>{file}</div>}
+        </For>
+      </div>
       <div class={styles.cornerCell} />
-      <For each={orderedRanks()}>
-        {(rank) => (
-          <>
+      <div class={styles.board}>
+        <For each={orderedRanks()}>
+          {(rank) => (
             <For each={orderedFiles()}>
               {(file) => {
                 const square: Square = { file, rank };
@@ -108,10 +110,14 @@ export function Board(props: BoardProps) {
                 );
               }}
             </For>
-            <div class={styles.rankLabel}>{RANK_KANJI[rank - 1]}</div>
-          </>
-        )}
-      </For>
+          )}
+        </For>
+      </div>
+      <div class={styles.rankLabels}>
+        <For each={orderedRanks()}>
+          {(rank) => <div class={styles.rankLabel}>{RANK_KANJI[rank - 1]}</div>}
+        </For>
+      </div>
     </div>
   );
 }

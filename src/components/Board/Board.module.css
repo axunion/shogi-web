@@ -1,8 +1,39 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: max-content var(--coord-band);
+  grid-template-rows: var(--coord-band) max-content;
+  grid-template-areas:
+    "files corner"
+    "board ranks";
+  width: fit-content;
+}
+
+.fileLabels {
+  grid-area: files;
+  display: grid;
+  grid-template-columns: repeat(9, var(--square-size));
+  column-gap: var(--board-line-width);
+  padding: 0 var(--board-edge-width);
+}
+
+.rankLabels {
+  grid-area: ranks;
+  display: grid;
+  grid-template-rows: repeat(9, var(--square-size));
+  row-gap: var(--board-line-width);
+  padding: var(--board-edge-width) 0;
+}
+
+.cornerCell {
+  grid-area: corner;
+}
+
 .board {
+  grid-area: board;
   position: relative;
   display: grid;
-  grid-template-columns: repeat(9, var(--square-size)) var(--coord-band);
-  grid-template-rows: var(--coord-band) repeat(9, var(--square-size));
+  grid-template-columns: repeat(9, var(--square-size));
+  grid-template-rows: repeat(9, var(--square-size));
   gap: var(--board-line-width);
   background:
 /* Wood-grain streaks: thin, uneven-width bands running the long axis. */
@@ -34,7 +65,7 @@
 .board::after {
   content: "";
   position: absolute;
-  top: calc(var(--coord-band) + var(--board-line-width));
+  top: 0;
   left: 0;
   width: calc(var(--square-size) * 9 + var(--board-line-width) * 8);
   height: calc(var(--square-size) * 9 + var(--board-line-width) * 8);
@@ -154,12 +185,10 @@
 }
 
 .fileLabel,
-.rankLabel,
-.cornerCell {
+.rankLabel {
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: var(--coord-font-size);
   color: var(--label-color);
-  background: transparent;
 }
