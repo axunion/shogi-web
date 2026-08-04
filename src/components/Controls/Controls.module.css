@@ -58,20 +58,6 @@
   border-color: color-mix(in srgb, var(--focus-ring) 45%, var(--panel-border));
 }
 
-.select {
-  padding: 0.4em 0.6em;
-  font: inherit;
-  background: var(--panel-bg);
-  color: var(--panel-text);
-  border: 1px solid var(--panel-border);
-  border-radius: 0.3rem;
-}
-
-.select:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
 .menuPanel {
   display: flex;
   flex-direction: column;
@@ -102,17 +88,6 @@
 .menuItem:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
-}
-
-.attribution {
-  margin: 0;
-  padding: 0 0.25em;
-  font-size: 0.75rem;
-  color: var(--label-color);
-}
-
-.attribution a {
-  color: inherit;
 }
 
 /* Mobile-only: desktop shows the kifu panel statically, no sheet needed. */

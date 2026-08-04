@@ -8,6 +8,7 @@ import styles from "./ResultOverlay.module.css";
 interface ResultOverlayProps {
   status: GameStatus;
   onRematch: () => void;
+  onReturnToTitle: () => void;
 }
 
 const RESULT_LABEL: Partial<Record<GameStatus, string>> = {
@@ -64,6 +65,9 @@ export function ResultOverlay(props: ResultOverlayProps) {
             )}
             <div class={styles.actions}>
               <Dialog.CloseButton>閉じる</Dialog.CloseButton>
+              <button type="button" onClick={props.onReturnToTitle}>
+                タイトルへ戻る
+              </button>
               <button type="button" onClick={handleRematch}>
                 もう一局
               </button>

@@ -94,6 +94,13 @@ export function parseSavedSettings(
   if (typeof parsed.pieceTheme === "string") {
     result.pieceTheme = parsed.pieceTheme;
   }
+  if (
+    parsed.colorScheme === "system" ||
+    parsed.colorScheme === "light" ||
+    parsed.colorScheme === "dark"
+  ) {
+    result.colorScheme = parsed.colorScheme;
+  }
   return result;
 }
 

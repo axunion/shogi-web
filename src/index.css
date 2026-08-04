@@ -52,21 +52,55 @@
   --dialog-bg: var(--panel-bg);
   --dialog-text: var(--panel-text);
   --focus-ring: #1a73e8;
+
+  /* Colors: dark. Defined once as raw values here (rather than inline in
+     each of the two selectors below that apply them) so the OS-driven and
+     manually-overridden dark palettes can't drift out of sync. */
+  --dark-page-bg: #1b1814;
+  --dark-page-bg-accent: #241f19;
+  --dark-page-text: #ece4d6;
+  --dark-panel-bg: #2a251e;
+  --dark-panel-text: #ece4d6;
+  --dark-panel-border: #4a4137;
+  --dark-label-color: #cfc3ad;
+  --dark-count-bg: #2a251e;
+  --dark-count-text: #ece4d6;
+  --dark-focus-ring: #8ab4f8;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --page-bg: #1b1814;
-    --page-bg-accent: #241f19;
-    --page-text: #ece4d6;
-    --panel-bg: #2a251e;
-    --panel-text: #ece4d6;
-    --panel-border: #4a4137;
-    --label-color: #cfc3ad;
-    --count-bg: #2a251e;
-    --count-text: #ece4d6;
-    --focus-ring: #8ab4f8;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page-bg: var(--dark-page-bg);
+    --page-bg-accent: var(--dark-page-bg-accent);
+    --page-text: var(--dark-page-text);
+    --panel-bg: var(--dark-panel-bg);
+    --panel-text: var(--dark-panel-text);
+    --panel-border: var(--dark-panel-border);
+    --label-color: var(--dark-label-color);
+    --count-bg: var(--dark-count-bg);
+    --count-text: var(--dark-count-text);
+    --focus-ring: var(--dark-focus-ring);
   }
+}
+
+/* Manual override: applied by applyColorScheme() regardless of OS preference. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page-bg: var(--dark-page-bg);
+  --page-bg-accent: var(--dark-page-bg-accent);
+  --page-text: var(--dark-page-text);
+  --panel-bg: var(--dark-panel-bg);
+  --panel-text: var(--dark-panel-text);
+  --panel-border: var(--dark-panel-border);
+  --label-color: var(--dark-label-color);
+  --count-bg: var(--dark-count-bg);
+  --count-text: var(--dark-count-text);
+  --focus-ring: var(--dark-focus-ring);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 *,

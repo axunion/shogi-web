@@ -1,4 +1,4 @@
-import { createEffect, on, onMount } from "solid-js";
+import { createEffect, createSignal, on, onMount, Show } from "solid-js";
 import { ensureAudioContext, playPieceSound } from "./audio/sfx";
 import { Board } from "./components/Board/Board";
 import { Controls } from "./components/Controls/Controls";
@@ -8,10 +8,13 @@ import { KifuList } from "./components/Kifu/KifuList";
 import { Layout } from "./components/Layout/Layout";
 import { PromotionDialog } from "./components/PromotionDialog/PromotionDialog";
 import { ResultOverlay } from "./components/ResultOverlay/ResultOverlay";
+import { TitleScreen } from "./components/TitleScreen/TitleScreen";
 import { colorLabel, colorSymbol } from "./domain/notation";
 import { squareIndex } from "./domain/sfen";
 import type { Color, MoveRecord, PieceType } from "./domain/types";
+import type { GameMode } from "./state/gameStore";
 import { gameStore } from "./state/gameStore";
+import { applyColorScheme } from "./theme/colorScheme";
 import { pieceThemeById } from "./theme/registry";
 import { textTheme } from "./theme/textTheme";
 
@@ -33,8 +36,24 @@ function App() {
     resign,
     undo,
     setSettings,
-    setGameMode,
   } = gameStore;
+
+  const [screen, setScreen] = createSignal<"title" | "game">("title");
+  const hasResumableGame = () => state.records.length > 0;
+
+  function handleStart(mode: GameMode, movetimeMs: number) {
+    setSettings({ mode, movetimeMs });
+    newGame();
+    setScreen("game");
+  }
+
+  function handleContinue() {
+    setScreen("game");
+  }
+
+  function handleReturnToTitle() {
+    setScreen("title");
+  }
 
   const selectedTheme = () =>
     pieceThemeById(state.settings.pieceTheme) ?? textTheme;
@@ -65,6 +84,8 @@ function App() {
   onMount(() => {
     void startEngine();
   });
+
+  createEffect(() => applyColorScheme(state.settings.colorScheme));
 
   createEffect(
     on(
@@ -97,88 +118,107 @@ function App() {
 
   return (
     <>
-      <Layout
-        info={
-          <GameInfo
-            status={state.status}
-            mode={state.settings.mode}
-            sideToMove={state.position.sideToMove}
-            errorMessage={state.errorMessage}
-            checked={checkedKingSquare() !== null}
-          />
-        }
-        opponentHand={
-          <Hand
-            color={opponentColor()}
-            pieces={state.position.hands[opponentColor()]}
-            theme={selectedTheme()}
-            label={`${colorSymbol(opponentColor())}${colorLabel(opponentColor())}`}
-            active={state.position.sideToMove === opponentColor()}
-            selectedPiece={selectedPieceFor(opponentColor())}
-            onSelectPiece={
-              handClickable(opponentColor()) ? handleHandPieceClick : undefined
-            }
-            rotated={handRotated(opponentColor())}
-          />
-        }
-        board={
-          <Board
-            position={state.position}
-            theme={selectedTheme()}
-            selectedSquare={
-              state.selection?.kind === "square" ? state.selection.square : null
-            }
-            legalTargets={state.legalTargets}
-            lastMove={state.lastMove}
-            checkSquare={checkedKingSquare()}
-            flipped={flipped()}
-            onSquareClick={handleSquareClick}
-          />
-        }
-        ownHand={
-          <Hand
-            color={ownColor()}
-            pieces={state.position.hands[ownColor()]}
-            theme={selectedTheme()}
-            label={`${colorSymbol(ownColor())}${colorLabel(ownColor())}`}
-            active={state.position.sideToMove === ownColor()}
-            selectedPiece={selectedPieceFor(ownColor())}
-            onSelectPiece={
-              handClickable(ownColor()) ? handleHandPieceClick : undefined
-            }
-            rotated={handRotated(ownColor())}
-          />
-        }
-        controls={
-          <Controls
-            status={state.status}
-            canUndo={state.records.length > 0}
-            soundEnabled={state.settings.soundEnabled}
-            movetimeMs={state.settings.movetimeMs}
-            mode={state.settings.mode}
-            boardFlip={state.settings.boardFlip}
-            pieceTheme={state.settings.pieceTheme}
-            records={state.records}
-            onNewGame={newGame}
-            onUndo={undo}
-            onResign={resign}
-            onToggleSound={() =>
-              setSettings({ soundEnabled: !state.settings.soundEnabled })
-            }
-            onMovetimeChange={(movetimeMs) => setSettings({ movetimeMs })}
-            onModeChange={setGameMode}
-            onToggleBoardFlip={() =>
-              setSettings({ boardFlip: !state.settings.boardFlip })
-            }
-            onPieceThemeChange={(pieceTheme) => setSettings({ pieceTheme })}
-          />
-        }
-        kifu={<KifuList records={state.records} />}
-      />
-      {state.pendingPromotion && (
-        <PromotionDialog onChoose={confirmPromotion} />
-      )}
-      <ResultOverlay status={state.status} onRematch={newGame} />
+      <Show when={screen() === "title"}>
+        <TitleScreen
+          mode={state.settings.mode}
+          movetimeMs={state.settings.movetimeMs}
+          pieceTheme={state.settings.pieceTheme}
+          status={state.status}
+          hasResumableGame={hasResumableGame()}
+          colorScheme={state.settings.colorScheme}
+          onColorSchemeChange={(colorScheme) => setSettings({ colorScheme })}
+          onPieceThemeChange={(pieceTheme) => setSettings({ pieceTheme })}
+          onStart={handleStart}
+          onContinue={handleContinue}
+        />
+      </Show>
+      <Show when={screen() === "game"}>
+        <Layout
+          info={
+            <GameInfo
+              status={state.status}
+              mode={state.settings.mode}
+              sideToMove={state.position.sideToMove}
+              errorMessage={state.errorMessage}
+              checked={checkedKingSquare() !== null}
+            />
+          }
+          opponentHand={
+            <Hand
+              color={opponentColor()}
+              pieces={state.position.hands[opponentColor()]}
+              theme={selectedTheme()}
+              label={`${colorSymbol(opponentColor())}${colorLabel(opponentColor())}`}
+              active={state.position.sideToMove === opponentColor()}
+              selectedPiece={selectedPieceFor(opponentColor())}
+              onSelectPiece={
+                handClickable(opponentColor())
+                  ? handleHandPieceClick
+                  : undefined
+              }
+              rotated={handRotated(opponentColor())}
+            />
+          }
+          board={
+            <Board
+              position={state.position}
+              theme={selectedTheme()}
+              selectedSquare={
+                state.selection?.kind === "square"
+                  ? state.selection.square
+                  : null
+              }
+              legalTargets={state.legalTargets}
+              lastMove={state.lastMove}
+              checkSquare={checkedKingSquare()}
+              flipped={flipped()}
+              onSquareClick={handleSquareClick}
+            />
+          }
+          ownHand={
+            <Hand
+              color={ownColor()}
+              pieces={state.position.hands[ownColor()]}
+              theme={selectedTheme()}
+              label={`${colorSymbol(ownColor())}${colorLabel(ownColor())}`}
+              active={state.position.sideToMove === ownColor()}
+              selectedPiece={selectedPieceFor(ownColor())}
+              onSelectPiece={
+                handClickable(ownColor()) ? handleHandPieceClick : undefined
+              }
+              rotated={handRotated(ownColor())}
+            />
+          }
+          controls={
+            <Controls
+              status={state.status}
+              canUndo={state.records.length > 0}
+              soundEnabled={state.settings.soundEnabled}
+              mode={state.settings.mode}
+              boardFlip={state.settings.boardFlip}
+              records={state.records}
+              onUndo={undo}
+              onResign={resign}
+              onToggleSound={() =>
+                setSettings({ soundEnabled: !state.settings.soundEnabled })
+              }
+              onToggleBoardFlip={() =>
+                setSettings({ boardFlip: !state.settings.boardFlip })
+              }
+              onReturnToTitle={handleReturnToTitle}
+            />
+          }
+          kifu={<KifuList records={state.records} />}
+        />
+        {state.pendingPromotion && (
+          <PromotionDialog onChoose={confirmPromotion} />
+        )}
+        <ResultOverlay
+          status={state.status}
+          onRematch={newGame}
+          onReturnToTitle={handleReturnToTitle}
+        />
+      </Show>
     </>
   );
 }

@@ -1,0 +1,304 @@
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.25rem;
+  min-height: 100svh;
+  padding: 2rem 1.25rem calc(3rem + env(safe-area-inset-bottom));
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse at 50% 30%,
+      rgb(220 179 92 / 8%) 0%,
+      transparent 60%
+    ),
+    radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 10%) 100%),
+    repeating-linear-gradient(
+      45deg,
+      var(--page-bg) 0,
+      var(--page-bg) 2px,
+      var(--page-bg-accent) 2px,
+      var(--page-bg-accent) 3px
+    );
+  color: var(--page-text);
+}
+
+/* Icon-only, no pill/border — the corner utility control stays out of the
+   way of the otherwise unboxed hero composition. */
+.colorSchemeControl {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.15rem;
+}
+
+.colorSchemeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--page-text);
+  background: none;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+}
+
+.colorSchemeButton:hover {
+  opacity: 0.85;
+  background: color-mix(in srgb, var(--page-text) 10%, transparent);
+}
+
+.colorSchemeButton:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.colorSchemeButtonActive {
+  opacity: 1;
+  background: color-mix(in srgb, var(--page-text) 12%, transparent);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+}
+
+.emblem {
+  width: clamp(4.5rem, 16vw, 7rem);
+  height: auto;
+  filter: drop-shadow(0 0.5rem 1.25rem rgb(0 0 0 / 35%));
+  animation: emblem-in 0.6s ease-out both;
+}
+
+.title {
+  margin: 0;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  font-size: clamp(2.5rem, 9vw, 4rem);
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  animation: title-in 0.6s 0.1s ease-out both;
+}
+
+.divider {
+  width: 3.5rem;
+  height: 2px;
+  margin: 0;
+  background: linear-gradient(90deg, transparent, var(--board-bg), transparent);
+  border: none;
+}
+
+/* Choices sit directly on the page background — no card/box behind them,
+   just generous spacing and an underline to mark the active pick. */
+.choices {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.35rem;
+  width: min(22rem, 100%);
+}
+
+.choiceRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  transition: opacity 0.15s;
+}
+
+.choiceRow:disabled {
+  opacity: 0.35;
+}
+
+.choiceLabel {
+  padding: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--label-color);
+}
+
+.choiceOptions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem 1.1rem;
+}
+
+/* Shared "underline toggle" behavior for the mode/difficulty text choices
+   and the piece-theme thumbnail choices: dimmed at rest, an underline plus
+   full opacity marks the active pick. */
+.toggleButton {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  opacity: 0.55;
+  transition:
+    opacity 0.15s,
+    border-color 0.15s;
+}
+
+.toggleButton:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.toggleButton:disabled {
+  cursor: default;
+}
+
+.toggleButton:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.toggleButtonActive {
+  opacity: 1;
+  border-bottom-color: var(--board-bg);
+}
+
+.choiceButton {
+  padding: 0.15em 0;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--page-text);
+  white-space: nowrap;
+}
+
+.choiceButtonActive {
+  font-weight: 600;
+}
+
+.themeOptions {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.themeButton {
+  display: flex;
+  padding: 0.2rem;
+}
+
+.themePieceBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  --piece-font-size: 1.5rem;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.startButton {
+  min-width: 12rem;
+  padding: 0.85em 1.5em;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #1a1206;
+  background: linear-gradient(180deg, #e8c766, var(--board-bg));
+  border: 1px solid var(--board-edge);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.startButton:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.startButton:disabled {
+  cursor: default;
+  filter: grayscale(0.4);
+  opacity: 0.6;
+}
+
+.startButton:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.continueLink {
+  padding: 0.2em 0;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--page-text);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--label-color);
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.15s;
+}
+
+.continueLink:hover {
+  opacity: 1;
+}
+
+.continueLink:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.credit {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  padding: 0.75rem 1rem calc(0.6rem + env(safe-area-inset-bottom));
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--label-color);
+  background: linear-gradient(to top, var(--page-bg) 45%, transparent);
+}
+
+.credit a {
+  color: inherit;
+}
+
+@keyframes emblem-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes title-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

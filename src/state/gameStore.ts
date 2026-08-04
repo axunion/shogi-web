@@ -11,7 +11,6 @@ import {
   createInitialPosition,
   isInCheck,
 } from "../domain/position";
-import { replayUsiMoves } from "../domain/replay";
 import { moveToUsi, squareIndex, usiToMove } from "../domain/sfen";
 import type {
   Move,
@@ -21,8 +20,7 @@ import type {
   Square,
 } from "../domain/types";
 import { UsiEngine } from "../engine/usiEngine";
-import { pieceThemeById } from "../theme/registry";
-import { textTheme } from "../theme/textTheme";
+import { type LastMove, lastMoveOf, resolveInitialState } from "./restore";
 import { rewind, undoPlies } from "./rewind";
 import type { ResignedBy } from "./storage";
 import {
@@ -32,6 +30,8 @@ import {
   saveGame,
   saveSettings,
 } from "./storage";
+
+export type { LastMove };
 
 export type GameMode = "engine" | "human";
 
@@ -87,11 +87,7 @@ export interface Settings {
   mode: GameMode;
   boardFlip: boolean;
   pieceTheme: string;
-}
-
-export interface LastMove {
-  from: Square | null;
-  to: Square;
+  colorScheme: "system" | "light" | "dark";
 }
 
 interface GameState {
@@ -104,20 +100,6 @@ interface GameState {
   status: GameStatus;
   errorMessage: string | null;
   settings: Settings;
-}
-
-const DEFAULT_SETTINGS: Settings = {
-  movetimeMs: 1000,
-  soundEnabled: true,
-  mode: "engine",
-  boardFlip: false,
-  pieceTheme: textTheme.id,
-};
-
-function lastMoveOf(move: Move): LastMove {
-  return move.kind === "move"
-    ? { from: move.from, to: move.to }
-    : { from: null, to: move.to };
 }
 
 function matedStatus(position: Position, mode: GameMode): GameStatus {
@@ -138,16 +120,29 @@ function createGameStore() {
     pendingSearch = null;
   }
 
+  // Settings and any saved game are restored synchronously (before the engine
+  // launches) so screens reading them (e.g. the title screen) never see a
+  // flash of defaults while the WASM engine boots.
+  const savedGame = loadGame();
+  const initial = resolveInitialState(loadSettings(), savedGame);
+  if (initial.invalidSavedGame) clearGame();
+  const hasReplayedGame = savedGame !== null && !initial.invalidSavedGame;
+  // Extracted so startEngine's closure (part of the store's permanent,
+  // module-lifetime API) doesn't keep the whole savedGame object — including
+  // its full usiMoves array, already consumed by resolveInitialState above —
+  // reachable for the rest of the session.
+  const resumedResignedBy = savedGame?.resigned;
+
   const [state, setState] = createStore<GameState>({
-    position: createInitialPosition(),
-    records: [],
-    lastMove: null,
+    position: initial.position,
+    records: initial.records,
+    lastMove: initial.lastMove,
     selection: null,
     legalTargets: [],
     pendingPromotion: null,
     status: "loading",
     errorMessage: null,
-    settings: { ...DEFAULT_SETTINGS },
+    settings: initial.settings,
   });
 
   const usiMoves = createMemo(() => state.records.map((record) => record.usi));
@@ -399,18 +394,12 @@ function createGameStore() {
     saveSettings({ ...state.settings });
   }
 
-  function setGameMode(mode: GameMode): void {
-    setSettings({ mode });
-    newGame();
-  }
-
   async function startEngine(): Promise<void> {
     // The engine is always launched (mode may switch to "engine" later in
     // the session, and that switch never retries a launch), but a launch
-    // failure must not discard settings or a saved game the player never
-    // got a chance to finish: those are restored regardless, and the
-    // failure only turns into a visible error if the restored mode needs
-    // the engine.
+    // failure must not discard the settings/saved game already restored
+    // synchronously above: the failure only turns into a visible error if
+    // the restored mode needs the engine.
     let launchError: unknown = null;
     try {
       await engine.launch();
@@ -418,35 +407,7 @@ function createGameStore() {
       launchError = error;
     }
 
-    const savedSettings = loadSettings();
-    if (savedSettings) {
-      if (
-        savedSettings.pieceTheme !== undefined &&
-        !pieceThemeById(savedSettings.pieceTheme)
-      ) {
-        savedSettings.pieceTheme = textTheme.id;
-      }
-      setState("settings", savedSettings);
-    }
-
     const mode = state.settings.mode;
-
-    const saved = loadGame();
-    const replay = saved ? replayUsiMoves(saved.usiMoves) : null;
-    if (saved && !replay) {
-      clearGame();
-    }
-
-    if (replay) {
-      setState({
-        position: replay.position,
-        records: replay.records,
-        lastMove:
-          replay.records.length > 0
-            ? lastMoveOf(replay.records[replay.records.length - 1].move)
-            : null,
-      });
-    }
 
     if (mode === "engine" && launchError) {
       setState({
@@ -461,22 +422,22 @@ function createGameStore() {
 
     if (mode === "engine") engine.newGame();
 
-    if (!replay) {
+    if (!hasReplayedGame) {
       setState({ status: "playerTurn" });
       return;
     }
 
-    if (saved?.resigned) {
-      setState({ status: RESIGNED_STATUS[saved.resigned] });
+    if (resumedResignedBy) {
+      setState({ status: RESIGNED_STATUS[resumedResignedBy] });
       return;
     }
 
-    if (!hasAnyLegalMoves(replay.position)) {
-      setState({ status: matedStatus(replay.position, mode) });
+    if (!hasAnyLegalMoves(state.position)) {
+      setState({ status: matedStatus(state.position, mode) });
       return;
     }
 
-    if (mode === "engine" && replay.position.sideToMove === "white") {
+    if (mode === "engine" && state.position.sideToMove === "white") {
       setState({ status: "thinking" });
       void requestEngineMove();
       return;
@@ -497,7 +458,6 @@ function createGameStore() {
     resign,
     undo,
     setSettings,
-    setGameMode,
   };
 }
 

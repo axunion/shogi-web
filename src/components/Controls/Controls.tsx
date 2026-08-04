@@ -3,39 +3,13 @@ import { Dialog } from "@kobalte/core/dialog";
 import { Popover } from "@kobalte/core/popover";
 import { Flag, Menu, RotateCw, Undo2, Volume2, VolumeX, X } from "lucide-solid";
 import type { JSX } from "solid-js";
-import { createEffect, createSignal, For, Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import type { MoveRecord } from "../../domain/types";
 import type { GameMode, GameStatus } from "../../state/gameStore";
-import { lishogiKanjiLightTheme } from "../../theme/lishogiKanjiLightTheme";
-import { pieceThemeById } from "../../theme/registry";
-import { textTheme } from "../../theme/textTheme";
-import type { PieceThemeAttribution } from "../../theme/types";
 import { ConfirmDialog } from "../Dialog/ConfirmDialog";
 import dialogStyles from "../Dialog/Dialog.module.css";
 import { KifuList } from "../Kifu/KifuList";
 import styles from "./Controls.module.css";
-
-const MOVETIME_OPTIONS: { value: number; label: string }[] = [
-  { value: 500, label: "弱い(0.5秒)" },
-  { value: 1000, label: "普通(1秒)" },
-  { value: 3000, label: "強い(3秒)" },
-  { value: 8000, label: "最強(8秒)" },
-];
-
-const MODE_OPTIONS: { value: GameMode; label: string }[] = [
-  { value: "engine", label: "対エンジン" },
-  { value: "human", label: "人対人（対面）" },
-];
-
-const PIECE_THEME_OPTIONS: { value: string; label: string }[] = [
-  { value: textTheme.id, label: "文字駒" },
-  { value: lishogiKanjiLightTheme.id, label: "画像駒（Kanji Light）" },
-];
-
-function imageAttribution(pieceThemeId: string): PieceThemeAttribution | null {
-  const theme = pieceThemeById(pieceThemeId);
-  return theme?.kind === "image" ? theme.attribution : null;
-}
 
 function ButtonContent(props: { icon: JSX.Element; label: string }) {
   return (
@@ -50,57 +24,30 @@ interface ControlsProps {
   status: GameStatus;
   canUndo: boolean;
   soundEnabled: boolean;
-  movetimeMs: number;
   mode: GameMode;
   boardFlip: boolean;
-  pieceTheme: string;
   records: MoveRecord[];
-  onNewGame: () => void;
   onUndo: () => void;
   onResign: () => void;
   onToggleSound: () => void;
-  onMovetimeChange: (movetimeMs: number) => void;
-  onModeChange: (mode: GameMode) => void;
   onToggleBoardFlip: () => void;
-  onPieceThemeChange: (pieceTheme: string) => void;
+  onReturnToTitle: () => void;
 }
 
 export function Controls(props: ControlsProps) {
-  const [confirmNewGame, setConfirmNewGame] = createSignal(false);
   const [confirmResign, setConfirmResign] = createSignal(false);
-  const [confirmModeChange, setConfirmModeChange] = createSignal(false);
-  // Mirrors props.mode so the <select>'s displayed value can be snapped back
-  // on cancel even when props.mode itself never changes.
-  const [displayMode, setDisplayMode] = createSignal<GameMode>(props.mode);
-  createEffect(() => setDisplayMode(props.mode));
+  const [confirmReturnToTitle, setConfirmReturnToTitle] = createSignal(false);
   const [kifuOpen, setKifuOpen] = createSignal(false);
   const [menuOpen, setMenuOpen] = createSignal(false);
-
-  function openNewGameDialog() {
-    setMenuOpen(false);
-    setConfirmNewGame(true);
-  }
 
   function openKifuDialog() {
     setMenuOpen(false);
     setKifuOpen(true);
   }
 
-  function requestModeChange(mode: GameMode) {
-    setDisplayMode(mode);
-    if (mode === props.mode) return;
+  function openReturnToTitleDialog() {
     setMenuOpen(false);
-    setConfirmModeChange(true);
-  }
-
-  function cancelModeChange() {
-    setDisplayMode(props.mode);
-    setConfirmModeChange(false);
-  }
-
-  function confirmModeChangeAction() {
-    props.onModeChange(displayMode());
-    setConfirmModeChange(false);
+    setConfirmReturnToTitle(true);
   }
 
   return (
@@ -149,14 +96,6 @@ export function Controls(props: ControlsProps) {
             <button
               type="button"
               class={styles.menuItem}
-              onClick={openNewGameDialog}
-            >
-              新規対局
-            </button>
-
-            <button
-              type="button"
-              class={styles.menuItem}
               onClick={props.onToggleSound}
             >
               {props.soundEnabled ? (
@@ -166,66 +105,6 @@ export function Controls(props: ControlsProps) {
               )}
               {props.soundEnabled ? "音を消す" : "音を鳴らす"}
             </button>
-
-            <select
-              class={styles.select}
-              value={displayMode()}
-              onChange={(event) =>
-                requestModeChange(event.currentTarget.value as GameMode)
-              }
-            >
-              <For each={MODE_OPTIONS}>
-                {(option) => (
-                  <option value={option.value}>{option.label}</option>
-                )}
-              </For>
-            </select>
-
-            <Show when={props.mode === "engine"}>
-              <select
-                class={styles.select}
-                value={props.movetimeMs}
-                onChange={(event) =>
-                  props.onMovetimeChange(Number(event.currentTarget.value))
-                }
-              >
-                <For each={MOVETIME_OPTIONS}>
-                  {(option) => (
-                    <option value={option.value}>{option.label}</option>
-                  )}
-                </For>
-              </select>
-            </Show>
-
-            <select
-              class={styles.select}
-              value={props.pieceTheme}
-              onChange={(event) =>
-                props.onPieceThemeChange(event.currentTarget.value)
-              }
-            >
-              <For each={PIECE_THEME_OPTIONS}>
-                {(option) => (
-                  <option value={option.value}>{option.label}</option>
-                )}
-              </For>
-            </select>
-
-            <Show when={imageAttribution(props.pieceTheme)}>
-              {(attribution) => (
-                <p class={styles.attribution}>
-                  駒画像: {attribution().name} by {attribution().author} (
-                  <a
-                    href={attribution().licenseUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {attribution().licenseName}
-                  </a>
-                  )
-                </p>
-              )}
-            </Show>
 
             <Show when={props.mode === "human"}>
               <button
@@ -245,31 +124,28 @@ export function Controls(props: ControlsProps) {
             >
               棋譜
             </button>
+
+            <button
+              type="button"
+              class={styles.menuItem}
+              onClick={openReturnToTitleDialog}
+            >
+              タイトルへ戻る
+            </button>
           </Popover.Content>
         </Popover.Portal>
       </Popover>
 
       <ConfirmDialog
-        open={confirmNewGame()}
-        onOpenChange={setConfirmNewGame}
-        title="新規対局"
-        description="現在の対局をやめて新しく始めますか?"
-        confirmLabel="新規対局する"
+        open={confirmReturnToTitle()}
+        onOpenChange={setConfirmReturnToTitle}
+        title="タイトルへ戻る"
+        description="対局を中断してタイトルへ戻りますか?現在の対局は保存され、後で続きから再開できます。"
+        confirmLabel="タイトルへ戻る"
         onConfirm={() => {
-          props.onNewGame();
-          setConfirmNewGame(false);
+          props.onReturnToTitle();
+          setConfirmReturnToTitle(false);
         }}
-      />
-
-      <ConfirmDialog
-        open={confirmModeChange()}
-        onOpenChange={(open) => {
-          if (!open) cancelModeChange();
-        }}
-        title="対局モードの変更"
-        description="モードを切り替えると現在の対局をやめて新しく始めます。よろしいですか?"
-        confirmLabel="切り替える"
-        onConfirm={confirmModeChangeAction}
       />
 
       <Dialog open={kifuOpen()} onOpenChange={setKifuOpen}>

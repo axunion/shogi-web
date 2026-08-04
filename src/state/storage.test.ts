@@ -128,4 +128,22 @@ describe("parseSavedSettings", () => {
   it("drops a non-string pieceTheme", () => {
     expect(parseSavedSettings(JSON.stringify({ pieceTheme: 123 }))).toEqual({});
   });
+
+  it("accepts a colorScheme value", () => {
+    expect(parseSavedSettings(JSON.stringify({ colorScheme: "dark" }))).toEqual(
+      { colorScheme: "dark" },
+    );
+    expect(
+      parseSavedSettings(JSON.stringify({ colorScheme: "light" })),
+    ).toEqual({ colorScheme: "light" });
+    expect(
+      parseSavedSettings(JSON.stringify({ colorScheme: "system" })),
+    ).toEqual({ colorScheme: "system" });
+  });
+
+  it("rejects an invalid colorScheme value", () => {
+    expect(
+      parseSavedSettings(JSON.stringify({ colorScheme: "invalid" })),
+    ).toEqual({});
+  });
 });
