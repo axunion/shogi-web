@@ -40,6 +40,11 @@ development-time planning notes follow the language the user is working in.
 - If the project has no test setup, ask briefly: introduce one, or verify another way?
 - Test observable outcomes and edge cases, not implementation details.
 - Each test is fully self-contained; no shared mutable state between tests.
+- `e2e/` (Playwright, `pnpm test:e2e`) holds only golden paths worth protecting against
+  future regressions — add a spec when one is introduced or changed, not for every UI
+  change you happen to verify by hand. One-off "does this render right" checks belong at
+  the dev server, not in a committed spec; a scripted assertion can't judge visual
+  quality anyway, only structural correctness.
 
 ## Subagents
 

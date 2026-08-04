@@ -21,6 +21,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run --passWithNoTests",
+    "test:e2e": "playwright test",
     "check": "biome check . && tsc -b",
     "fix": "biome check --write ."
   },
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
+    "@playwright/test": "^1.62.1",
     "@types/emscripten": "^1.41.5",
     "@types/node": "^24.13.2",
     "happy-dom": "^20.11.1",

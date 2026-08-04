@@ -26,5 +26,8 @@ export default defineConfig({
   // Pin it explicitly to happy-dom (lighter/faster) instead.
   test: {
     environment: "happy-dom",
+    // e2e/*.spec.ts are Playwright specs (run via `pnpm test:e2e`), not
+    // Vitest ones, but their filenames match Vitest's default spec glob.
+    exclude: ["**/node_modules/**", "**/e2e/**"],
   },
 });
