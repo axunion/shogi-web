@@ -41,6 +41,27 @@ development-time planning notes follow the language the user is working in.
 - Test observable outcomes and edge cases, not implementation details.
 - Each test is fully self-contained; no shared mutable state between tests.
 
+## Subagents
+
+Three tiers, scaled to how much a change is worth checking:
+
+- **Trivial** (one-line fixes, typos, config tweaks): implement directly, no agents.
+- **Non-trivial but contained** (a self-contained feature or fix, one area of the
+  codebase): implement directly — optionally after a standalone `researcher` pass if the
+  change touches unfamiliar library APIs (Solid.js, Kobalte) or conventions you're not
+  sure of — then autonomously run `reviewer` and `tester` in parallel as a verification
+  pass. No confirmation needed: both are read-only/test-only (tester only ever edits
+  `*.test.ts`), so the cost and risk of running them is low.
+- **Large, ambiguous, or high-risk** (spans multiple files, touches `src/domain/` or
+  `src/engine/` logic in a substantial way): prefer the `feature-loop` skill (research →
+  implement → review + test via four agents, iterating on findings). Because it spawns
+  four agents and iterates, always confirm with the user first ("this looks like
+  feature-loop scope — want me to run it?") before starting; never spawn it silently.
+
+The `executor` agent is loop-only — it has no special knowledge beyond what's already
+available in this conversation, so running it standalone (outside `feature-loop`) adds
+no value over implementing directly.
+
 ## Commits
 
 Format — plain prose, no prefixes or labels (`feat:`, `fix:`, and the like):

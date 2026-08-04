@@ -1,7 +1,6 @@
 ---
 name: feature-loop
-description: Runs a task through the research → implement → review + test loop using the researcher, executor, reviewer, and tester agents, iterating until both review and tests pass or a retry cap is hit. Use only when the user explicitly asks for the automated loop (e.g. "/feature-loop <task>") — not for routine single-step edits.
-disable-model-invocation: true
+description: Runs a task through the research → implement → review + test loop using the researcher, executor, reviewer, and tester agents, iterating until both review and tests pass or a retry cap is hit. Invoke explicitly via "/feature-loop <task>", or autonomously (after confirming with the user) for non-trivial work — changes touching src/domain/ or src/engine/ logic, spanning multiple files, or relying on unfamiliar library APIs. Not for one-line fixes, typos, or config tweaks.
 argument-hint: <task description>
 ---
 
@@ -17,6 +16,11 @@ therefore restate the original task description in full (not just "fix this"), s
 always include it, not just the delta since the last step.
 
 ## Steps
+
+0. **Confirm before spawning.** If this run was triggered autonomously (not via an
+   explicit `/feature-loop` invocation), tell the user the task looks like feature-loop
+   scope and ask before starting — spawning four agents has real time/cost, and that
+   decision belongs to the user, not to your own judgment call alone.
 
 1. **Research.** Call the `researcher` agent with the task description. If its brief
    reports a genuine ambiguity, stop here and ask the user to resolve it — do not let the

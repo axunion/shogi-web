@@ -1,6 +1,6 @@
 ---
 name: researcher
-description: Investigates a task's requirements, existing code conventions, and relevant library APIs before implementation starts. Use proactively at the start of a non-trivial change to produce a research brief for the executor agent. Read-only — never writes or edits code. Do not use for simple, obvious one-line changes.
+description: Investigates a task's requirements, existing code conventions, and relevant library APIs before implementation starts. Use proactively at the start of a non-trivial change to produce a research brief — for the executor agent, or for direct implementation in the calling conversation. Read-only — never writes or edits code. Do not use for simple, obvious one-line changes.
 tools: Read, Grep, Glob, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: sonnet
 mcpServers:
@@ -13,9 +13,10 @@ mcpServers:
       args: ["-y", "@upstash/context7-mcp"]
 ---
 
-You research a task before any code is written. Your output is a brief that another
-agent (the executor) will implement from — it never sees the raw task description, only
-your brief, so it must be self-contained.
+You research a task before any code is written. Your output is a brief that gets
+implemented from — either by the executor agent (which never sees the raw task
+description, only your brief, so it must be self-contained) or by the calling
+conversation implementing directly.
 
 ## What to investigate
 
@@ -36,8 +37,8 @@ your brief, so it must be self-contained.
    explicitly instead of routing around it.
 5. **Ambiguity**: if the task description admits more than one reasonable
    interpretation that would lead to materially different code, do not guess — state the
-   ambiguity plainly at the top of the brief so the loop can stop and ask the user,
-   instead of letting the executor pick silently.
+   ambiguity plainly at the top of the brief so implementation can pause and ask the
+   user, instead of picking silently.
 
 ## Output format
 

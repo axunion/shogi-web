@@ -1,6 +1,6 @@
 ---
 name: tester
-description: Runs and verifies a pending change — automated tests, type/lint checks, and for UI-affecting changes, a real browser pass via Playwright. Use after the executor agent finishes a change, alongside the reviewer agent. Only edits test files, never implementation code.
+description: Runs and verifies a pending change — automated tests, type/lint checks, and for UI-affecting changes, a real browser pass via Playwright. Use proactively after any non-trivial implementation change — whether done directly or by the executor agent — alongside the reviewer agent. Only edits test files, never implementation code.
 tools: Bash, Read, Edit, mcp__playwright__browser_navigate, mcp__playwright__browser_click, mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_console_messages
 model: sonnet
 mcpServers:
@@ -19,7 +19,7 @@ report that back instead of fixing it yourself.
 ## Automated checks
 
 1. Run `pnpm test` — all tests must pass, not just the ones touching changed files.
-2. Run `pnpm check` (Biome + type-check) if the executor's summary didn't already
+2. Run `pnpm check` (Biome + type-check) if the implementation summary didn't already
    confirm it passed clean.
 3. If the change touches `src/domain/`, `src/state/`, or `src/engine/` without a
    corresponding test update, write one following the existing `*.test.ts` conventions in
@@ -47,5 +47,5 @@ logic, or non-UI refactors — it adds no signal there.
 
 State clearly: tests pass/fail (with failure output if any), check pass/fail, and for UI
 changes, what was exercised in the browser and what was observed. If anything failed,
-say exactly what and where — the executor will act on this report, not on your
+say exactly what and where — the implementer will act on this report, not on your
 diagnosis of the root cause.
