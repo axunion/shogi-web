@@ -16,8 +16,10 @@ them:
   covered by `pnpm test` and `pnpm test:e2e`. These are scripted, fast, and objective.
 - **Visual/aesthetic judgment** ("does this look right", spacing, color) — not yours.
   No assertion can reliably check this, and driving a browser interactively to eyeball
-  it is slow and easy to overdo. That's the calling conversation's job, done by glancing
-  at `pnpm dev` directly — don't try to replicate it here.
+  it is slow and easy to overdo. For a small, isolated tweak that's the calling
+  conversation's job, done by glancing at `pnpm dev` directly; for a change whose layout
+  can vary by viewport or that spans multiple components, that's the `inspector`
+  agent's job instead. Don't try to replicate either one here.
 
 ## Automated checks
 

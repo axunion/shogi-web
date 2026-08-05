@@ -67,6 +67,26 @@ The `executor` agent is loop-only — it has no special knowledge beyond what's 
 available in this conversation, so running it standalone (outside `feature-loop`) adds
 no value over implementing directly.
 
+Visual/layout verification is a separate axis from the tiers above, gated by whether
+the change touches rendered UI at all — not by how large the change is. A large
+domain/engine change has no rendered surface to check; a one-line CSS change might.
+
+- **No rendered surface changed**: skip — no browser involved.
+- **Small, isolated, single-property UI tweak**: just glance at `pnpm dev` yourself at a
+  normal window size.
+- **Layout that can vary by viewport (flex-wrap, min/max-width, dialogs), or a change
+  spanning multiple components sharing styles, or chasing a reported visual bug**: run
+  the `inspector` agent. Give it the full picture (it has no memory of this
+  conversation) — what changed, what specifically to verify, and any prior finding that
+  prompted the check. If it reports a real issue, fix it and re-run — a fix isn't
+  verified until it comes back clean.
+
+Like `reviewer`/`tester` and unlike `feature-loop`, this doesn't need the user's
+confirmation before running — it's a single agent doing one pass, not a multi-agent
+iterating loop. But unlike `reviewer`/`tester`, don't run it automatically for every
+non-trivial UI change either: it costs real minutes (dev server + browser), so it's a
+judgment call each time, made against the tiers above, not a default step.
+
 ## Commits
 
 Format — plain prose, no prefixes or labels (`feat:`, `fix:`, and the like):
