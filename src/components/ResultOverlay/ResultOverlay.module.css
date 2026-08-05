@@ -5,6 +5,11 @@
   gap: 1rem;
   padding: 2rem;
   min-width: 16rem;
+  /* 34rem (minus 2 * 2rem padding = 30rem inner) comfortably fits all three
+     action buttons (3 * 9rem basis + 2 * 1rem gap = 29rem) on one row on
+     normal screens; calc(100vw - 2rem) takes over and wraps them on narrow
+     ones. Dialog.module.css's 24rem default is for the two-button dialogs. */
+  max-width: min(34rem, calc(100vw - 2rem));
   background: var(--dialog-bg);
   color: var(--dialog-text);
   border: 1px solid var(--panel-border);
@@ -34,24 +39,12 @@
   margin: 0;
 }
 
+/* Centered, unlike Dialog.module.css's right-aligned default: this dialog's
+   content is centered, and three buttons read better balanced than
+   flush-right. Button styling itself comes from DialogButton. */
 .actions {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 1rem;
-}
-
-.actions button {
-  min-width: 7rem;
-  padding: 0.5em 1.25em;
-  font: inherit;
-  white-space: nowrap;
-  cursor: pointer;
-  background: var(--panel-bg);
-  color: var(--panel-text);
-  border: 1px solid var(--panel-border);
-  border-radius: 0.3rem;
-}
-
-.actions button:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
 }

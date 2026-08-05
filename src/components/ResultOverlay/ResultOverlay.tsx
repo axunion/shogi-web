@@ -3,6 +3,7 @@ import { createEffect, createSignal, on } from "solid-js";
 import type { GameStatus } from "../../state/gameStore";
 import { isGameOver } from "../../state/gameStore";
 import dialogStyles from "../Dialog/Dialog.module.css";
+import { DialogButton } from "../Dialog/DialogButton";
 import styles from "./ResultOverlay.module.css";
 
 interface ResultOverlayProps {
@@ -64,13 +65,15 @@ export function ResultOverlay(props: ResultOverlayProps) {
               <p class={styles.reason}>{RESULT_REASON[props.status]}</p>
             )}
             <div class={styles.actions}>
-              <Dialog.CloseButton>閉じる</Dialog.CloseButton>
-              <button type="button" onClick={props.onReturnToTitle}>
+              <Dialog.CloseButton class={dialogStyles.actionButton}>
+                閉じる
+              </Dialog.CloseButton>
+              <DialogButton onClick={props.onReturnToTitle}>
                 タイトルへ戻る
-              </button>
-              <button type="button" onClick={handleRematch}>
+              </DialogButton>
+              <DialogButton variant="primary" onClick={handleRematch}>
                 もう一局
-              </button>
+              </DialogButton>
             </div>
           </Dialog.Content>
         </div>

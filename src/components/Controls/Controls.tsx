@@ -67,6 +67,7 @@ export function Controls(props: ControlsProps) {
         title="投了"
         description="投了します。よろしいですか?"
         confirmLabel="投了する"
+        confirmVariant="danger"
         onConfirm={() => {
           props.onResign();
           setConfirmResign(false);

@@ -1,6 +1,7 @@
 import { AlertDialog } from "@kobalte/core/alert-dialog";
 import type { JSX } from "solid-js";
 import styles from "./Dialog.module.css";
+import { DialogButton, type DialogButtonVariant } from "./DialogButton";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -8,6 +9,7 @@ interface ConfirmDialogProps {
   title: string;
   description: string;
   confirmLabel: string;
+  confirmVariant?: DialogButtonVariant;
   cancelLabel?: string;
   onConfirm: () => void;
   trigger?: () => JSX.Element;
@@ -28,12 +30,15 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
               {props.description}
             </AlertDialog.Description>
             <div class={styles.actions}>
-              <button type="button" onClick={() => props.onOpenChange(false)}>
+              <DialogButton onClick={() => props.onOpenChange(false)}>
                 {props.cancelLabel ?? "キャンセル"}
-              </button>
-              <button type="button" onClick={props.onConfirm}>
+              </DialogButton>
+              <DialogButton
+                variant={props.confirmVariant ?? "primary"}
+                onClick={props.onConfirm}
+              >
                 {props.confirmLabel}
-              </button>
+              </DialogButton>
             </div>
           </AlertDialog.Content>
         </div>

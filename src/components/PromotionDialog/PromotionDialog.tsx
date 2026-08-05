@@ -1,5 +1,6 @@
 import { Dialog } from "@kobalte/core/dialog";
 import dialogStyles from "../Dialog/Dialog.module.css";
+import { DialogButton } from "../Dialog/DialogButton";
 import styles from "./PromotionDialog.module.css";
 
 interface PromotionDialogProps {
@@ -20,12 +21,15 @@ export function PromotionDialog(props: PromotionDialogProps) {
           <Dialog.Content class={styles.dialog}>
             <Dialog.Title class={styles.title}>成りますか?</Dialog.Title>
             <div class={styles.actions}>
-              <button type="button" onClick={() => props.onChoose(false)}>
+              <DialogButton onClick={() => props.onChoose(false)}>
                 成らない
-              </button>
-              <button type="button" onClick={() => props.onChoose(true)}>
+              </DialogButton>
+              <DialogButton
+                variant="primary"
+                onClick={() => props.onChoose(true)}
+              >
                 成る
-              </button>
+              </DialogButton>
             </div>
           </Dialog.Content>
         </div>
