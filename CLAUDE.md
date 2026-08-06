@@ -37,7 +37,6 @@ development-time planning notes follow the language the user is working in.
 ## Testing
 
 - Write tests before or alongside implementation — they are your success criteria.
-- If the project has no test setup, ask briefly: introduce one, or verify another way?
 - Test observable outcomes and edge cases, not implementation details.
 - Each test is fully self-contained; no shared mutable state between tests.
 - `e2e/` (Playwright, `pnpm test:e2e`) holds only golden paths worth protecting against
@@ -63,7 +62,7 @@ Three tiers, scaled to how much a change is worth checking:
   four agents and iterates, always confirm with the user first ("this looks like
   feature-loop scope — want me to run it?") before starting; never spawn it silently.
 
-The `executor` agent is loop-only — it has no special knowledge beyond what's already
+The `implementer` agent is loop-only — it has no special knowledge beyond what's already
 available in this conversation, so running it standalone (outside `feature-loop`) adds
 no value over implementing directly.
 
@@ -81,11 +80,9 @@ domain/engine change has no rendered surface to check; a one-line CSS change mig
   prompted the check. If it reports a real issue, fix it and re-run — a fix isn't
   verified until it comes back clean.
 
-Like `reviewer`/`tester` and unlike `feature-loop`, this doesn't need the user's
-confirmation before running — it's a single agent doing one pass, not a multi-agent
-iterating loop. But unlike `reviewer`/`tester`, don't run it automatically for every
-non-trivial UI change either: it costs real minutes (dev server + browser), so it's a
-judgment call each time, made against the tiers above, not a default step.
+No confirmation needed to run it, but don't run it automatically for every non-trivial
+UI change either — it costs real minutes (dev server + browser), so it's a judgment
+call each time, made against the tiers above, not a default step.
 
 ## Commits
 

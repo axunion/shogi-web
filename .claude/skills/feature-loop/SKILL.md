@@ -1,6 +1,6 @@
 ---
 name: feature-loop
-description: Runs a task through the research → implement → review + test loop using the researcher, executor, reviewer, and tester agents, iterating until both review and tests pass or a retry cap is hit. Invoke explicitly via "/feature-loop <task>", or autonomously (after confirming with the user) for non-trivial work — changes touching src/domain/ or src/engine/ logic, spanning multiple files, or relying on unfamiliar library APIs. Not for one-line fixes, typos, or config tweaks.
+description: Runs a task through the research → implement → review + test loop using the researcher, implementer, reviewer, and tester agents, iterating until both review and tests pass or a retry cap is hit. Invoke explicitly via "/feature-loop <task>", or autonomously (after confirming with the user) for non-trivial work — changes touching src/domain/ or src/engine/ logic, spanning multiple files, or relying on unfamiliar library APIs. Not for one-line fixes, typos, or config tweaks.
 argument-hint: <task description>
 ---
 
@@ -26,7 +26,7 @@ always include it, not just the delta since the last step.
    reports a genuine ambiguity, stop here and ask the user to resolve it — do not let the
    loop proceed on a guess.
 
-2. **Implement.** Call the `executor` agent with the task description plus the
+2. **Implement.** Call the `implementer` agent with the task description plus the
    research brief.
 
 3. **Review + test in parallel.** Call the `reviewer` agent and the `tester` agent in
@@ -38,9 +38,9 @@ always include it, not just the delta since the last step.
 4. **Judge.**
    - If reviewer found no findings **and** tester reports everything passing: done —
      go to Report.
-   - Otherwise: call `executor` again with the original task description, the original
+   - Otherwise: call `implementer` again with the original task description, the original
      research brief, and the reviewer's findings plus the tester's failure output as
-     fix instructions — then repeat from step 3. A fresh executor call has no memory of
+     fix instructions — then repeat from step 3. A fresh implementer call has no memory of
      what it just built, so it needs the full picture, not only the delta.
    - Cap at **3 total passes through step 3-4**. If it still isn't clean after that,
      stop and report the unresolved findings to the user instead of continuing — don't

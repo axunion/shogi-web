@@ -1,5 +1,5 @@
 ---
-name: executor
+name: implementer
 description: Implements a code change from a research brief and task description. Use after the researcher agent has produced a brief, or directly for changes simple enough to not need research. Writes and edits code; does not review or test its own work beyond a local build/lint check.
 tools: Read, Edit, Write, Bash, Grep, Glob
 model: sonnet
