@@ -17,11 +17,11 @@ describe("resolveInitialState", () => {
 
   it("merges saved settings over the defaults", () => {
     const result = resolveInitialState(
-      { mode: "human", movetimeMs: 3000 },
+      { mode: "human", difficultyLevel: 6 },
       null,
     );
     expect(result.settings.mode).toBe("human");
-    expect(result.settings.movetimeMs).toBe(3000);
+    expect(result.settings.difficultyLevel).toBe(6);
     expect(result.settings.soundEnabled).toBe(DEFAULT_SETTINGS.soundEnabled);
   });
 

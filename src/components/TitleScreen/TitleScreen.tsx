@@ -1,6 +1,7 @@
 import { Monitor, Moon, Sun } from "lucide-solid";
 import { createSignal, For, Show } from "solid-js";
 import type { Piece } from "../../domain/types";
+import { DIFFICULTY_LEVELS } from "../../engine/difficulty";
 import type { GameMode, GameStatus, Settings } from "../../state/gameStore";
 import { isGameOver } from "../../state/gameStore";
 import { lishogiKanjiLightTheme } from "../../theme/lishogiKanjiLightTheme";
@@ -14,12 +15,11 @@ const MODE_OPTIONS: { value: GameMode; label: string }[] = [
   { value: "human", label: "人対人(対面)" },
 ];
 
-const MOVETIME_OPTIONS: { value: number; label: string }[] = [
-  { value: 500, label: "弱い(0.5秒)" },
-  { value: 1000, label: "普通(1秒)" },
-  { value: 3000, label: "強い(3秒)" },
-  { value: 8000, label: "最強(8秒)" },
-];
+const DIFFICULTY_OPTIONS: { value: number; label: string }[] =
+  DIFFICULTY_LEVELS.map((level, index) => ({
+    value: index,
+    label: level.label,
+  }));
 
 // A pawn is the most familiar piece, so it reads clearly as "a sample piece"
 // rather than anything tied to a specific role on the board.
@@ -84,21 +84,21 @@ function ChoiceRow<T extends string | number>(props: ChoiceRowProps<T>) {
 
 interface TitleScreenProps {
   mode: GameMode;
-  movetimeMs: number;
+  difficultyLevel: number;
   pieceTheme: string;
   status: GameStatus;
   hasResumableGame: boolean;
   colorScheme: Settings["colorScheme"];
   onColorSchemeChange: (colorScheme: Settings["colorScheme"]) => void;
   onPieceThemeChange: (pieceTheme: string) => void;
-  onStart: (mode: GameMode, movetimeMs: number) => void;
+  onStart: (mode: GameMode, difficultyLevel: number) => void;
   onContinue: () => void;
 }
 
 export function TitleScreen(props: TitleScreenProps) {
   const [selectedMode, setSelectedMode] = createSignal<GameMode>(props.mode);
-  const [selectedMovetime, setSelectedMovetime] = createSignal(
-    props.movetimeMs,
+  const [selectedDifficulty, setSelectedDifficulty] = createSignal(
+    props.difficultyLevel,
   );
 
   const engineNotReady = () =>
@@ -147,9 +147,9 @@ export function TitleScreen(props: TitleScreenProps) {
         />
         <ChoiceRow
           label="難易度"
-          options={MOVETIME_OPTIONS}
-          value={selectedMovetime()}
-          onChange={setSelectedMovetime}
+          options={DIFFICULTY_OPTIONS}
+          value={selectedDifficulty()}
+          onChange={setSelectedDifficulty}
           disabled={selectedMode() !== "engine"}
         />
         <fieldset class={styles.choiceRow}>
@@ -183,7 +183,7 @@ export function TitleScreen(props: TitleScreenProps) {
           type="button"
           class={styles.startButton}
           disabled={engineNotReady()}
-          onClick={() => props.onStart(selectedMode(), selectedMovetime())}
+          onClick={() => props.onStart(selectedMode(), selectedDifficulty())}
         >
           {engineNotReady() ? "エンジン起動中…" : "対局を始める"}
         </button>

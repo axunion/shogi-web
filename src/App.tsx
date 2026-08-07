@@ -41,8 +41,8 @@ function App() {
   const [screen, setScreen] = createSignal<"title" | "game">("title");
   const hasResumableGame = () => state.records.length > 0;
 
-  function handleStart(mode: GameMode, movetimeMs: number) {
-    setSettings({ mode, movetimeMs });
+  function handleStart(mode: GameMode, difficultyLevel: number) {
+    setSettings({ mode, difficultyLevel });
     newGame();
     setScreen("game");
   }
@@ -121,7 +121,7 @@ function App() {
       <Show when={screen() === "title"}>
         <TitleScreen
           mode={state.settings.mode}
-          movetimeMs={state.settings.movetimeMs}
+          difficultyLevel={state.settings.difficultyLevel}
           pieceTheme={state.settings.pieceTheme}
           status={state.status}
           hasResumableGame={hasResumableGame()}

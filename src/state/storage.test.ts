@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DIFFICULTY_LEVELS } from "../engine/difficulty";
 import { parseSavedGame, parseSavedSettings } from "./storage";
 
 const SCHEMA_VERSION = 1;
@@ -78,9 +79,9 @@ describe("parseSavedSettings", () => {
   it("accepts well-formed settings", () => {
     expect(
       parseSavedSettings(
-        JSON.stringify({ movetimeMs: 3000, soundEnabled: false }),
+        JSON.stringify({ difficultyLevel: 3, soundEnabled: false }),
       ),
-    ).toEqual({ movetimeMs: 3000, soundEnabled: false });
+    ).toEqual({ difficultyLevel: 3, soundEnabled: false });
   });
 
   it("rejects invalid JSON", () => {
@@ -94,18 +95,22 @@ describe("parseSavedSettings", () => {
   it("drops fields with the wrong type", () => {
     expect(
       parseSavedSettings(
-        JSON.stringify({ movetimeMs: "fast", soundEnabled: false }),
+        JSON.stringify({ difficultyLevel: "hard", soundEnabled: false }),
       ),
     ).toEqual({ soundEnabled: false });
   });
 
-  it("drops a non-positive or non-finite movetimeMs", () => {
-    expect(parseSavedSettings(JSON.stringify({ movetimeMs: -1 }))).toEqual({});
-    expect(parseSavedSettings(JSON.stringify({ movetimeMs: 0 }))).toEqual({});
+  it("drops an out-of-range or non-integer difficultyLevel", () => {
+    expect(parseSavedSettings(JSON.stringify({ difficultyLevel: -1 }))).toEqual(
+      {},
+    );
     expect(
       parseSavedSettings(
-        JSON.stringify({ movetimeMs: Number.POSITIVE_INFINITY }),
+        JSON.stringify({ difficultyLevel: DIFFICULTY_LEVELS.length }),
       ),
+    ).toEqual({});
+    expect(
+      parseSavedSettings(JSON.stringify({ difficultyLevel: 1.5 })),
     ).toEqual({});
   });
 

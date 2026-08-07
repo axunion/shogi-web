@@ -19,6 +19,7 @@ import type {
   Position,
   Square,
 } from "../domain/types";
+import { difficultyLevelById } from "../engine/difficulty";
 import { UsiEngine } from "../engine/usiEngine";
 import { type LastMove, lastMoveOf, resolveInitialState } from "./restore";
 import { rewind, undoPlies } from "./rewind";
@@ -82,7 +83,7 @@ interface PendingPromotion {
 }
 
 export interface Settings {
-  movetimeMs: number;
+  difficultyLevel: number;
   soundEnabled: boolean;
   mode: GameMode;
   boardFlip: boolean;
@@ -193,7 +194,7 @@ function createGameStore() {
     try {
       const token = await engine.search(
         usiPositionCommand(),
-        state.settings.movetimeMs,
+        difficultyLevelById(state.settings.difficultyLevel).movetimeMs,
         controller.signal,
       );
       if (pendingSearch === controller) pendingSearch = null;
@@ -338,7 +339,10 @@ function createGameStore() {
   function newGame(): void {
     cancelPendingSearch();
     generation++;
-    if (state.settings.mode === "engine") engine.newGame();
+    if (state.settings.mode === "engine") {
+      engine.configure(difficultyLevelById(state.settings.difficultyLevel));
+      engine.newGame();
+    }
     setState({
       position: createInitialPosition(),
       records: [],
@@ -420,7 +424,10 @@ function createGameStore() {
       return;
     }
 
-    if (mode === "engine") engine.newGame();
+    if (mode === "engine") {
+      engine.configure(difficultyLevelById(state.settings.difficultyLevel));
+      engine.newGame();
+    }
 
     if (!hasReplayedGame) {
       setState({ status: "playerTurn" });

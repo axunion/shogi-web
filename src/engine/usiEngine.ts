@@ -1,3 +1,4 @@
+import type { DifficultyLevel } from "./difficulty";
 import type { MainToWorkerMessage, WorkerToMainMessage } from "./messages";
 
 const SEARCH_TIMEOUT_MS = 30_000;
@@ -70,6 +71,16 @@ export class UsiEngine {
 
   newGame(): void {
     this.send("usinewgame");
+  }
+
+  /**
+   * SkillLevel/NodesLimit persist across usinewgame once set, so every level
+   * (including full-strength ones) must send explicit values rather than
+   * relying on defaults from a previous game.
+   */
+  configure(level: DifficultyLevel): void {
+    this.send(`setoption name SkillLevel value ${level.skillLevel}`);
+    this.send(`setoption name NodesLimit value ${level.nodesLimit}`);
   }
 
   /**

@@ -1,13 +1,14 @@
 import { createInitialPosition } from "../domain/position";
 import { replayUsiMoves } from "../domain/replay";
 import type { Move, MoveRecord, Position, Square } from "../domain/types";
+import { DEFAULT_DIFFICULTY_ID } from "../engine/difficulty";
 import { pieceThemeById } from "../theme/registry";
 import { textTheme } from "../theme/textTheme";
 import type { Settings } from "./gameStore";
 import type { ParsedSavedGame } from "./storage";
 
 export const DEFAULT_SETTINGS: Settings = {
-  movetimeMs: 1000,
+  difficultyLevel: DEFAULT_DIFFICULTY_ID,
   soundEnabled: true,
   mode: "engine",
   boardFlip: false,

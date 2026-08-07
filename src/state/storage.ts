@@ -1,3 +1,4 @@
+import { DIFFICULTY_LEVELS } from "../engine/difficulty";
 import type { Settings } from "./gameStore";
 
 const GAME_KEY = "shogi-web:game";
@@ -76,11 +77,12 @@ export function parseSavedSettings(
 
   const result: Partial<Settings> = {};
   if (
-    typeof parsed.movetimeMs === "number" &&
-    Number.isFinite(parsed.movetimeMs) &&
-    parsed.movetimeMs > 0
+    typeof parsed.difficultyLevel === "number" &&
+    Number.isInteger(parsed.difficultyLevel) &&
+    parsed.difficultyLevel >= 0 &&
+    parsed.difficultyLevel < DIFFICULTY_LEVELS.length
   ) {
-    result.movetimeMs = parsed.movetimeMs;
+    result.difficultyLevel = parsed.difficultyLevel;
   }
   if (typeof parsed.soundEnabled === "boolean") {
     result.soundEnabled = parsed.soundEnabled;
