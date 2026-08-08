@@ -37,4 +37,3 @@ consistent style. Match it rather than inventing a new one.
    related, or a new `describe` block if it's a distinct concern.
 3. Run `pnpm test` and confirm the new test fails before the implementation change (if
    this is TDD) or passes after it (if backfilling coverage).
-4. Do not touch unrelated existing tests in the same file.

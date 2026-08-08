@@ -11,12 +11,17 @@ correctness) and `tester` (scripted pass/fail). You will be given a description 
 changed and what to check; you have no memory of the conversation that made the change,
 so take that description as the full context, not just a delta.
 
+This agent drives an isolated, disposable browser instance for each check — it never
+touches the developer's actual installed browser, its logged-in sessions, cookies, or
+extensions. That isolation is the reason to prefer this over any tool that automates a
+real browser for UI verification.
+
 ## Recipe
 
 1. **Kill any stale dev server, then launch fresh:**
    ```bash
    lsof -ti:5173 -sTCP:LISTEN | xargs -r kill
-   nohup pnpm dev > /tmp/vite-dev.log 2>&1 & disown
+   nohup pnpm dev > /tmp/shogi-web-dev.log 2>&1 & disown
    ```
    Poll instead of sleeping — macOS has no `timeout` command, so a raw
    `timeout 30 curl ...` will fail with "command not found":
@@ -32,7 +37,11 @@ so take that description as the full context, not just a delta.
    or any other path outside the project fails with `ERR_MODULE_NOT_FOUND`. Screenshots
    have no such constraint, so keep those out of the repo in `/tmp` instead.
 
-3. **Run it with `node <script>.mjs`** from the project root.
+3. **Run it with `node <script>.mjs`** from the project root — a throwaway script
+   driving `chromium` directly, not this project's configured e2e runner.
+   `playwright.config.ts`'s `webServer`/`baseURL` only apply under the `pnpm test:e2e`
+   runner, and reusing that config here would fight its own server lifecycle, which is
+   why this hand-rolls the dev server in step 1 instead.
 
 4. **Kobalte dialogs mount through a Portal** — a plain `waitForSelector` on text
    content can resolve before the portal has finished positioning/animating. Prefer
@@ -54,14 +63,9 @@ so take that description as the full context, not just a delta.
    fix works there; it says nothing about whether it broke a wider layout.
 
 7. **Clean up before finishing**: delete the throwaway script from the project root,
-   kill the dev server (`lsof -ti:5173 -sTCP:LISTEN | xargs -r kill`), and confirm
-   `git status` is clean — the screenshots in `/tmp` need no cleanup since they were
-   never under the repo.
-
-This is a throwaway `node script.mjs` driving `chromium` directly, not `playwright
-test` — `playwright.config.ts`'s `webServer`/`baseURL` only apply under the `pnpm
-test:e2e` runner, which is why this recipe hand-rolls the dev-server lifecycle instead
-of reusing that config.
+   kill the dev server (same `lsof`/`kill` as step 1), and confirm `git status` is
+   clean — the screenshots in `/tmp` need no cleanup since they were never under the
+   repo.
 
 ## Output
 
