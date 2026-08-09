@@ -110,6 +110,20 @@ function matedStatus(position: Position, mode: GameMode): GameStatus {
   return position.sideToMove === "black" ? "playerMated" : "engineMated";
 }
 
+// Shared by both the synchronous init-time status and startEngine's
+// post-boot check — a resumed game may already be over (resigned or mated)
+// before the engine even starts, and both call sites need to resolve that
+// the same way. Returns "loading" when the resumed game is still ongoing.
+function resumedGameStatus(
+  position: Position,
+  mode: GameMode,
+  resignedBy: ResignedBy | undefined,
+): GameStatus {
+  if (resignedBy) return RESIGNED_STATUS[resignedBy];
+  if (!hasAnyLegalMoves(position)) return matedStatus(position, mode);
+  return "loading";
+}
+
 function createGameStore() {
   const engine = new UsiEngine();
   let generation = 0;
@@ -133,6 +147,17 @@ function createGameStore() {
   // its full usiMoves array, already consumed by resolveInitialState above —
   // reachable for the rest of the session.
   const resumedResignedBy = savedGame?.resigned;
+  // A resumed game that's already over is known synchronously too (it only
+  // depends on the values above), so the title screen's continue link never
+  // shows "対局を続ける" for a beat before flipping to "hidden" once
+  // startEngine's async boot confirms the same outcome.
+  const initialStatus: GameStatus = hasReplayedGame
+    ? resumedGameStatus(
+        initial.position,
+        initial.settings.mode,
+        resumedResignedBy,
+      )
+    : "loading";
 
   const [state, setState] = createStore<GameState>({
     position: initial.position,
@@ -141,7 +166,7 @@ function createGameStore() {
     selection: null,
     legalTargets: [],
     pendingPromotion: null,
-    status: "loading",
+    status: initialStatus,
     errorMessage: null,
     settings: initial.settings,
   });
@@ -434,13 +459,13 @@ function createGameStore() {
       return;
     }
 
-    if (resumedResignedBy) {
-      setState({ status: RESIGNED_STATUS[resumedResignedBy] });
-      return;
-    }
-
-    if (!hasAnyLegalMoves(state.position)) {
-      setState({ status: matedStatus(state.position, mode) });
+    const resumedStatus = resumedGameStatus(
+      state.position,
+      mode,
+      resumedResignedBy,
+    );
+    if (resumedStatus !== "loading") {
+      setState({ status: resumedStatus });
       return;
     }
 

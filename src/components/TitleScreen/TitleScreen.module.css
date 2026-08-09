@@ -6,7 +6,7 @@
   justify-content: center;
   gap: 2.25rem;
   min-height: 100svh;
-  padding: 2rem 1.25rem calc(3rem + env(safe-area-inset-bottom));
+  padding: 2rem 1.25rem calc(2rem + env(safe-area-inset-bottom));
   overflow: hidden;
   background:
     radial-gradient(
@@ -27,20 +27,15 @@
 
 /* Icon-only, no pill/border — the corner utility control stays out of the
    way of the otherwise unboxed hero composition. */
-.colorSchemeControl {
+.settingsButton {
   position: absolute;
   top: 1rem;
   right: 1rem;
   display: flex;
-  gap: 0.15rem;
-}
-
-.colorSchemeButton {
-  display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   padding: 0;
   color: var(--page-text);
   background: none;
@@ -53,9 +48,88 @@
     background-color 0.15s;
 }
 
-.colorSchemeButton:hover {
+.settingsButton:hover {
   opacity: 0.85;
   background: color-mix(in srgb, var(--page-text) 10%, transparent);
+}
+
+.settingsButton:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.settingsButtonActive {
+  opacity: 1;
+  background: color-mix(in srgb, var(--page-text) 12%, transparent);
+}
+
+.settingsPanel {
+  display: flex;
+  flex-direction: column;
+  min-width: 13rem;
+  padding: 1.3rem 1rem;
+  background: var(--panel-bg);
+  color: var(--dialog-text);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
+}
+
+.settingsColorOptions {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+/* Legend text is kept for screen readers but hidden visually — icons and
+   layout carry the meaning, so a visible caption would just repeat it. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Each settings group carries its own top/bottom spacing (rather than a
+   shared flex gap) so a border can sit cleanly between the two without
+   double-spacing. Legends are sr-only, so this line is the only visual
+   separator between "color scheme" and "piece style". */
+.settingsPanel fieldset {
+  padding-bottom: 1.1rem;
+}
+
+.settingsPanel fieldset + fieldset {
+  padding-top: 1.1rem;
+  padding-bottom: 0;
+  border-top: 1px solid var(--panel-border);
+}
+
+.colorSchemeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--panel-text);
+  background: none;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+}
+
+.colorSchemeButton:hover {
+  opacity: 0.85;
+  background: color-mix(in srgb, var(--panel-text) 10%, transparent);
 }
 
 .colorSchemeButton:focus-visible {
@@ -65,7 +139,7 @@
 
 .colorSchemeButtonActive {
   opacity: 1;
-  background: color-mix(in srgb, var(--page-text) 12%, transparent);
+  background: color-mix(in srgb, var(--panel-text) 12%, transparent);
 }
 
 .hero {
@@ -101,13 +175,16 @@
   border: none;
 }
 
-/* Choices sit directly on the page background — no card/box behind them,
-   just generous spacing and an underline to mark the active pick. */
 .choices {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1.35rem;
+  /* stretch (not center): .choiceRow needs a definite width to hand down to
+     .modeCards' width:100%, otherwise the two mode cards' flex-basis/
+     aspect-ratio sizing has no shared width to split evenly. .choiceRow's
+     own align-items:center still horizontally centers its narrower rows
+     (e.g. the difficulty stepper) within that full width. */
+  align-items: stretch;
+  gap: 1.75rem;
   width: min(22rem, 100%);
 }
 
@@ -127,23 +204,8 @@
   opacity: 0.35;
 }
 
-.choiceLabel {
-  padding: 0;
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  color: var(--label-color);
-}
-
-.choiceOptions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.3rem 1.1rem;
-}
-
-/* Shared "underline toggle" behavior for the mode/difficulty text choices
-   and the piece-theme thumbnail choices: dimmed at rest, an underline plus
-   full opacity marks the active pick. */
+/* Shared "underline toggle" behavior for the piece-theme thumbnail choices:
+   dimmed at rest, an underline plus full opacity marks the active pick. */
 .toggleButton {
   background: none;
   border: none;
@@ -173,16 +235,150 @@
   border-bottom-color: var(--board-bg);
 }
 
-.choiceButton {
-  padding: 0.15em 0;
-  font: inherit;
-  font-size: 0.95rem;
-  color: var(--page-text);
-  white-space: nowrap;
+.modeCards {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
 }
 
-.choiceButtonActive {
+/* aspect-ratio (rather than sizing from content) is what actually makes the
+   two cards match — equal flex width + a fixed ratio gives equal height too,
+   regardless of how long either label is. white-space: nowrap keeps a label
+   from ever wrapping inside that fixed box. Golden ratio (wider than tall)
+   reads less oversized than a plain square for this little icon+label. */
+.modeCard {
+  display: flex;
+  flex: 1;
+  aspect-ratio: 1.618;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5em;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--page-text);
+  white-space: nowrap;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  opacity: 0.65;
+  transition:
+    opacity 0.15s,
+    border-color 0.15s,
+    background-color 0.15s;
+}
+
+.modeCard:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.modeCard:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.modeCardActive {
+  opacity: 1;
+  border-color: var(--board-edge);
+  background: color-mix(in srgb, var(--board-bg) 20%, var(--panel-bg));
+}
+
+.difficultyStepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.stepperButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  color: var(--page-text);
+  background: none;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition:
+    opacity 0.15s,
+    border-color 0.15s;
+}
+
+.stepperButton:hover:not(:disabled) {
+  opacity: 1;
+  border-color: var(--board-edge);
+}
+
+.stepperButton:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.stepperButton:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.difficultyLabel {
+  min-width: 6rem;
+  font-size: 1.1rem;
   font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+.difficultyDots {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+
+.difficultyDot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.difficultyDot:disabled {
+  cursor: default;
+}
+
+.difficultyDot:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+/* The dot's own visual circle is smaller than its clickable button so the
+   tap target stays reasonable even with 8 dots packed into one row. */
+.difficultyDot::before {
+  width: 0.5rem;
+  height: 0.5rem;
+  content: "";
+  background: transparent;
+  border: 1.5px solid var(--label-color);
+  border-radius: 999px;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.difficultyDotFilled::before {
+  background: var(--board-bg);
+  border-color: var(--board-edge);
 }
 
 .themeOptions {
@@ -210,10 +406,11 @@
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
+  width: min(22rem, 100%);
 }
 
 .startButton {
-  min-width: 12rem;
+  width: 100%;
   padding: 0.85em 1.5em;
   font: inherit;
   font-size: 1rem;
@@ -264,20 +461,15 @@
   outline-offset: 2px;
 }
 
-.credit {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  margin: 0;
-  padding: 0.75rem 1rem calc(0.6rem + env(safe-area-inset-bottom));
+.pieceCredit {
+  margin: 0.9rem 0 0;
+  padding: 0;
   font-size: 0.7rem;
   text-align: center;
   color: var(--label-color);
-  background: linear-gradient(to top, var(--page-bg) 45%, transparent);
 }
 
-.credit a {
+.pieceCredit a {
   color: inherit;
 }
 

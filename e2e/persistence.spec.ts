@@ -7,7 +7,7 @@ import { expect, test } from "@playwright/test";
 test("restores an in-progress game after reload", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("button", { name: "人対人(対面)" }).click();
+  await page.getByRole("button", { name: "対面対局" }).click();
   await page.getByRole("button", { name: "対局を始める" }).click();
 
   await page.getByRole("button", { name: "7七 先手 歩" }).click();
