@@ -10,6 +10,8 @@ interface PieceViewProps {
   theme: PieceTheme;
   selected?: boolean;
   placed?: boolean;
+  /** Cell-unit offset to slide in from, for board moves (not drops). */
+  slide?: { cols: number; rows: number } | null;
   /** Overrides the default color-based rotation (white=180deg). Used by
    * hand slots in board-flip mode, where "own vs opponent" rather than
    * "black vs white" determines which pieces should read as upright. */
@@ -33,9 +35,18 @@ export function PieceView(props: PieceViewProps) {
         [styles.rotated]: isRotated(),
         [styles.selected]: !!props.selected,
         [styles.placed]: !!props.placed,
+        [styles.sliding]: !!props.slide,
         [styles.promoted]: isPromoted(),
       }}
-      style={{ "--piece-scale": String(scale()) }}
+      style={{
+        "--piece-scale": String(scale()),
+        ...(props.slide
+          ? {
+              "--slide-cols": String(props.slide.cols),
+              "--slide-rows": String(props.slide.rows),
+            }
+          : {}),
+      }}
     >
       {props.theme.kind === "image" ? (
         <img

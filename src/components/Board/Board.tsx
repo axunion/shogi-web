@@ -1,4 +1,4 @@
-import { For, Show } from "solid-js";
+import { createEffect, createSignal, For, Show } from "solid-js";
 import { sameSquare } from "../../domain/moves";
 import { colorLabel, RANK_KANJI } from "../../domain/notation";
 import { squareIndex } from "../../domain/sfen";
@@ -39,6 +39,35 @@ function isStarPoint(square: Square): boolean {
   );
 }
 
+// Screen-space column/row index for a file/rank, accounting for the
+// orderedFiles/orderedRanks reversal under board-flip. Column 0 is
+// leftmost, row 0 is topmost.
+function colIndex(file: number, flipped: boolean): number {
+  return flipped ? file - 1 : 9 - file;
+}
+
+function rowIndex(rank: number, flipped: boolean): number {
+  return flipped ? 9 - rank : rank - 1;
+}
+
+// Cell-unit offset a piece must start at (relative to its resting square)
+// to visually originate from `from`. PieceView turns this into pixels via
+// calc(cols * (--square-size + --board-line-width)). The standalone
+// `translate` property moves the element in plain screen coordinates
+// regardless of any `transform: rotate()` also applied to it (verified
+// empirically — rotation does NOT negate translate), so no sign flip is
+// needed for rotated (gote, or sente-when-flipped) pieces.
+function slideCellDelta(
+  from: Square,
+  to: Square,
+  flipped: boolean,
+): { cols: number; rows: number } {
+  return {
+    cols: colIndex(from.file, flipped) - colIndex(to.file, flipped),
+    rows: rowIndex(from.rank, flipped) - rowIndex(to.rank, flipped),
+  };
+}
+
 function squareAriaLabel(square: Square, piece: Piece | null): string {
   const position = `${square.file}${RANK_KANJI[square.rank - 1]}`;
   if (!piece) return `${position} 空`;
@@ -65,6 +94,19 @@ export function Board(props: BoardProps) {
                 const square: Square = { file, rank };
                 const piece = () =>
                   props.position.board[squareIndex(file, rank)];
+                // Tracks the piece that just occupied this square before a
+                // capture, so it can be shown fading out underneath the
+                // capturing piece's slide-in instead of vanishing instantly.
+                const [capturedGhost, setCapturedGhost] =
+                  createSignal<Piece | null>(null);
+                let previousPiece: Piece | null = null;
+                createEffect(() => {
+                  const current = piece();
+                  if (previousPiece && current && previousPiece !== current) {
+                    setCapturedGhost(previousPiece);
+                  }
+                  previousPiece = current;
+                });
                 const selected = () =>
                   !!props.selectedSquare &&
                   sameSquare(props.selectedSquare, square);
@@ -95,14 +137,43 @@ export function Board(props: BoardProps) {
                     aria-label={squareAriaLabel(square, piece())}
                   >
                     {isStarPoint(square) && <span class={styles.starPoint} />}
-                    <Show when={piece()}>
+                    {/* The captured piece fades out underneath the incoming
+                        piece rather than vanishing the instant it's replaced. */}
+                    <Show when={capturedGhost()} keyed>
+                      {(ghost) => (
+                        <span
+                          class={styles.capturedGhost}
+                          onAnimationEnd={() => setCapturedGhost(null)}
+                        >
+                          <PieceView
+                            piece={ghost}
+                            theme={props.theme}
+                            rotated={pieceRotated(ghost, !!props.flipped)}
+                          />
+                        </span>
+                      )}
+                    </Show>
+                    {/* keyed: forces a fresh PieceView on every landing, including
+                        captures, so the slide/place CSS animation always restarts.
+                        Relies on applyMoveToBoardOnly (src/domain/moves.ts) always
+                        allocating a new piece object at the destination square. */}
+                    <Show when={piece()} keyed>
                       {(p) => (
                         <PieceView
-                          piece={p()}
+                          piece={p}
                           theme={props.theme}
                           selected={selected()}
-                          placed={isLastMoveTo()}
-                          rotated={pieceRotated(p(), !!props.flipped)}
+                          placed={isLastMoveTo() && !props.lastMove?.from}
+                          slide={
+                            isLastMoveTo() && props.lastMove?.from
+                              ? slideCellDelta(
+                                  props.lastMove.from,
+                                  square,
+                                  !!props.flipped,
+                                )
+                              : null
+                          }
+                          rotated={pieceRotated(p, !!props.flipped)}
                         />
                       )}
                     </Show>

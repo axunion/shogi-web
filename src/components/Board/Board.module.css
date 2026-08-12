@@ -89,6 +89,10 @@
 
 .square {
   position: relative;
+  /* Establishes a local stacking context so .capturedGhost's negative
+     z-index only sinks below this square's own (transparent) background,
+     not below the whole board's background/border. */
+  z-index: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -105,6 +109,31 @@
 .square:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: -2px;
+}
+
+/* z-index: -1 keeps this below the incoming piece (a plain, non-positioned
+   flex child that stacks above it automatically) without having to touch
+   PieceView's own stacking, so the lastMoveTo flash overlay below stays
+   unaffected. */
+.capturedGhost {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: captured-fade 160ms ease-in forwards;
+}
+
+@keyframes captured-fade {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 .lastMoveFrom {

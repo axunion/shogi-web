@@ -32,6 +32,24 @@
   }
 }
 
+.sliding {
+  --slide-dx: calc(
+    var(--slide-cols, 0) *
+    (var(--square-size) + var(--board-line-width))
+  );
+  --slide-dy: calc(
+    var(--slide-rows, 0) *
+    (var(--square-size) + var(--board-line-width))
+  );
+  animation: slide-in 160ms ease-out backwards;
+}
+
+@keyframes slide-in {
+  from {
+    translate: var(--slide-dx) var(--slide-dy);
+  }
+}
+
 .shape {
   position: relative;
   display: flex;
