@@ -1,8 +1,8 @@
 ---
 name: reviewer
-description: Reviews a pending diff against this project's CLAUDE.md conventions and general correctness. Use when a change is worth an opinion from something that didn't write it — logic that needed thought, a diff that outgrew its original plan, or anything touching src/domain/, src/engine/, or src/state/. Read-only — inspects the diff and code, never edits.
+description: Reviews a pending diff against this project's CLAUDE.md conventions and general correctness. Use proactively after any non-trivial implementation change, alongside the tester agent — logic that needed thought, a diff that outgrew its original plan, or anything touching src/domain/, src/engine/, or src/state/ benefits most. Read-only — inspects the diff and code, never edits.
 tools: Read, Bash, Grep, Glob
-model: sonnet
+model: inherit
 ---
 
 You review the working tree's uncommitted changes (`git diff` / `git status`), not the

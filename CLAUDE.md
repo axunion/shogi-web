@@ -56,22 +56,25 @@ Three tiers, scaled to how much a change is worth checking:
   codebase): implement directly — optionally after one research pass first: the built-in
   `Explore` agent when an existing convention is worth confirming, the `researcher` agent
   when an unfamiliar external API is involved (Solid.js, Kobalte, the YaneuraOu WASM
-  engine). Afterward, run `tester` — it owns the concrete checks (`pnpm test`,
-  `pnpm check`, `pnpm test:e2e`) and nothing else runs them. Add `reviewer` when the
-  change is worth an opinion from something that didn't write it: logic you had to think
-  about, a diff that grew past what you first planned, or anything in the risk areas
-  named in tier 3. Skip it when the tests fully cover whether the change is correct.
-  Neither needs confirmation — both are read-only/test-only (tester only ever edits test
-  files), so the cost and risk of running them is low.
+  engine). Afterward, run `reviewer` and `tester` in parallel, without asking first —
+  both are read-only/test-only (tester only ever edits test files), so the cost and risk
+  of running them is low, and they exist specifically to catch the blind spot of
+  reviewing your own work.
 - **Large, ambiguous, or high-risk** (spans multiple files, touches `src/domain/`,
-  `src/engine/`, or `src/state/` logic in a substantial way): this is `feature-loop`
-  scope (research → implement → review + test, iterating on findings). The skill is
-  manual-invocation-only, so you can't start it yourself — say the task looks like
-  feature-loop scope and ask the user to run `/feature-loop <task>`, or implement under
-  tier 2's rules if they'd rather not.
+  `src/engine/`, or `src/state/` logic in a substantial way): propose that the user
+  drive it with the built-in `/goal` command, with a completion condition that
+  explicitly requires `reviewer` and `tester` passing — e.g. "implement X; done when
+  reviewer reports no findings and tester passes", not just "implement X", since
+  `/goal`'s evaluator has no built-in knowledge that these agents exist. Always propose
+  this rather than assuming it's wanted — the agents involved are as safe to run as
+  tier 2's, but a `/goal` run spanning research, implementation, and multiple
+  verification passes is real time and tokens to commit someone to. Once set, follow the
+  same shape each turn: research (`Explore` and `researcher` in parallel, since neither
+  depends on the other's result), implement here, then `reviewer` and `tester` in
+  parallel — repeating on later turns until the evaluator confirms the condition holds.
 
 Notice what stays constant across all three tiers: **this conversation writes the code
-every time**, including inside `feature-loop`. Only the scaffolding changes — none, then
+every time**, including inside a `/goal` run. Only the scaffolding changes — none, then
 verification after, then research before and verification after with iteration. There is
 deliberately no implementer agent: a write agent enforces no useful tool restriction, its
 real product is the working tree rather than the summary it returns, and each fix pass
