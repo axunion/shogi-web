@@ -15,8 +15,8 @@ import type { Color, MoveRecord, PieceType } from "./domain/types";
 import type { GameMode } from "./state/gameStore";
 import { gameStore } from "./state/gameStore";
 import { applyColorScheme } from "./theme/colorScheme";
+import { lishogiKanjiLightTheme } from "./theme/lishogiKanjiLightTheme";
 import { pieceThemeById } from "./theme/registry";
-import { textTheme } from "./theme/textTheme";
 
 function wasCapture(record: MoveRecord): boolean {
   if (record.move.kind !== "move") return false;
@@ -56,7 +56,7 @@ function App() {
   }
 
   const selectedTheme = () =>
-    pieceThemeById(state.settings.pieceTheme) ?? textTheme;
+    pieceThemeById(state.settings.pieceTheme) ?? lishogiKanjiLightTheme;
 
   const flipModeActive = () =>
     state.settings.mode === "human" && state.settings.boardFlip;

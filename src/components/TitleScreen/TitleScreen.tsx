@@ -41,12 +41,12 @@ const PIECE_THEME_OPTIONS: {
   label: string;
   theme: PieceTheme;
 }[] = [
-  { value: textTheme.id, label: "文字駒", theme: textTheme },
   {
     value: lishogiKanjiLightTheme.id,
     label: "画像駒",
     theme: lishogiKanjiLightTheme,
   },
+  { value: textTheme.id, label: "文字駒", theme: textTheme },
 ];
 
 const COLOR_SCHEME_OPTIONS: {

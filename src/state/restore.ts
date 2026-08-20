@@ -2,8 +2,8 @@ import { createInitialPosition } from "../domain/position";
 import { replayUsiMoves } from "../domain/replay";
 import type { Move, MoveRecord, Position, Square } from "../domain/types";
 import { DEFAULT_DIFFICULTY_ID } from "../engine/difficulty";
+import { lishogiKanjiLightTheme } from "../theme/lishogiKanjiLightTheme";
 import { pieceThemeById } from "../theme/registry";
-import { textTheme } from "../theme/textTheme";
 import type { Settings } from "./gameStore";
 import type { ParsedSavedGame } from "./storage";
 
@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS: Settings = {
   soundEnabled: true,
   mode: "engine",
   boardFlip: false,
-  pieceTheme: textTheme.id,
+  pieceTheme: lishogiKanjiLightTheme.id,
   colorScheme: "system",
 };
 
@@ -43,7 +43,7 @@ export function resolveInitialState(
 ): InitialState {
   const settings: Settings = { ...DEFAULT_SETTINGS, ...savedSettings };
   if (!pieceThemeById(settings.pieceTheme)) {
-    settings.pieceTheme = textTheme.id;
+    settings.pieceTheme = lishogiKanjiLightTheme.id;
   }
 
   const empty = {
