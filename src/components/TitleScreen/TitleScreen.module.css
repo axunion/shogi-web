@@ -146,7 +146,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.85rem;
   text-align: center;
 }
 
@@ -249,12 +249,12 @@
 .modeCard {
   display: flex;
   flex: 1;
-  aspect-ratio: 1.618;
+  aspect-ratio: 2.2;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5em;
+  gap: 0.4rem;
+  padding: 0.4em;
   font: inherit;
   font-size: 0.85rem;
   color: var(--page-text);

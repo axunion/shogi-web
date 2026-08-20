@@ -202,7 +202,7 @@ export function TitleScreen(props: TitleScreenProps) {
                   aria-pressed={selectedMode() === option.value}
                   onClick={() => setSelectedMode(option.value)}
                 >
-                  <option.Icon size={22} />
+                  <option.Icon size={18} />
                   <span>{option.label}</span>
                 </button>
               )}
