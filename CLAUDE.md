@@ -1,24 +1,32 @@
 # Global Claude Rules
 
-House conventions for this project — the parts that aren't already your defaults.
+Behavioral defaults plus house conventions. Bias toward caution over speed; on trivial
+tasks, use judgment.
 
 ## Approach
 
-- **Think before coding.** State assumptions. If a simpler path exists, say so and push
-  back when warranted.
-- **Simplest thing that works.** No speculative abstractions, and no error handling for
-  cases this client-only app can't reach. If 200 lines could be 50, rewrite it.
-- **Surgical changes.** Remove only the imports and symbols your change orphaned; leave
-  unrelated dead code alone and mention it.
+- **Think before coding.** State assumptions. Make routine judgment calls yourself and
+  note them; ask only when different interpretations would lead to materially different
+  work. If a simpler path exists, say so and push back when warranted.
+- **Simplest thing that works.** No unasked-for abstractions, flexibility, or error
+  handling for impossible cases. If 200 lines could be 50, rewrite it.
+- **Surgical changes.** Every changed line should trace to the request. Don't refactor,
+  reformat, or "improve" adjacent code that isn't broken; match the surrounding style.
+  Remove only the imports and symbols your change orphaned; leave unrelated dead code alone
+  and mention it.
 - **Goal-driven.** Turn each task into a verifiable outcome ("fix the bug" → "write a
-  failing test that reproduces it, then make it pass").
+  failing test that reproduces it, then make it pass"). For multi-step work, state a brief
+  plan before starting.
 
 ## Language
 
-Write everything in **English** — in-code comments, console output, error and log
-messages, AI-readable instruction files, and docs meant for readers (README and the
-like). This rule applies to artifacts, not conversation: chat replies and
-development-time planning notes follow the language the user is working in.
+Default to the user's language for everything interactive — chat replies, plan-mode
+proposals, clarifying questions, and any other back-and-forth during the session.
+
+Switch to English only for durable artifacts: things other people or tools will read
+after the session ends — in-code comments, console/log/error output, AI-readable
+instruction files, and reader-facing docs (README and the like). Scratch notes and other
+throwaway dev artifacts stay in the user's language.
 
 ## Code Structure
 
@@ -31,6 +39,7 @@ development-time planning notes follow the language the user is working in.
 ## Testing
 
 - Write tests before or alongside implementation — they are your success criteria.
+- If the project has no test setup, ask briefly: introduce one, or verify another way?
 - Test observable outcomes and edge cases, not implementation details.
 - Each test is fully self-contained; no shared mutable state between tests.
 - `e2e/` (Playwright, `pnpm test:e2e`) holds only golden paths worth protecting against

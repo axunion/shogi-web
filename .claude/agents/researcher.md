@@ -3,6 +3,7 @@ name: researcher
 description: Looks up external, non-codebase knowledge before implementation — current third-party API usage, version differences, deprecations, and the patterns a library's own docs endorse. Use proactively at the start of a change that leans on an unfamiliar or fast-moving external API, alongside the built-in Explore agent, which covers this codebase. Read-only, and never explores or edits the project's own source.
 tools: WebFetch, WebSearch, Read, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: sonnet
+effort: medium
 # Inline: connected only while this subagent runs, never touches the main
 # conversation or other subagents. Works without an API key at a lower rate
 # limit; add "--api-key", "<key>" to args for higher limits.
