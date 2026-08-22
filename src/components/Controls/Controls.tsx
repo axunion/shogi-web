@@ -1,8 +1,6 @@
-import { AlertDialog } from "@kobalte/core/alert-dialog";
 import { Dialog } from "@kobalte/core/dialog";
 import { Popover } from "@kobalte/core/popover";
 import { Flag, Menu, RotateCw, Undo2, Volume2, VolumeX, X } from "lucide-solid";
-import type { JSX } from "solid-js";
 import { createSignal, Show } from "solid-js";
 import type { MoveRecord } from "../../domain/types";
 import type { GameMode, GameStatus } from "../../state/gameStore";
@@ -10,15 +8,6 @@ import { ConfirmDialog } from "../Dialog/ConfirmDialog";
 import dialogStyles from "../Dialog/Dialog.module.css";
 import { KifuList } from "../Kifu/KifuList";
 import styles from "./Controls.module.css";
-
-function ButtonContent(props: { icon: JSX.Element; label: string }) {
-  return (
-    <>
-      {props.icon}
-      <span class={styles.buttonLabel}>{props.label}</span>
-    </>
-  );
-}
 
 interface ControlsProps {
   status: GameStatus;
@@ -40,27 +29,15 @@ export function Controls(props: ControlsProps) {
   const [kifuOpen, setKifuOpen] = createSignal(false);
   const [menuOpen, setMenuOpen] = createSignal(false);
 
-  function openKifuDialog() {
-    setMenuOpen(false);
-    setKifuOpen(true);
-  }
-
-  function openReturnToTitleDialog() {
-    setMenuOpen(false);
-    setConfirmReturnToTitle(true);
+  function closeMenuThen(action: () => void) {
+    return () => {
+      setMenuOpen(false);
+      action();
+    };
   }
 
   return (
-    <div class={styles.controls}>
-      <button
-        type="button"
-        class={styles.button}
-        disabled={!props.canUndo}
-        onClick={props.onUndo}
-      >
-        <ButtonContent icon={<Undo2 size={16} />} label="待った" />
-      </button>
-
+    <>
       <ConfirmDialog
         open={confirmResign()}
         onOpenChange={setConfirmResign}
@@ -72,28 +49,43 @@ export function Controls(props: ControlsProps) {
           props.onResign();
           setConfirmResign(false);
         }}
-        trigger={() => (
-          <AlertDialog.Trigger
-            class={`${styles.button} ${styles.buttonDanger}`}
-            disabled={props.status !== "playerTurn"}
-          >
-            <ButtonContent icon={<Flag size={16} />} label="投了" />
-          </AlertDialog.Trigger>
-        )}
       />
 
       <Popover
         open={menuOpen()}
         onOpenChange={setMenuOpen}
         modal={false}
-        placement="bottom"
+        placement="bottom-end"
         gutter={8}
       >
-        <Popover.Trigger class={`${styles.button} ${styles.buttonAccent}`}>
-          <ButtonContent icon={<Menu size={16} />} label="メニュー" />
+        <Popover.Trigger
+          class={`${styles.menuTrigger} ${menuOpen() ? styles.menuTriggerActive : ""}`}
+          aria-label="メニュー"
+        >
+          <Menu size={18} />
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content class={styles.menuPanel}>
+            <button
+              type="button"
+              class={styles.menuItem}
+              disabled={!props.canUndo}
+              onClick={closeMenuThen(props.onUndo)}
+            >
+              <Undo2 size={18} />
+              待った
+            </button>
+
+            <button
+              type="button"
+              class={`${styles.menuItem} ${styles.menuItemDanger}`}
+              disabled={props.status !== "playerTurn"}
+              onClick={closeMenuThen(() => setConfirmResign(true))}
+            >
+              <Flag size={18} />
+              投了
+            </button>
+
             <button
               type="button"
               class={styles.menuItem}
@@ -121,7 +113,7 @@ export function Controls(props: ControlsProps) {
             <button
               type="button"
               class={`${styles.menuItem} ${styles.kifuButton}`}
-              onClick={openKifuDialog}
+              onClick={closeMenuThen(() => setKifuOpen(true))}
             >
               棋譜
             </button>
@@ -129,7 +121,7 @@ export function Controls(props: ControlsProps) {
             <button
               type="button"
               class={styles.menuItem}
-              onClick={openReturnToTitleDialog}
+              onClick={closeMenuThen(() => setConfirmReturnToTitle(true))}
             >
               タイトルへ戻る
             </button>
@@ -155,7 +147,7 @@ export function Controls(props: ControlsProps) {
             <div class={styles.fullscreenHeader}>
               <Dialog.Title class={dialogStyles.title}>棋譜</Dialog.Title>
               <Dialog.CloseButton
-                class={`${styles.button} ${styles.fullscreenClose}`}
+                class={styles.fullscreenClose}
                 aria-label="閉じる"
               >
                 <X size={20} />
@@ -165,6 +157,6 @@ export function Controls(props: ControlsProps) {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog>
-    </div>
+    </>
   );
 }

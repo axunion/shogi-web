@@ -74,7 +74,7 @@
 }
 
 /* Danger: ends or discards something, mirrors Controls.module.css's
-   .buttonDanger tint so the two danger cues stay consistent. */
+   .menuItemDanger tint so the two danger cues stay consistent. */
 .danger {
   color: var(--check-color);
   border-color: color-mix(in srgb, var(--check-color) 45%, var(--panel-border));

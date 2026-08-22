@@ -1,61 +1,42 @@
-.controls {
+/* Icon-only, no pill/border — mirrors TitleScreen's .settingsButton, but
+   fixed to the viewport corner (rather than absolute within a relatively
+   positioned screen) so it stays clear of the turn-indicator text and any
+   grid/layout changes underneath it. */
+.menuTrigger {
+  position: fixed;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 10;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-}
-
-.button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  width: 5.5rem;
-  height: 2.75rem;
-  padding: 0 0.25rem;
-  font: inherit;
-  font-size: 0.8rem;
-  white-space: nowrap;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  color: var(--page-text);
+  background: none;
+  border: none;
+  border-radius: 999px;
   cursor: pointer;
-  background: var(--panel-bg);
-  color: var(--panel-text);
-  border: 1px solid var(--panel-border);
-  border-radius: 0.5rem;
+  opacity: 0.55;
   transition:
-    background-color 0.15s,
-    border-color 0.15s;
+    opacity 0.15s,
+    background-color 0.15s;
 }
 
-.buttonLabel {
-  white-space: nowrap;
+.menuTrigger:hover {
+  opacity: 0.85;
+  background: color-mix(in srgb, var(--page-text) 10%, transparent);
 }
 
-.button:disabled {
-  cursor: default;
-  opacity: 0.5;
-}
-
-.button:hover:not(:disabled) {
-  background: var(--page-bg-accent);
-}
-
-.button:focus-visible {
+.menuTrigger:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
-/* Danger (投了): ends the game, so it's tinted to stand apart from the
-   reversible neutral action. */
-.buttonDanger {
-  color: var(--check-color);
-  border-color: color-mix(in srgb, var(--check-color) 45%, var(--panel-border));
-}
-
-/* Accent (メニュー): a navigation/utility action, not a game move. */
-.buttonAccent {
-  color: var(--focus-ring);
-  border-color: color-mix(in srgb, var(--focus-ring) 45%, var(--panel-border));
+.menuTriggerActive {
+  opacity: 1;
+  background: color-mix(in srgb, var(--page-text) 12%, transparent);
 }
 
 .menuPanel {
@@ -85,9 +66,21 @@
   border-radius: 0.3rem;
 }
 
+.menuItem:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 .menuItem:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Danger (投了): ends the game, so it's tinted to stand apart from the
+   other, reversible menu actions. */
+.menuItemDanger {
+  color: var(--check-color);
+  border-color: color-mix(in srgb, var(--check-color) 45%, var(--panel-border));
 }
 
 /* Mobile-only: desktop shows the kifu panel statically, no sheet needed. */
@@ -98,8 +91,8 @@
 }
 
 /* Mobile kifu view: full-screen rather than a small sheet, so it's
-   unambiguously in front of everything (including the fixed control bar)
-   and has room for a proper header with its own close button. */
+   unambiguously in front of everything and has room for a proper header
+   with its own close button. */
 .fullscreen {
   position: fixed;
   inset: 0;
@@ -122,7 +115,26 @@
 }
 
 .fullscreenClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
   padding: 0;
+  cursor: pointer;
+  background: var(--panel-bg);
+  color: var(--panel-text);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 15%);
+  transition: background-color 0.15s;
+}
+
+.fullscreenClose:hover {
+  background: var(--page-bg-accent);
+}
+
+.fullscreenClose:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }

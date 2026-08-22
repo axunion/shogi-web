@@ -18,7 +18,7 @@ export function Layout(props: LayoutProps) {
       <div class={styles.board}>{props.board}</div>
       <div class={styles.ownHand}>{props.ownHand}</div>
       <div class={styles.sidePanel}>
-        <div class={styles.controls}>{props.controls}</div>
+        {props.controls}
         <div class={styles.kifu}>{props.kifu}</div>
       </div>
     </div>
