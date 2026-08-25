@@ -148,9 +148,10 @@ function createGameStore() {
   // reachable for the rest of the session.
   const resumedResignedBy = savedGame?.resigned;
   // A resumed game that's already over is known synchronously too (it only
-  // depends on the values above), so the title screen's continue link never
-  // shows "対局を続ける" for a beat before flipping to "hidden" once
-  // startEngine's async boot confirms the same outcome.
+  // depends on the values above), so the title screen's resume-vs-start-new
+  // prompt (shown from 対局を始める) never briefly offers "続ける" for a
+  // finished game before flipping to hidden once startEngine's async boot
+  // confirms the same outcome.
   const initialStatus: GameStatus = hasReplayedGame
     ? resumedGameStatus(
         initial.position,

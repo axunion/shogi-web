@@ -29,9 +29,13 @@
   border-radius: 0.5rem;
 }
 
+/* wrap-reverse (not wrap): keeps source order for tab/focus order — the
+   first button stays the default-focused, least-destructive action — while
+   still putting the emphasized last button (primary/danger) on top when
+   the row wraps to a stacked layout on narrow screens. */
 .actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap-reverse;
   justify-content: flex-end;
   gap: 0.5rem;
 }

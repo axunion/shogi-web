@@ -12,12 +12,21 @@ interface ConfirmDialogProps {
   confirmVariant?: DialogButtonVariant;
   cancelLabel?: string;
   onConfirm: () => void;
+  onCancel?: () => void;
   trigger?: () => JSX.Element;
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
+  // Routed through a single function so onCancel also fires when the dialog
+  // is dismissed via Escape or an outside click, not just the cancel button
+  // — those close the dialog through this same onOpenChange(false).
+  function handleOpenChange(open: boolean) {
+    props.onOpenChange(open);
+    if (!open) props.onCancel?.();
+  }
+
   return (
-    <AlertDialog open={props.open} onOpenChange={props.onOpenChange}>
+    <AlertDialog open={props.open} onOpenChange={handleOpenChange}>
       {props.trigger?.()}
       <AlertDialog.Portal>
         <AlertDialog.Overlay class={styles.overlay} />
@@ -30,7 +39,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
               {props.description}
             </AlertDialog.Description>
             <div class={styles.actions}>
-              <DialogButton onClick={() => props.onOpenChange(false)}>
+              <DialogButton onClick={() => handleOpenChange(false)}>
                 {props.cancelLabel ?? "キャンセル"}
               </DialogButton>
               <DialogButton

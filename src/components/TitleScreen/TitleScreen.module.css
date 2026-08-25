@@ -439,28 +439,6 @@
   outline-offset: 2px;
 }
 
-.continueLink {
-  padding: 0.2em 0;
-  font: inherit;
-  font-size: 0.9rem;
-  color: var(--page-text);
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--label-color);
-  cursor: pointer;
-  opacity: 0.75;
-  transition: opacity 0.15s;
-}
-
-.continueLink:hover {
-  opacity: 1;
-}
-
-.continueLink:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
 .pieceCredit {
   margin: 0.9rem 0 0;
   padding: 0;

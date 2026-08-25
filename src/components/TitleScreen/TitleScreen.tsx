@@ -9,7 +9,7 @@ import {
   Sun,
   Users,
 } from "lucide-solid";
-import { createSignal, For, Show } from "solid-js";
+import { createSignal, For } from "solid-js";
 import type { Piece } from "../../domain/types";
 import {
   DIFFICULTY_LEVELS,
@@ -25,6 +25,7 @@ import { lishogiKanjiLightTheme } from "../../theme/lishogiKanjiLightTheme";
 import { textTheme } from "../../theme/textTheme";
 import type { PieceTheme } from "../../theme/types";
 import { PieceView } from "../Board/PieceView";
+import { ConfirmDialog } from "../Dialog/ConfirmDialog";
 import styles from "./TitleScreen.module.css";
 
 const MODE_OPTIONS: { value: GameMode; label: string; Icon: typeof Bot }[] = [
@@ -84,9 +85,18 @@ export function TitleScreen(props: TitleScreenProps) {
   // mouse click doesn't show a focus ring nobody asked for, while Tab still
   // reaches the popover's contents for keyboard-only navigation.
   const [openedViaKeyboard, setOpenedViaKeyboard] = createSignal(false);
+  const [resumeChoiceOpen, setResumeChoiceOpen] = createSignal(false);
 
   const engineNotReady = () =>
     selectedMode() === "engine" && props.status === "loading";
+
+  function handleStartClick() {
+    if (props.hasResumableGame && !isGameOver(props.status)) {
+      setResumeChoiceOpen(true);
+      return;
+    }
+    props.onStart(selectedMode(), selectedDifficulty());
+  }
 
   return (
     <div class={styles.screen}>
@@ -267,21 +277,26 @@ export function TitleScreen(props: TitleScreenProps) {
           type="button"
           class={styles.startButton}
           disabled={engineNotReady()}
-          onClick={() => props.onStart(selectedMode(), selectedDifficulty())}
+          onClick={handleStartClick}
         >
           {engineNotReady() ? "エンジン起動中…" : "対局を始める"}
         </button>
-
-        <Show when={props.hasResumableGame && !isGameOver(props.status)}>
-          <button
-            type="button"
-            class={styles.continueLink}
-            onClick={props.onContinue}
-          >
-            対局を続ける
-          </button>
-        </Show>
       </div>
+
+      <ConfirmDialog
+        open={resumeChoiceOpen()}
+        onOpenChange={setResumeChoiceOpen}
+        title="対局が進行中です"
+        description="現在進行中の対局があります。続きから再開しますか、それとも新しく始めますか?"
+        cancelLabel="続ける"
+        confirmLabel="新しく始める"
+        confirmVariant="danger"
+        onConfirm={() => {
+          setResumeChoiceOpen(false);
+          props.onStart(selectedMode(), selectedDifficulty());
+        }}
+        onCancel={props.onContinue}
+      />
     </div>
   );
 }

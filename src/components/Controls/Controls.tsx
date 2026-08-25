@@ -76,15 +76,17 @@ export function Controls(props: ControlsProps) {
               待った
             </button>
 
-            <button
-              type="button"
-              class={`${styles.menuItem} ${styles.menuItemDanger}`}
-              disabled={props.status !== "playerTurn"}
-              onClick={closeMenuThen(() => setConfirmResign(true))}
-            >
-              <Flag size={18} />
-              投了
-            </button>
+            <Show when={props.mode === "engine"}>
+              <button
+                type="button"
+                class={`${styles.menuItem} ${styles.menuItemDanger}`}
+                disabled={props.status !== "playerTurn"}
+                onClick={closeMenuThen(() => setConfirmResign(true))}
+              >
+                <Flag size={18} />
+                投了
+              </button>
+            </Show>
 
             <button
               type="button"
