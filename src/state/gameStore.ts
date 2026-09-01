@@ -1,4 +1,4 @@
-import { createMemo } from "solid-js";
+import { createMemo, createRoot } from "solid-js";
 import { createStore } from "solid-js/store";
 import {
   findKing,
@@ -504,4 +504,8 @@ function createGameStore() {
   };
 }
 
-export const gameStore = createGameStore();
+// createRoot gives the store's internal createMemo calls a disposal owner;
+// the store is a permanent, whole-app-lifetime singleton, so it's never
+// actually disposed, but without this Solid's dev build logs a "computations
+// created outside a createRoot" warning at startup.
+export const gameStore = createRoot(() => createGameStore());

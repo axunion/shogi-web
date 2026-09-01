@@ -46,7 +46,7 @@ export class UsiEngine {
           return;
         }
 
-        console.debug(`< ${message.line}`);
+        if (import.meta.env.DEV) console.debug(`< ${message.line}`);
         if (
           this.pendingStaleBestmoves > 0 &&
           message.line.startsWith("bestmove")
@@ -135,7 +135,7 @@ export class UsiEngine {
   }
 
   private send(line: string): void {
-    console.debug(`> ${line}`);
+    if (import.meta.env.DEV) console.debug(`> ${line}`);
     this.postToWorker({ type: "send", line });
   }
 
