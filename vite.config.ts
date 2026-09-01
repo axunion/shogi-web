@@ -2,7 +2,8 @@ import solid from "vite-plugin-solid";
 import { defineConfig } from "vitest/config";
 
 // Required for SharedArrayBuffer, which the YaneuraOu.wasm engine needs for
-// WebAssembly threads. Must also be set by the production host.
+// WebAssembly threads. Must also be set by the production host — see
+// public/_headers for the Cloudflare Pages equivalent.
 const crossOriginIsolationHeaders = {
   "Cross-Origin-Opener-Policy": "same-origin",
   "Cross-Origin-Embedder-Policy": "require-corp",
