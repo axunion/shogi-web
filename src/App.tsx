@@ -126,6 +126,7 @@ function App() {
           difficultyLevel={state.settings.difficultyLevel}
           pieceTheme={state.settings.pieceTheme}
           status={state.status}
+          engineLaunchError={state.engineLaunchError}
           hasResumableGame={hasResumableGame()}
           colorScheme={state.settings.colorScheme}
           onColorSchemeChange={(colorScheme) => setSettings({ colorScheme })}

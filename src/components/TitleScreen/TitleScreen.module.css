@@ -439,6 +439,13 @@
   outline-offset: 2px;
 }
 
+.engineError {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--error-text);
+  text-align: center;
+}
+
 .pieceCredit {
   margin: 0.9rem 0 0;
   padding: 0;

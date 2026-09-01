@@ -100,6 +100,11 @@ interface GameState {
   pendingPromotion: PendingPromotion | null;
   status: GameStatus;
   errorMessage: string | null;
+  // Unlike errorMessage (cleared per-game by newGame()/undo()), this records
+  // an engine launch failure for the rest of the session — the launch is
+  // never retried, so the title screen keeps warning even after a game
+  // that didn't need the engine clears the per-game error.
+  engineLaunchError: string | null;
   settings: Settings;
 }
 
@@ -169,6 +174,7 @@ function createGameStore() {
     pendingPromotion: null,
     status: initialStatus,
     errorMessage: null,
+    engineLaunchError: null,
     settings: initial.settings,
   });
 
@@ -428,8 +434,11 @@ function createGameStore() {
     // The engine is always launched (mode may switch to "engine" later in
     // the session, and that switch never retries a launch), but a launch
     // failure must not discard the settings/saved game already restored
-    // synchronously above: the failure only turns into a visible error if
-    // the restored mode needs the engine.
+    // synchronously above: it only turns into a blocking "error" status if
+    // the restored mode needs the engine. engineLaunchError is still
+    // recorded unconditionally, and survives newGame()/undo() (unlike
+    // errorMessage), so the title screen can warn the user if they pick
+    // engine mode later even after playing an unrelated human-mode game.
     let launchError: unknown = null;
     try {
       await engine.launch();
@@ -439,15 +448,16 @@ function createGameStore() {
 
     const mode = state.settings.mode;
 
-    if (mode === "engine" && launchError) {
-      setState({
-        status: "error",
-        errorMessage:
-          launchError instanceof Error
-            ? launchError.message
-            : String(launchError),
-      });
-      return;
+    if (launchError) {
+      const errorMessage =
+        launchError instanceof Error
+          ? launchError.message
+          : String(launchError);
+      setState({ engineLaunchError: errorMessage });
+      if (mode === "engine") {
+        setState({ status: "error", errorMessage });
+        return;
+      }
     }
 
     if (mode === "engine") {

@@ -65,6 +65,7 @@ interface TitleScreenProps {
   difficultyLevel: number;
   pieceTheme: string;
   status: GameStatus;
+  engineLaunchError: string | null;
   hasResumableGame: boolean;
   colorScheme: SettingsState["colorScheme"];
   onColorSchemeChange: (colorScheme: SettingsState["colorScheme"]) => void;
@@ -89,6 +90,8 @@ export function TitleScreen(props: TitleScreenProps) {
 
   const engineNotReady = () =>
     selectedMode() === "engine" && props.status === "loading";
+  const engineError = () =>
+    selectedMode() === "engine" && !!props.engineLaunchError;
 
   function handleStartClick() {
     if (props.hasResumableGame && !isGameOver(props.status)) {
@@ -281,6 +284,9 @@ export function TitleScreen(props: TitleScreenProps) {
         >
           {engineNotReady() ? "エンジン起動中…" : "対局を始める"}
         </button>
+        {engineError() && (
+          <p class={styles.engineError}>{props.engineLaunchError}</p>
+        )}
       </div>
 
       <ConfirmDialog
