@@ -16,11 +16,29 @@ test("restores an in-progress game after reload", async ({ page }) => {
   await expect(page.getByText("▲7六歩")).toBeVisible();
 
   await page.reload();
-  await page.getByRole("button", { name: "対局を始める" }).click();
-  await page.getByRole("button", { name: "続ける" }).click();
 
   await expect(page.getByText("▲7六歩")).toBeVisible();
   await expect(page.getByRole("button", { name: "7六 先手 歩" })).toBeVisible();
+});
+
+test("shows the title screen on reload when the saved game already ended", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "shogi-web:game",
+      JSON.stringify({
+        version: 1,
+        usiMoves: ["7g7f"],
+        savedAt: new Date().toISOString(),
+        resigned: "black",
+      }),
+    );
+  });
+
+  await page.goto("/");
+
+  await expect(page.getByRole("button", { name: "対面対局" })).toBeVisible();
 });
 
 test("keeps the resumable game when starting a new one is declined", async ({

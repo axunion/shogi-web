@@ -13,7 +13,7 @@ import { colorLabel, colorSymbol } from "./domain/notation";
 import { squareIndex } from "./domain/sfen";
 import type { Color, MoveRecord, PieceType } from "./domain/types";
 import type { GameMode } from "./state/gameStore";
-import { gameStore } from "./state/gameStore";
+import { gameStore, isGameOver } from "./state/gameStore";
 import { applyColorScheme } from "./theme/colorScheme";
 import { lishogiKanjiLightTheme } from "./theme/lishogiKanjiLightTheme";
 import { pieceThemeById } from "./theme/registry";
@@ -38,8 +38,10 @@ function App() {
     setSettings,
   } = gameStore;
 
-  const [screen, setScreen] = createSignal<"title" | "game">("title");
   const hasResumableGame = () => state.records.length > 0;
+  const [screen, setScreen] = createSignal<"title" | "game">(
+    hasResumableGame() && !isGameOver(state.status) ? "game" : "title",
+  );
 
   function handleStart(mode: GameMode, difficultyLevel: number) {
     setSettings({ mode, difficultyLevel });
