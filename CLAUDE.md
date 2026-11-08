@@ -1,47 +1,7 @@
-# Global Claude Rules
-
-Behavioral defaults plus house conventions. Bias toward caution over speed; on trivial
-tasks, use judgment.
-
-## Approach
-
-- **Think before coding.** State assumptions. Make routine judgment calls yourself and
-  note them; ask only when different interpretations would lead to materially different
-  work. If a simpler path exists, say so and push back when warranted.
-- **Simplest thing that works.** No unasked-for abstractions, flexibility, or error
-  handling for impossible cases. If 200 lines could be 50, rewrite it.
-- **Surgical changes.** Every changed line should trace to the request. Don't refactor,
-  reformat, or "improve" adjacent code that isn't broken; match the surrounding style.
-  Remove only the imports and symbols your change orphaned; leave unrelated dead code alone
-  and mention it.
-- **Goal-driven.** Turn each task into a verifiable outcome ("fix the bug" → "write a
-  failing test that reproduces it, then make it pass"). For multi-step work, state a brief
-  plan before starting.
-
-## Language
-
-Default to the user's language for everything interactive — chat replies, plan-mode
-proposals, clarifying questions, and any other back-and-forth during the session.
-
-Switch to English only for durable artifacts: things other people or tools will read
-after the session ends — in-code comments, console/log/error output, AI-readable
-instruction files, and reader-facing docs (README and the like). Scratch notes and other
-throwaway dev artifacts stay in the user's language.
-
-## Code Structure
-
-- Name variables, functions, and files to communicate intent.
-- One concern per file; split new code when a file exceeds ~300 lines. Don't split
-  existing files unless asked.
-- Extract a helper only when used in 3+ places; otherwise inline it.
-- Delete dead code you create; never comment it out.
+# Project Rules
 
 ## Testing
 
-- Write tests before or alongside implementation — they are your success criteria.
-- If the project has no test setup, ask briefly: introduce one, or verify another way?
-- Test observable outcomes and edge cases, not implementation details.
-- Each test is fully self-contained; no shared mutable state between tests.
 - `e2e/` (Playwright, `pnpm test:e2e`) holds only golden paths worth protecting against
   future regressions — add a spec when one is introduced or changed, not for every UI
   change you happen to verify by hand. Prefer a flow with real evidence it can break
@@ -109,18 +69,7 @@ No confirmation needed to run it, but don't run it automatically for every non-t
 UI change either — it costs real minutes (dev server + browser), so it's a judgment
 call each time, made against the three cases above, not a default step.
 
-## Commits
-
-Format — plain prose, no prefixes or labels (`feat:`, `fix:`, and the like):
-
-```
-<summary: imperative mood, ≤70 chars, no trailing period>
-
-<motivation: one sentence, only when not evident from the diff>
-
-- <change bullets: only for 2+ distinct changes>
-```
-
-- Never commit secrets (`*.key`, `*.pem`, `credentials*`).
-- Never use `--no-verify`. Use `--amend` only when explicitly asked; default to a new
-  commit.
+Verifying a known change is different from open-ended exploration of the UI for bugs,
+spec holes, and improvements — that is the `ui-loop` skill (`/ui-loop [scope]`), which
+drives `inspector` in explore mode and keeps its plan and findings ledger under
+`.claude/ui-loop/`.
