@@ -70,6 +70,5 @@ UI change either — it costs real minutes (dev server + browser), so it's a jud
 call each time, made against the three cases above, not a default step.
 
 Verifying a known change is different from open-ended exploration of the UI for bugs,
-spec holes, and improvements — that is the `ui-loop` skill (`/ui-loop [scope]`), which
-drives `inspector` in explore mode and keeps its plan and findings ledger under
-`.claude/ui-loop/`.
+spec holes, and improvements — that is the `ui-sweep` skill (`/ui-sweep [scope]`), which
+drives `inspector` in explore mode, fixes what it finds, and re-checks.

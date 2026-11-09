@@ -24,7 +24,7 @@ them:
 
 ## Denied commands
 
-If a command fails on a permission denial (a blocked path, a refused host),
+If a command fails on a permission or sandbox denial (a blocked path, a refused host),
 report the command and the error back rather than working around it; changing the
 permissions is the user's call.
 
