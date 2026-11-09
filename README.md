@@ -15,7 +15,7 @@ WebAssembly — no server, no network calls once the page has loaded.
 
 ## Requirements
 
-- Node.js 24 (see `.node-version`)
+- Node.js 26 (see `.node-version`)
 - pnpm
 
 ## Getting Started
