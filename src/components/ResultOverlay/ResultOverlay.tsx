@@ -65,7 +65,10 @@ export function ResultOverlay(props: ResultOverlayProps) {
               <p class={styles.reason}>{RESULT_REASON[props.status]}</p>
             )}
             <div class={styles.actions}>
-              <Dialog.CloseButton class={dialogStyles.actionButton}>
+              <Dialog.CloseButton
+                class={dialogStyles.actionButton}
+                aria-label="閉じる"
+              >
                 閉じる
               </Dialog.CloseButton>
               <DialogButton onClick={props.onReturnToTitle}>
