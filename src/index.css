@@ -15,7 +15,6 @@
 
   /* Dimensions derived from --square-size (no absolute values here). */
   --piece-font-size: calc(var(--square-size) * 0.5);
-  --count-font-size: calc(var(--square-size) * 0.26);
   --board-line-width: max(1px, calc(var(--square-size) * 0.018));
   --board-edge-width: max(2px, calc(var(--square-size) * 0.045));
 
