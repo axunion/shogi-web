@@ -146,6 +146,27 @@ describe("resuming before the engine is ready", () => {
     expect(store.state.status).toBe("playerTurn");
   });
 
+  it("keeps an engine game restarted during boot waiting for the engine", async () => {
+    let finishLaunch = () => {};
+    const store = await loadStore({
+      settings: { mode: "engine" },
+      usiMoves: ["7g7f", "3c3d"],
+      launch: () =>
+        new Promise<void>((resolve) => {
+          finishLaunch = resolve;
+        }),
+    });
+
+    const started = store.startEngine();
+    store.newGame();
+    expect(store.usiMoves()).toEqual([]);
+    expect(store.state.status).toBe("loading");
+
+    finishLaunch();
+    await started;
+    expect(store.state.status).toBe("playerTurn");
+  });
+
   it("blocks an engine game undone during boot when the launch then fails", async () => {
     let failLaunch = () => {};
     const store = await loadStore({
