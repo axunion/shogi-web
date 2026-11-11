@@ -68,6 +68,10 @@ function App() {
   const opponentColor = (): Color => (flipped() ? "black" : "white");
   const ownColor = (): Color => (flipped() ? "white" : "black");
 
+  function isActive(color: Color): boolean {
+    return !isGameOver(state.status) && state.position.sideToMove === color;
+  }
+
   function handClickable(color: Color): boolean {
     return state.status === "playerTurn" && state.position.sideToMove === color;
   }
@@ -154,7 +158,7 @@ function App() {
               pieces={state.position.hands[opponentColor()]}
               theme={selectedTheme()}
               label={`${colorSymbol(opponentColor())}${colorLabel(opponentColor())}`}
-              active={state.position.sideToMove === opponentColor()}
+              active={isActive(opponentColor())}
               selectedPiece={selectedPieceFor(opponentColor())}
               onSelectPiece={
                 handClickable(opponentColor())
@@ -186,7 +190,7 @@ function App() {
               pieces={state.position.hands[ownColor()]}
               theme={selectedTheme()}
               label={`${colorSymbol(ownColor())}${colorLabel(ownColor())}`}
-              active={state.position.sideToMove === ownColor()}
+              active={isActive(ownColor())}
               selectedPiece={selectedPieceFor(ownColor())}
               onSelectPiece={
                 handClickable(ownColor()) ? handleHandPieceClick : undefined
@@ -204,6 +208,7 @@ function App() {
               records={state.records}
               onUndo={undo}
               onResign={resign}
+              onRematch={newGame}
               onToggleSound={() =>
                 setSettings({ soundEnabled: !state.settings.soundEnabled })
               }
