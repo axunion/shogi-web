@@ -85,7 +85,7 @@
 
 /* Desktop shows the kifu panel statically, no sheet needed. Must match the
    desktop breakpoint in Layout.module.css. */
-@media (min-width: 64rem) {
+@media (width >= 64rem) {
   .kifuButton {
     display: none;
   }

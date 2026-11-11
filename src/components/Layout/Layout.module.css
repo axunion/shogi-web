@@ -83,9 +83,8 @@
     --hand-direction: column;
     /* Board rows 9 + the coordinate band; same grid-gap/border correction
        as above (9 -> 9.252), plus 4px for the 1px floor on grid lines,
-       which outgrows that ratio at these small sizes. Horizontally, two side
-       columns of up to ~7rem each (a hand, or the turn indicator's text)
-       plus gaps are reserved. */
+       which outgrows that ratio at these small sizes. Horizontally, the two
+       fixed 7rem side columns, their gaps and the notch insets are reserved. */
     --square-size: min(
       calc(
         (
@@ -97,16 +96,35 @@
         ) /
         9.252
       ),
-      calc((100vw - 1rem - var(--coord-band) - 14rem - var(--gap) * 2) / 9.252),
+      calc(
+        (
+          100vw -
+          1rem -
+          env(safe-area-inset-left) -
+          env(safe-area-inset-right) -
+          var(--coord-band) -
+          14rem -
+          var(--gap) *
+          2
+        ) /
+        9.252
+      ),
       64px
     );
-    grid-template-columns: auto auto auto;
+    /* Fixed side columns: sized by content, the turn text (which changes
+       every ply) would resize its column and shift the centred board. */
+    grid-template-columns: 7rem auto 7rem;
     grid-template-rows: 1fr auto;
+    /* Tight so the opponent's hand plus a wrapped game result still fit
+       beside the board on the shortest phones (568x320). */
+    row-gap: 0.15rem;
     grid-template-areas:
       "opponentHand board ownHand"
       "info         board ownHand";
     justify-content: center;
     align-items: center;
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
   }
 
   .opponentHand {
@@ -117,12 +135,14 @@
     align-self: end;
   }
 
+  /* Long statuses (e.g. a game result) wrap within the column. */
   .info {
     align-self: end;
+    font-size: 0.75rem;
   }
 }
 
-@media (min-width: 64rem) {
+@media (width >= 64rem) {
   .layout {
     /* Bound the grid to the viewport so the "1fr" kifu row has a definite
        height to distribute instead of growing with the move list — without
