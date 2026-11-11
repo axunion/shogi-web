@@ -377,17 +377,6 @@ function createGameStore() {
     });
   }
 
-  // An engine game reset (by undo or a rematch) while the engine is still
-  // booting must wait in "loading" too, so startEngine picks it up once the
-  // boot settles instead of letting a move reach an engine that can't answer.
-  function awaitingEngine(): boolean {
-    return (
-      state.settings.mode === "engine" &&
-      !state.engineReady &&
-      !state.engineLaunchError
-    );
-  }
-
   function newGame(): void {
     cancelPendingSearch();
     generation++;
@@ -395,6 +384,13 @@ function createGameStore() {
       engine.configure(difficultyLevelById(state.settings.difficultyLevel));
       engine.newGame();
     }
+    // An engine game started while the engine is still booting waits in
+    // "loading" so startEngine picks it up once the boot settles, instead of
+    // letting a move reach an engine that can't answer.
+    const awaitingEngine =
+      state.settings.mode === "engine" &&
+      !state.engineReady &&
+      !state.engineLaunchError;
     setState({
       position: createInitialPosition(),
       records: [],
@@ -402,7 +398,7 @@ function createGameStore() {
       selection: null,
       legalTargets: [],
       pendingPromotion: null,
-      status: awaitingEngine() ? "loading" : "playerTurn",
+      status: awaitingEngine ? "loading" : "playerTurn",
       errorMessage: null,
     });
     saveGame([]);
@@ -432,6 +428,11 @@ function createGameStore() {
     cancelPendingSearch();
     generation++;
     const lastRecord = result.records[result.records.length - 1];
+    // Same boot wait as newGame().
+    const awaitingEngine =
+      state.settings.mode === "engine" &&
+      !state.engineReady &&
+      !state.engineLaunchError;
     setState({
       position: result.position,
       records: result.records,
@@ -439,7 +440,7 @@ function createGameStore() {
       selection: null,
       legalTargets: [],
       pendingPromotion: null,
-      status: awaitingEngine() ? "loading" : "playerTurn",
+      status: awaitingEngine ? "loading" : "playerTurn",
       errorMessage: null,
     });
     saveGame(result.records.map((r) => r.usi));

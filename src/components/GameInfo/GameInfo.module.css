@@ -15,7 +15,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 1.2rem;
+  /* min-height, not height: a long error wraps in the narrow landscape
+     column instead of spilling out of the line. */
+  min-height: 1.2rem;
 }
 
 .check {
