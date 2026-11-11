@@ -66,6 +66,7 @@ interface TitleScreenProps {
   pieceTheme: string;
   status: GameStatus;
   engineLaunchError: string | null;
+  engineReady: boolean;
   hasResumableGame: boolean;
   colorScheme: SettingsState["colorScheme"];
   onColorSchemeChange: (colorScheme: SettingsState["colorScheme"]) => void;
@@ -89,7 +90,9 @@ export function TitleScreen(props: TitleScreenProps) {
   const [resumeChoiceOpen, setResumeChoiceOpen] = createSignal(false);
 
   const engineNotReady = () =>
-    selectedMode() === "engine" && props.status === "loading";
+    selectedMode() === "engine" &&
+    !props.engineReady &&
+    !props.engineLaunchError;
   const engineError = () =>
     selectedMode() === "engine" && !!props.engineLaunchError;
 

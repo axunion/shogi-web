@@ -37,7 +37,7 @@ export type { LastMove };
 export type GameMode = "engine" | "human";
 
 export type GameStatus =
-  | "loading" // engine starting up
+  | "loading" // a resumed engine game waiting for the engine to boot
   | "playerTurn"
   | "thinking"
   | "engineResigned" // player wins: engine resigned
@@ -105,6 +105,9 @@ interface GameState {
   // never retried, so the title screen keeps warning even after a game
   // that didn't need the engine clears the per-game error.
   engineLaunchError: string | null;
+  // Tracked apart from status so a game that doesn't need the engine (human
+  // mode) is playable while it's still booting.
+  engineReady: boolean;
   settings: Settings;
 }
 
@@ -115,10 +118,9 @@ function matedStatus(position: Position, mode: GameMode): GameStatus {
   return position.sideToMove === "black" ? "playerMated" : "engineMated";
 }
 
-// Shared by both the synchronous init-time status and startEngine's
-// post-boot check — a resumed game may already be over (resigned or mated)
-// before the engine even starts, and both call sites need to resolve that
-// the same way. Returns "loading" when the resumed game is still ongoing.
+// A resumed game may already be over (resigned or mated). An ongoing engine
+// game waits in "loading" until startEngine's boot finishes; an ongoing human
+// game is playable straight away.
 function resumedGameStatus(
   position: Position,
   mode: GameMode,
@@ -126,7 +128,7 @@ function resumedGameStatus(
 ): GameStatus {
   if (resignedBy) return RESIGNED_STATUS[resignedBy];
   if (!hasAnyLegalMoves(position)) return matedStatus(position, mode);
-  return "loading";
+  return mode === "engine" ? "loading" : "playerTurn";
 }
 
 function createGameStore() {
@@ -147,23 +149,16 @@ function createGameStore() {
   const initial = resolveInitialState(loadSettings(), savedGame);
   if (initial.invalidSavedGame) clearGame();
   const hasReplayedGame = savedGame !== null && !initial.invalidSavedGame;
-  // Extracted so startEngine's closure (part of the store's permanent,
-  // module-lifetime API) doesn't keep the whole savedGame object — including
-  // its full usiMoves array, already consumed by resolveInitialState above —
-  // reachable for the rest of the session.
-  const resumedResignedBy = savedGame?.resigned;
-  // A resumed game that's already over is known synchronously too (it only
-  // depends on the values above), so the title screen's resume-vs-start-new
-  // prompt (shown from 対局を始める) never briefly offers "続ける" for a
-  // finished game before flipping to hidden once startEngine's async boot
-  // confirms the same outcome.
+  // Resolved synchronously so the title screen's resume-vs-start-new prompt
+  // (shown from 対局を始める) never offers to resume a finished game. With no
+  // saved game the status is unused until newGame() sets it.
   const initialStatus: GameStatus = hasReplayedGame
     ? resumedGameStatus(
         initial.position,
         initial.settings.mode,
-        resumedResignedBy,
+        savedGame?.resigned,
       )
-    : "loading";
+    : "playerTurn";
 
   const [state, setState] = createStore<GameState>({
     position: initial.position,
@@ -175,6 +170,7 @@ function createGameStore() {
     status: initialStatus,
     errorMessage: null,
     engineLaunchError: null,
+    engineReady: false,
     settings: initial.settings,
   });
 
@@ -445,13 +441,11 @@ function createGameStore() {
 
   async function startEngine(): Promise<void> {
     // The engine is always launched (mode may switch to "engine" later in
-    // the session, and that switch never retries a launch), but a launch
-    // failure must not discard the settings/saved game already restored
-    // synchronously above: it only turns into a blocking "error" status if
-    // the restored mode needs the engine. engineLaunchError is still
-    // recorded unconditionally, and survives newGame()/undo() (unlike
-    // errorMessage), so the title screen can warn the user if they pick
-    // engine mode later even after playing an unrelated human-mode game.
+    // the session, and that switch never retries a launch). A launch failure
+    // is recorded for the rest of the session in engineLaunchError (which,
+    // unlike errorMessage, survives newGame()/undo()) so the title screen can
+    // warn whenever engine mode is picked, but it only blocks the current
+    // game if that game is waiting on the engine.
     let launchError: unknown = null;
     try {
       await engine.launch();
@@ -459,41 +453,29 @@ function createGameStore() {
       launchError = error;
     }
 
-    const mode = state.settings.mode;
-
     if (launchError) {
       const errorMessage =
         launchError instanceof Error
           ? launchError.message
           : String(launchError);
       setState({ engineLaunchError: errorMessage });
-      if (mode === "engine") {
+      if (state.status === "loading") {
         setState({ status: "error", errorMessage });
-        return;
       }
+      return;
     }
 
-    if (mode === "engine") {
+    setState({ engineReady: true });
+    if (state.settings.mode === "engine") {
       engine.configure(difficultyLevelById(state.settings.difficultyLevel));
       engine.newGame();
     }
 
-    if (!hasReplayedGame) {
-      setState({ status: "playerTurn" });
-      return;
-    }
+    // Only a resumed engine game waits on the boot; any other status was set
+    // by the player in the meantime and must not be overwritten.
+    if (state.status !== "loading") return;
 
-    const resumedStatus = resumedGameStatus(
-      state.position,
-      mode,
-      resumedResignedBy,
-    );
-    if (resumedStatus !== "loading") {
-      setState({ status: resumedStatus });
-      return;
-    }
-
-    if (mode === "engine" && state.position.sideToMove === "white") {
+    if (state.position.sideToMove === "white") {
       setState({ status: "thinking" });
       void requestEngineMove();
       return;

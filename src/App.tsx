@@ -128,6 +128,7 @@ function App() {
           pieceTheme={state.settings.pieceTheme}
           status={state.status}
           engineLaunchError={state.engineLaunchError}
+          engineReady={state.engineReady}
           hasResumableGame={hasResumableGame()}
           colorScheme={state.settings.colorScheme}
           onColorSchemeChange={(colorScheme) => setSettings({ colorScheme })}

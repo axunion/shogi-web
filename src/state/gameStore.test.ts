@@ -59,9 +59,7 @@ describe("promotion prompt", () => {
     const store = await loadStore({
       settings: { mode: "human" },
       usiMoves: BISHOP_EXCHANGE_READY,
-      launch: async () => {},
     });
-    await store.startEngine();
 
     store.selectSquare({ file: 8, rank: 8 });
     store.selectSquare({ file: 2, rank: 2 });
@@ -82,14 +80,85 @@ describe("promotion prompt", () => {
     const store = await loadStore({
       settings: { mode: "human" },
       usiMoves: BISHOP_EXCHANGE_READY,
-      launch: async () => {},
     });
-    await store.startEngine();
 
     store.selectSquare({ file: 8, rank: 8 });
     store.selectSquare({ file: 2, rank: 2 });
     store.confirmPromotion(true);
 
     expect(store.usiMoves()).toEqual([...BISHOP_EXCHANGE_READY, "8h2b+"]);
+  });
+});
+
+describe("resuming before the engine is ready", () => {
+  it("lets a resumed face-to-face game be played while the engine boots", async () => {
+    const store = await loadStore({
+      settings: { mode: "human" },
+      usiMoves: ["7g7f"],
+    });
+
+    expect(store.state.status).toBe("playerTurn");
+    store.selectSquare({ file: 3, rank: 3 });
+    store.selectSquare({ file: 3, rank: 4 });
+
+    expect(store.usiMoves()).toEqual(["7g7f", "3c3d"]);
+  });
+
+  it("keeps a resumed engine game waiting until the engine is ready", async () => {
+    let finishLaunch = () => {};
+    const store = await loadStore({
+      settings: { mode: "engine" },
+      usiMoves: ["7g7f", "3c3d"],
+      launch: () =>
+        new Promise<void>((resolve) => {
+          finishLaunch = resolve;
+        }),
+    });
+
+    expect(store.state.status).toBe("loading");
+    const started = store.startEngine();
+    finishLaunch();
+    await started;
+
+    expect(store.state.engineReady).toBe(true);
+    expect(store.state.status).toBe("playerTurn");
+  });
+
+  it("does not overwrite a resignation made while the engine boots", async () => {
+    let finishLaunch = () => {};
+    const store = await loadStore({
+      settings: { mode: "human" },
+      usiMoves: ["7g7f"],
+      launch: () =>
+        new Promise<void>((resolve) => {
+          finishLaunch = resolve;
+        }),
+    });
+
+    const started = store.startEngine();
+    store.resign();
+    finishLaunch();
+    await started;
+
+    expect(store.state.status).toBe("whiteResigned");
+  });
+
+  it("only blocks the game with an error when it was waiting on the engine", async () => {
+    const humanStore = await loadStore({
+      settings: { mode: "human" },
+      usiMoves: ["7g7f"],
+      launch: () => Promise.reject(new Error("boom")),
+    });
+    await humanStore.startEngine();
+    expect(humanStore.state.status).toBe("playerTurn");
+    expect(humanStore.state.engineLaunchError).toBe("boom");
+
+    const engineStore = await loadStore({
+      settings: { mode: "engine" },
+      usiMoves: ["7g7f", "3c3d"],
+      launch: () => Promise.reject(new Error("boom")),
+    });
+    await engineStore.startEngine();
+    expect(engineStore.state.status).toBe("error");
   });
 });

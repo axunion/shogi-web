@@ -89,3 +89,33 @@ test("discards the resumable game when starting a new one is confirmed", async (
 
   await expect(page.getByText("▲7六歩")).not.toBeVisible();
 });
+
+// The engine is irrelevant to a face-to-face game, so a resumed one must be
+// playable before the WASM engine boots. The engine script request is left
+// hanging to hold the boot open for the whole test.
+test("lets a resumed face-to-face game be played while the engine boots", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "shogi-web:settings",
+      JSON.stringify({ mode: "human" }),
+    );
+    localStorage.setItem(
+      "shogi-web:game",
+      JSON.stringify({
+        version: 1,
+        usiMoves: ["7g7f"],
+        savedAt: new Date().toISOString(),
+      }),
+    );
+  });
+  await page.route("**/engine/yaneuraou.k-p.js", () => {});
+
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "3三 後手 歩" }).click();
+  await page.getByRole("button", { name: "3四 空" }).click();
+
+  await expect(page.getByText("△3四歩")).toBeVisible();
+});
