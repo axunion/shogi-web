@@ -15,6 +15,13 @@
     calc((100svh - var(--vertical-fixed)) / 12.752),
     64px
   );
+  /* Re-derived here from the overridden --square-size: the :root copies in
+     index.css resolve against :root's own fixed size and ignore it. The
+     coordinate font keeps a floor so it stays readable on small phones. */
+  --piece-font-size: calc(var(--square-size) * 0.5);
+  --coord-font-size: clamp(0.625rem, calc(var(--square-size) * 0.24), 0.75rem);
+  --board-line-width: max(1px, calc(var(--square-size) * 0.018));
+  --board-edge-width: max(2px, calc(var(--square-size) * 0.045));
 
   display: grid;
   grid-template-areas:
