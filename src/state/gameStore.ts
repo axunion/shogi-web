@@ -368,6 +368,19 @@ function createGameStore() {
     });
   }
 
+  // Dismissing the promotion prompt takes the move back rather than playing
+  // it unpromoted, leaving the piece selected so another target can be picked.
+  function cancelPromotion() {
+    const pending = state.pendingPromotion;
+    if (!pending) return;
+    const selection: Selection = { kind: "square", square: pending.from };
+    setState({
+      pendingPromotion: null,
+      selection,
+      legalTargets: legalTargetsFor(selection),
+    });
+  }
+
   function newGame(): void {
     cancelPendingSearch();
     generation++;
@@ -497,6 +510,7 @@ function createGameStore() {
     selectSquare,
     selectHandPiece,
     confirmPromotion,
+    cancelPromotion,
     newGame,
     resign,
     undo,

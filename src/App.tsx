@@ -30,6 +30,7 @@ function App() {
     selectSquare,
     selectHandPiece,
     confirmPromotion,
+    cancelPromotion,
     startEngine,
     checkedKingSquare,
     newGame,
@@ -214,7 +215,10 @@ function App() {
           kifu={<KifuList records={state.records} />}
         />
         {state.pendingPromotion && (
-          <PromotionDialog onChoose={confirmPromotion} />
+          <PromotionDialog
+            onChoose={confirmPromotion}
+            onCancel={cancelPromotion}
+          />
         )}
         <ResultOverlay
           status={state.status}

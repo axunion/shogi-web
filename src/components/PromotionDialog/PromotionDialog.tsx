@@ -5,6 +5,7 @@ import styles from "./PromotionDialog.module.css";
 
 interface PromotionDialogProps {
   onChoose: (promote: boolean) => void;
+  onCancel: () => void;
 }
 
 export function PromotionDialog(props: PromotionDialogProps) {
@@ -12,7 +13,7 @@ export function PromotionDialog(props: PromotionDialogProps) {
     <Dialog
       open
       onOpenChange={(isOpen) => {
-        if (!isOpen) props.onChoose(false);
+        if (!isOpen) props.onCancel();
       }}
     >
       <Dialog.Portal>
