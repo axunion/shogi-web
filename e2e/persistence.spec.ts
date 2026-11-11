@@ -64,7 +64,7 @@ test("keeps the resumable game when starting a new one is declined", async ({
     ),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "続ける" }).click();
+  await page.getByRole("button", { name: "続きから" }).click();
   await expect(page.getByText("▲7六歩")).toBeVisible();
 });
 

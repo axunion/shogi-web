@@ -297,7 +297,7 @@ export function TitleScreen(props: TitleScreenProps) {
         onOpenChange={setResumeChoiceOpen}
         title="対局が進行中です"
         description="現在進行中の対局があります。続きから再開しますか、それとも新しく始めますか?"
-        cancelLabel="続ける"
+        cancelLabel="続きから"
         confirmLabel="新しく始める"
         confirmVariant="danger"
         onConfirm={() => {
