@@ -469,9 +469,15 @@ function createGameStore() {
         launchError instanceof Error
           ? launchError.message
           : String(launchError);
+      // The UI only shows a generic Japanese message, so the cause (e.g.
+      // missing cross-origin isolation headers) goes to the console.
+      console.error("Engine launch failed:", launchError);
       setState({ engineLaunchError: errorMessage });
       if (state.status === "loading") {
-        setState({ status: "error", errorMessage });
+        setState({
+          status: "error",
+          errorMessage: "エンジンを起動できませんでした",
+        });
       }
       return;
     }

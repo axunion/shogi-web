@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 interface LoadOptions {
   settings?: Record<string, unknown>;
@@ -46,7 +46,13 @@ async function loadStore(options: LoadOptions = {}) {
   return gameStore;
 }
 
+beforeEach(() => {
+  // Launch failures are logged; keep the test output clean.
+  vi.spyOn(console, "error").mockImplementation(() => {});
+});
+
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.doUnmock("../engine/usiEngine");
   localStorage.clear();
 });
@@ -227,5 +233,6 @@ describe("resuming before the engine is ready", () => {
     await store.startEngine();
 
     expect(store.state.status).toBe("error");
+    expect(store.state.errorMessage).toBe("エンジンを起動できませんでした");
   });
 });
