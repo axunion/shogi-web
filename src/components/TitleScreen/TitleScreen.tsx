@@ -288,7 +288,9 @@ export function TitleScreen(props: TitleScreenProps) {
           {engineNotReady() ? "エンジン起動中…" : "対局を始める"}
         </button>
         {engineError() && (
-          <p class={styles.engineError}>{props.engineLaunchError}</p>
+          <p class={styles.engineError}>
+            エンジンを起動できませんでした。ページを再読み込みするか、対面対局をお試しください。
+          </p>
         )}
       </div>
 
