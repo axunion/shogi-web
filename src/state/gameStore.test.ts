@@ -116,12 +116,53 @@ describe("resuming before the engine is ready", () => {
     });
 
     expect(store.state.status).toBe("loading");
+    expect(store.state.engineReady).toBe(false);
     const started = store.startEngine();
     finishLaunch();
     await started;
 
     expect(store.state.engineReady).toBe(true);
     expect(store.state.status).toBe("playerTurn");
+  });
+
+  it("keeps an engine game undone during boot waiting for the engine", async () => {
+    let finishLaunch = () => {};
+    const store = await loadStore({
+      settings: { mode: "engine" },
+      usiMoves: ["7g7f", "3c3d"],
+      launch: () =>
+        new Promise<void>((resolve) => {
+          finishLaunch = resolve;
+        }),
+    });
+
+    const started = store.startEngine();
+    store.undo();
+    expect(store.usiMoves()).toEqual([]);
+    expect(store.state.status).toBe("loading");
+
+    finishLaunch();
+    await started;
+    expect(store.state.status).toBe("playerTurn");
+  });
+
+  it("blocks an engine game undone during boot when the launch then fails", async () => {
+    let failLaunch = () => {};
+    const store = await loadStore({
+      settings: { mode: "engine" },
+      usiMoves: ["7g7f", "3c3d"],
+      launch: () =>
+        new Promise<void>((_, reject) => {
+          failLaunch = () => reject(new Error("boom"));
+        }),
+    });
+
+    const started = store.startEngine();
+    store.undo();
+    failLaunch();
+    await started;
+
+    expect(store.state.status).toBe("error");
   });
 
   it("does not overwrite a resignation made while the engine boots", async () => {
@@ -143,22 +184,27 @@ describe("resuming before the engine is ready", () => {
     expect(store.state.status).toBe("whiteResigned");
   });
 
-  it("only blocks the game with an error when it was waiting on the engine", async () => {
-    const humanStore = await loadStore({
+  it("keeps a face-to-face game playable when the engine fails to launch", async () => {
+    const store = await loadStore({
       settings: { mode: "human" },
       usiMoves: ["7g7f"],
       launch: () => Promise.reject(new Error("boom")),
     });
-    await humanStore.startEngine();
-    expect(humanStore.state.status).toBe("playerTurn");
-    expect(humanStore.state.engineLaunchError).toBe("boom");
+    await store.startEngine();
 
-    const engineStore = await loadStore({
+    expect(store.state.status).toBe("playerTurn");
+    expect(store.state.engineReady).toBe(false);
+    expect(store.state.engineLaunchError).toBe("boom");
+  });
+
+  it("blocks a resumed engine game when the engine fails to launch", async () => {
+    const store = await loadStore({
       settings: { mode: "engine" },
       usiMoves: ["7g7f", "3c3d"],
       launch: () => Promise.reject(new Error("boom")),
     });
-    await engineStore.startEngine();
-    expect(engineStore.state.status).toBe("error");
+    await store.startEngine();
+
+    expect(store.state.status).toBe("error");
   });
 });

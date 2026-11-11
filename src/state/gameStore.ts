@@ -377,6 +377,17 @@ function createGameStore() {
     });
   }
 
+  // An engine game reset (by undo or a rematch) while the engine is still
+  // booting must wait in "loading" too, so startEngine picks it up once the
+  // boot settles instead of letting a move reach an engine that can't answer.
+  function awaitingEngine(): boolean {
+    return (
+      state.settings.mode === "engine" &&
+      !state.engineReady &&
+      !state.engineLaunchError
+    );
+  }
+
   function newGame(): void {
     cancelPendingSearch();
     generation++;
@@ -391,7 +402,7 @@ function createGameStore() {
       selection: null,
       legalTargets: [],
       pendingPromotion: null,
-      status: "playerTurn",
+      status: awaitingEngine() ? "loading" : "playerTurn",
       errorMessage: null,
     });
     saveGame([]);
@@ -428,7 +439,7 @@ function createGameStore() {
       selection: null,
       legalTargets: [],
       pendingPromotion: null,
-      status: "playerTurn",
+      status: awaitingEngine() ? "loading" : "playerTurn",
       errorMessage: null,
     });
     saveGame(result.records.map((r) => r.usi));
