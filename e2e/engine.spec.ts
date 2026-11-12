@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+const ENGINE_ERROR = "エンジンを起動できませんでした";
+
 // Regression coverage for a real production incident: a deployment missing
 // the required cross-origin isolation headers made the engine fail to
 // launch silently until the user started a game and hit the 30s search
@@ -15,7 +17,7 @@ test("shows an error on the title screen when the engine fails to launch", async
   await expect(
     page.getByRole("button", { name: "対局を始める" }),
   ).toBeVisible();
-  await expect(page.getByText("Failed to fetch")).toBeVisible();
+  await expect(page.getByText(ENGINE_ERROR)).toBeVisible();
 });
 
 test("hides the engine error when switching to face-to-face mode", async ({
@@ -25,13 +27,13 @@ test("hides the engine error when switching to face-to-face mode", async ({
 
   await page.goto("/");
 
-  await expect(page.getByText("Failed to fetch")).toBeVisible();
+  await expect(page.getByText(ENGINE_ERROR)).toBeVisible();
 
   await page.getByRole("button", { name: "対面対局" }).click();
-  await expect(page.getByText("Failed to fetch")).not.toBeVisible();
+  await expect(page.getByText(ENGINE_ERROR)).not.toBeVisible();
 
   await page.getByRole("button", { name: "AI対戦" }).click();
-  await expect(page.getByText("Failed to fetch")).toBeVisible();
+  await expect(page.getByText(ENGINE_ERROR)).toBeVisible();
 });
 
 // The saved mode determines whether a launch failure blocks with a game
@@ -50,10 +52,10 @@ test("warns about a prior engine failure when switching from a saved face-to-fac
 
   await page.goto("/");
 
-  await expect(page.getByText("Failed to fetch")).not.toBeVisible();
+  await expect(page.getByText(ENGINE_ERROR)).not.toBeVisible();
 
   await page.getByRole("button", { name: "AI対戦" }).click();
-  await expect(page.getByText("Failed to fetch")).toBeVisible();
+  await expect(page.getByText(ENGINE_ERROR)).toBeVisible();
 });
 
 // newGame()/undo() clear the per-game errorMessage on every new game, so the
@@ -73,5 +75,5 @@ test("still warns about a prior engine failure after playing a face-to-face game
   await page.getByRole("button", { name: "タイトルへ戻る" }).last().click();
 
   await page.getByRole("button", { name: "AI対戦" }).click();
-  await expect(page.getByText("Failed to fetch")).toBeVisible();
+  await expect(page.getByText(ENGINE_ERROR)).toBeVisible();
 });

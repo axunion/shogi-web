@@ -1,9 +1,19 @@
 import { Dialog } from "@kobalte/core/dialog";
 import { Popover } from "@kobalte/core/popover";
-import { Flag, Menu, RotateCw, Undo2, Volume2, VolumeX, X } from "lucide-solid";
+import {
+  Flag,
+  Menu,
+  RotateCcw,
+  RotateCw,
+  Undo2,
+  Volume2,
+  VolumeX,
+  X,
+} from "lucide-solid";
 import { createSignal, Show } from "solid-js";
 import type { MoveRecord } from "../../domain/types";
 import type { GameMode, GameStatus } from "../../state/gameStore";
+import { isGameOver } from "../../state/gameStore";
 import { ConfirmDialog } from "../Dialog/ConfirmDialog";
 import dialogStyles from "../Dialog/Dialog.module.css";
 import { KifuList } from "../Kifu/KifuList";
@@ -18,6 +28,7 @@ interface ControlsProps {
   records: MoveRecord[];
   onUndo: () => void;
   onResign: () => void;
+  onRematch: () => void;
   onToggleSound: () => void;
   onToggleBoardFlip: () => void;
   onReturnToTitle: () => void;
@@ -66,6 +77,19 @@ export function Controls(props: ControlsProps) {
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content class={styles.menuPanel}>
+            {/* The result dialog offers a rematch too, but once it's closed
+                this is the only way to start one without leaving the game. */}
+            <Show when={isGameOver(props.status)}>
+              <button
+                type="button"
+                class={styles.menuItem}
+                onClick={closeMenuThen(props.onRematch)}
+              >
+                <RotateCcw size={18} />
+                もう一局
+              </button>
+            </Show>
+
             <button
               type="button"
               class={styles.menuItem}

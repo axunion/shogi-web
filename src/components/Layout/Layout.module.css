@@ -15,6 +15,14 @@
     calc((100svh - var(--vertical-fixed)) / 12.752),
     64px
   );
+  /* Derived here rather than on :root, where they would resolve against
+     :root's own --square-size and ignore this override. The coordinate font
+     has a floor so it stays readable on small phones and a cap so it fits
+     the coordinate band. */
+  --piece-font-size: calc(var(--square-size) * 0.5);
+  --coord-font-size: clamp(0.625rem, calc(var(--square-size) * 0.24), 0.75rem);
+  --board-line-width: max(1px, calc(var(--square-size) * 0.018));
+  --board-edge-width: max(2px, calc(var(--square-size) * 0.045));
 
   display: grid;
   grid-template-areas:
@@ -66,7 +74,78 @@
   display: none;
 }
 
-@media (min-width: 48rem) {
+/* Landscape below the desktop breakpoint (phones held sideways, small
+   tablets): height is the scarce axis, so the hands stand in columns beside
+   the board instead of rows above and below it, and the kifu stays behind
+   the menu as on portrait mobile. The turn indicator sits under the
+   opponent's hand, clear of the fixed menu button in the top-right corner. */
+@media (orientation: landscape) and (width < 64rem) {
+  .layout {
+    --hand-direction: column;
+    --side-col: 7rem;
+    /* Board rows 9 + the coordinate band; same grid-gap/border correction
+       as above (9 -> 9.252), plus 4px for the 1px floor on grid lines,
+       which outgrows that ratio at these small sizes. Horizontally, the
+       two fixed side columns, their gaps and the notch insets are reserved. */
+    --square-size: min(
+      calc(
+        (
+          100svh -
+          1rem -
+          4px -
+          var(--coord-band) -
+          env(safe-area-inset-bottom)
+        ) /
+        9.252
+      ),
+      calc(
+        (
+          100vw -
+          1rem -
+          env(safe-area-inset-left) -
+          env(safe-area-inset-right) -
+          var(--coord-band) -
+          var(--side-col) *
+          2 -
+          var(--gap) *
+          2
+        ) /
+        9.252
+      ),
+      64px
+    );
+    /* Fixed side columns: sized by content, the turn text (which changes
+       every ply) would resize its column and shift the centred board. */
+    grid-template-columns: var(--side-col) auto var(--side-col);
+    grid-template-rows: 1fr auto;
+    /* Tight so the opponent's hand plus a wrapped game result still fit
+       beside the board on the shortest phones (568x320). */
+    row-gap: 0.15rem;
+    grid-template-areas:
+      "opponentHand board ownHand"
+      "info         board ownHand";
+    justify-content: center;
+    align-items: center;
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+  }
+
+  .opponentHand {
+    align-self: start;
+  }
+
+  .ownHand {
+    align-self: end;
+  }
+
+  /* Long statuses (e.g. a game result) wrap within the column. */
+  .info {
+    align-self: end;
+    font-size: 0.75rem;
+  }
+}
+
+@media (width >= 64rem) {
   .layout {
     /* Bound the grid to the viewport so the "1fr" kifu row has a definite
        height to distribute instead of growing with the move list — without
@@ -79,9 +158,9 @@
     --hand-direction: column;
     /* Same board grid-gap/border correction as the mobile formula above:
        divisors are 10.252 / 12.252 instead of 10 / 12. The vertical reserve
-       (5.7rem, close to the ~5.5rem measured fixed chrome) is tuned to keep
-       844x390 landscape from overflowing; that leaves 1440x900 at ~79px per
-       square, just under the 80px target — preferred over a scrollbar. */
+       (5.7rem, close to the ~5.5rem measured fixed chrome) keeps short
+       windows from overflowing; that leaves 1440x900 at ~79px per square,
+       just under the 80px target — preferred over a scrollbar. */
     --square-size: min(
       calc((100svh - 5.7rem) / 10.252),
       calc((100vw - 22rem) / 12.252),

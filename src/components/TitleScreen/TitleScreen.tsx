@@ -16,11 +16,15 @@ import {
   difficultyLevelById,
 } from "../../engine/difficulty";
 import type {
+  EngineState,
   GameMode,
   GameStatus,
   Settings as SettingsState,
 } from "../../state/gameStore";
-import { isGameOver } from "../../state/gameStore";
+import {
+  ENGINE_LAUNCH_FAILED_MESSAGE,
+  isGameOver,
+} from "../../state/gameStore";
 import { lishogiKanjiLightTheme } from "../../theme/lishogiKanjiLightTheme";
 import { textTheme } from "../../theme/textTheme";
 import type { PieceTheme } from "../../theme/types";
@@ -65,7 +69,7 @@ interface TitleScreenProps {
   difficultyLevel: number;
   pieceTheme: string;
   status: GameStatus;
-  engineLaunchError: string | null;
+  engine: EngineState;
   hasResumableGame: boolean;
   colorScheme: SettingsState["colorScheme"];
   onColorSchemeChange: (colorScheme: SettingsState["colorScheme"]) => void;
@@ -89,9 +93,9 @@ export function TitleScreen(props: TitleScreenProps) {
   const [resumeChoiceOpen, setResumeChoiceOpen] = createSignal(false);
 
   const engineNotReady = () =>
-    selectedMode() === "engine" && props.status === "loading";
+    selectedMode() === "engine" && props.engine === "booting";
   const engineError = () =>
-    selectedMode() === "engine" && !!props.engineLaunchError;
+    selectedMode() === "engine" && props.engine === "failed";
 
   function handleStartClick() {
     if (props.hasResumableGame && !isGameOver(props.status)) {
@@ -285,7 +289,9 @@ export function TitleScreen(props: TitleScreenProps) {
           {engineNotReady() ? "エンジン起動中…" : "対局を始める"}
         </button>
         {engineError() && (
-          <p class={styles.engineError}>{props.engineLaunchError}</p>
+          <p class={styles.engineError}>
+            {`${ENGINE_LAUNCH_FAILED_MESSAGE}。ページを再読み込みするか、対面対局をお試しください。`}
+          </p>
         )}
       </div>
 
@@ -294,7 +300,7 @@ export function TitleScreen(props: TitleScreenProps) {
         onOpenChange={setResumeChoiceOpen}
         title="対局が進行中です"
         description="現在進行中の対局があります。続きから再開しますか、それとも新しく始めますか?"
-        cancelLabel="続ける"
+        cancelLabel="続きから"
         confirmLabel="新しく始める"
         confirmVariant="danger"
         onConfirm={() => {

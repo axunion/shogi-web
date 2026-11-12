@@ -4,19 +4,14 @@
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 
-  /* Sole scaling knob. Layout overrides this per breakpoint. */
+  /* Sole scaling knob. Layout overrides this per breakpoint and derives the
+     board's other dimensions from it there. */
   --square-size: 56px;
 
   /* Coordinate label band width/height. Not derived from --square-size
-     (phase 3's --square-size formula subtracts this value, so deriving it
-     would create a circular reference). Capped so the font fits the band. */
+     (Layout's --square-size formula subtracts this value, so deriving it
+     would create a circular reference). */
   --coord-band: 1.3rem;
-  --coord-font-size: min(calc(var(--square-size) * 0.24), 0.75rem);
-
-  /* Dimensions derived from --square-size (no absolute values here). */
-  --piece-font-size: calc(var(--square-size) * 0.5);
-  --board-line-width: max(1px, calc(var(--square-size) * 0.018));
-  --board-edge-width: max(2px, calc(var(--square-size) * 0.045));
 
   /* Colors: light */
   --page-bg: #e9e2d4;
@@ -44,8 +39,9 @@
   --highlight-color: #4c9a2a;
   --selected-bg: rgb(106 176 76 / 35%);
   --target-dot: rgb(58 42 26 / 45%);
-  --last-move-bg: rgb(214 168 63 / 45%);
-  --last-move-bg-weak: rgb(214 168 63 / 20%);
+  /* A warmer, redder hue than the wood so it reads even without the flash. */
+  --last-move-bg: rgb(222 92 36 / 42%);
+  --last-move-bg-weak: rgb(222 92 36 / 18%);
   --check-color: #d0342c;
   --error-text: #b00020;
   --dialog-bg: var(--panel-bg);

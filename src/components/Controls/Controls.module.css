@@ -83,8 +83,9 @@
   border-color: color-mix(in srgb, var(--check-color) 45%, var(--panel-border));
 }
 
-/* Mobile-only: desktop shows the kifu panel statically, no sheet needed. */
-@media (min-width: 48rem) {
+/* Desktop shows the kifu panel statically, no sheet needed. Must match the
+   desktop breakpoint in Layout.module.css. */
+@media (width >= 64rem) {
   .kifuButton {
     display: none;
   }

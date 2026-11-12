@@ -30,6 +30,7 @@ function App() {
     selectSquare,
     selectHandPiece,
     confirmPromotion,
+    cancelPromotion,
     startEngine,
     checkedKingSquare,
     newGame,
@@ -126,7 +127,7 @@ function App() {
           difficultyLevel={state.settings.difficultyLevel}
           pieceTheme={state.settings.pieceTheme}
           status={state.status}
-          engineLaunchError={state.engineLaunchError}
+          engine={state.engine}
           hasResumableGame={hasResumableGame()}
           colorScheme={state.settings.colorScheme}
           onColorSchemeChange={(colorScheme) => setSettings({ colorScheme })}
@@ -152,7 +153,10 @@ function App() {
               pieces={state.position.hands[opponentColor()]}
               theme={selectedTheme()}
               label={`${colorSymbol(opponentColor())}${colorLabel(opponentColor())}`}
-              active={state.position.sideToMove === opponentColor()}
+              active={
+                !isGameOver(state.status) &&
+                state.position.sideToMove === opponentColor()
+              }
               selectedPiece={selectedPieceFor(opponentColor())}
               onSelectPiece={
                 handClickable(opponentColor())
@@ -184,7 +188,10 @@ function App() {
               pieces={state.position.hands[ownColor()]}
               theme={selectedTheme()}
               label={`${colorSymbol(ownColor())}${colorLabel(ownColor())}`}
-              active={state.position.sideToMove === ownColor()}
+              active={
+                !isGameOver(state.status) &&
+                state.position.sideToMove === ownColor()
+              }
               selectedPiece={selectedPieceFor(ownColor())}
               onSelectPiece={
                 handClickable(ownColor()) ? handleHandPieceClick : undefined
@@ -202,6 +209,7 @@ function App() {
               records={state.records}
               onUndo={undo}
               onResign={resign}
+              onRematch={newGame}
               onToggleSound={() =>
                 setSettings({ soundEnabled: !state.settings.soundEnabled })
               }
@@ -214,7 +222,10 @@ function App() {
           kifu={<KifuList records={state.records} />}
         />
         {state.pendingPromotion && (
-          <PromotionDialog onChoose={confirmPromotion} />
+          <PromotionDialog
+            onChoose={confirmPromotion}
+            onCancel={cancelPromotion}
+          />
         )}
         <ResultOverlay
           status={state.status}

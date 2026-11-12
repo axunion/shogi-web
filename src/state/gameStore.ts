@@ -36,8 +36,12 @@ export type { LastMove };
 
 export type GameMode = "engine" | "human";
 
+export type EngineState = "booting" | "ready" | "failed";
+
+export const ENGINE_LAUNCH_FAILED_MESSAGE = "エンジンを起動できませんでした";
+
 export type GameStatus =
-  | "loading" // engine starting up
+  | "loading" // a resumed engine game waiting for the engine to boot
   | "playerTurn"
   | "thinking"
   | "engineResigned" // player wins: engine resigned
@@ -100,11 +104,11 @@ interface GameState {
   pendingPromotion: PendingPromotion | null;
   status: GameStatus;
   errorMessage: string | null;
-  // Unlike errorMessage (cleared per-game by newGame()/undo()), this records
-  // an engine launch failure for the rest of the session — the launch is
-  // never retried, so the title screen keeps warning even after a game
-  // that didn't need the engine clears the per-game error.
-  engineLaunchError: string | null;
+  // Tracked apart from status so a game that doesn't need the engine (human
+  // mode) is playable while it's still booting. "failed" lasts for the rest
+  // of the session — the launch is never retried, so the title screen keeps
+  // warning even after an unrelated game clears the per-game errorMessage.
+  engine: EngineState;
   settings: Settings;
 }
 
@@ -115,10 +119,9 @@ function matedStatus(position: Position, mode: GameMode): GameStatus {
   return position.sideToMove === "black" ? "playerMated" : "engineMated";
 }
 
-// Shared by both the synchronous init-time status and startEngine's
-// post-boot check — a resumed game may already be over (resigned or mated)
-// before the engine even starts, and both call sites need to resolve that
-// the same way. Returns "loading" when the resumed game is still ongoing.
+// A resumed game may already be over (resigned or mated). An ongoing engine
+// game waits in "loading" until startEngine's boot finishes; an ongoing human
+// game is playable straight away.
 function resumedGameStatus(
   position: Position,
   mode: GameMode,
@@ -126,7 +129,7 @@ function resumedGameStatus(
 ): GameStatus {
   if (resignedBy) return RESIGNED_STATUS[resignedBy];
   if (!hasAnyLegalMoves(position)) return matedStatus(position, mode);
-  return "loading";
+  return mode === "engine" ? "loading" : "playerTurn";
 }
 
 function createGameStore() {
@@ -147,23 +150,16 @@ function createGameStore() {
   const initial = resolveInitialState(loadSettings(), savedGame);
   if (initial.invalidSavedGame) clearGame();
   const hasReplayedGame = savedGame !== null && !initial.invalidSavedGame;
-  // Extracted so startEngine's closure (part of the store's permanent,
-  // module-lifetime API) doesn't keep the whole savedGame object — including
-  // its full usiMoves array, already consumed by resolveInitialState above —
-  // reachable for the rest of the session.
-  const resumedResignedBy = savedGame?.resigned;
-  // A resumed game that's already over is known synchronously too (it only
-  // depends on the values above), so the title screen's resume-vs-start-new
-  // prompt (shown from 対局を始める) never briefly offers "続ける" for a
-  // finished game before flipping to hidden once startEngine's async boot
-  // confirms the same outcome.
+  // Resolved synchronously so the title screen's resume-vs-start-new prompt
+  // (shown from 対局を始める) never offers to resume a finished game. With no
+  // saved game the status is unused until newGame() sets it.
   const initialStatus: GameStatus = hasReplayedGame
     ? resumedGameStatus(
         initial.position,
         initial.settings.mode,
-        resumedResignedBy,
+        savedGame?.resigned,
       )
-    : "loading";
+    : "playerTurn";
 
   const [state, setState] = createStore<GameState>({
     position: initial.position,
@@ -174,7 +170,7 @@ function createGameStore() {
     pendingPromotion: null,
     status: initialStatus,
     errorMessage: null,
-    engineLaunchError: null,
+    engine: "booting",
     settings: initial.settings,
   });
 
@@ -368,6 +364,15 @@ function createGameStore() {
     });
   }
 
+  // Dismissing the promotion prompt takes the move back rather than playing
+  // it unpromoted, leaving the piece selected so another target can be picked.
+  function cancelPromotion() {
+    const pending = state.pendingPromotion;
+    if (!pending) return;
+    setState({ pendingPromotion: null });
+    selectOwnSquare(pending.from);
+  }
+
   function newGame(): void {
     cancelPendingSearch();
     generation++;
@@ -375,6 +380,11 @@ function createGameStore() {
       engine.configure(difficultyLevelById(state.settings.difficultyLevel));
       engine.newGame();
     }
+    // An engine game started while the engine is still booting waits in
+    // "loading" so startEngine picks it up once the boot settles, instead of
+    // letting a move reach an engine that can't answer.
+    const awaitingEngine =
+      state.settings.mode === "engine" && state.engine === "booting";
     setState({
       position: createInitialPosition(),
       records: [],
@@ -382,7 +392,7 @@ function createGameStore() {
       selection: null,
       legalTargets: [],
       pendingPromotion: null,
-      status: "playerTurn",
+      status: awaitingEngine ? "loading" : "playerTurn",
       errorMessage: null,
     });
     saveGame([]);
@@ -412,6 +422,9 @@ function createGameStore() {
     cancelPendingSearch();
     generation++;
     const lastRecord = result.records[result.records.length - 1];
+    // Same boot wait as newGame().
+    const awaitingEngine =
+      state.settings.mode === "engine" && state.engine === "booting";
     setState({
       position: result.position,
       records: result.records,
@@ -419,7 +432,7 @@ function createGameStore() {
       selection: null,
       legalTargets: [],
       pendingPromotion: null,
-      status: "playerTurn",
+      status: awaitingEngine ? "loading" : "playerTurn",
       errorMessage: null,
     });
     saveGame(result.records.map((r) => r.usi));
@@ -432,13 +445,8 @@ function createGameStore() {
 
   async function startEngine(): Promise<void> {
     // The engine is always launched (mode may switch to "engine" later in
-    // the session, and that switch never retries a launch), but a launch
-    // failure must not discard the settings/saved game already restored
-    // synchronously above: it only turns into a blocking "error" status if
-    // the restored mode needs the engine. engineLaunchError is still
-    // recorded unconditionally, and survives newGame()/undo() (unlike
-    // errorMessage), so the title screen can warn the user if they pick
-    // engine mode later even after playing an unrelated human-mode game.
+    // the session, and that switch never retries a launch). A launch failure
+    // only blocks the current game if that game is waiting on the engine.
     let launchError: unknown = null;
     try {
       await engine.launch();
@@ -446,41 +454,31 @@ function createGameStore() {
       launchError = error;
     }
 
-    const mode = state.settings.mode;
-
     if (launchError) {
-      const errorMessage =
-        launchError instanceof Error
-          ? launchError.message
-          : String(launchError);
-      setState({ engineLaunchError: errorMessage });
-      if (mode === "engine") {
-        setState({ status: "error", errorMessage });
-        return;
+      // The UI only shows a generic Japanese message, so the cause (e.g.
+      // missing cross-origin isolation headers) goes to the console.
+      console.error("Engine launch failed:", launchError);
+      setState({ engine: "failed" });
+      if (state.status === "loading") {
+        setState({
+          status: "error",
+          errorMessage: ENGINE_LAUNCH_FAILED_MESSAGE,
+        });
       }
+      return;
     }
 
-    if (mode === "engine") {
+    setState({ engine: "ready" });
+    if (state.settings.mode === "engine") {
       engine.configure(difficultyLevelById(state.settings.difficultyLevel));
       engine.newGame();
     }
 
-    if (!hasReplayedGame) {
-      setState({ status: "playerTurn" });
-      return;
-    }
+    // Only a resumed engine game waits on the boot; any other status was set
+    // by the player in the meantime and must not be overwritten.
+    if (state.status !== "loading") return;
 
-    const resumedStatus = resumedGameStatus(
-      state.position,
-      mode,
-      resumedResignedBy,
-    );
-    if (resumedStatus !== "loading") {
-      setState({ status: resumedStatus });
-      return;
-    }
-
-    if (mode === "engine" && state.position.sideToMove === "white") {
+    if (state.position.sideToMove === "white") {
       setState({ status: "thinking" });
       void requestEngineMove();
       return;
@@ -497,6 +495,7 @@ function createGameStore() {
     selectSquare,
     selectHandPiece,
     confirmPromotion,
+    cancelPromotion,
     newGame,
     resign,
     undo,
