@@ -4,19 +4,14 @@
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 
-  /* Sole scaling knob. Layout overrides this per breakpoint. */
+  /* Sole scaling knob. Layout overrides this per breakpoint and derives the
+     board's other dimensions from it there. */
   --square-size: 56px;
 
   /* Coordinate label band width/height. Not derived from --square-size
-     (phase 3's --square-size formula subtracts this value, so deriving it
-     would create a circular reference). Capped so the font fits the band. */
+     (Layout's --square-size formula subtracts this value, so deriving it
+     would create a circular reference). */
   --coord-band: 1.3rem;
-  --coord-font-size: min(calc(var(--square-size) * 0.24), 0.75rem);
-
-  /* Dimensions derived from --square-size (no absolute values here). */
-  --piece-font-size: calc(var(--square-size) * 0.5);
-  --board-line-width: max(1px, calc(var(--square-size) * 0.018));
-  --board-edge-width: max(2px, calc(var(--square-size) * 0.045));
 
   /* Colors: light */
   --page-bg: #e9e2d4;

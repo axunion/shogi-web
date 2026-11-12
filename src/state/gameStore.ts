@@ -36,6 +36,10 @@ export type { LastMove };
 
 export type GameMode = "engine" | "human";
 
+export type EngineState = "booting" | "ready" | "failed";
+
+export const ENGINE_LAUNCH_FAILED_MESSAGE = "エンジンを起動できませんでした";
+
 export type GameStatus =
   | "loading" // a resumed engine game waiting for the engine to boot
   | "playerTurn"
@@ -100,14 +104,11 @@ interface GameState {
   pendingPromotion: PendingPromotion | null;
   status: GameStatus;
   errorMessage: string | null;
-  // Unlike errorMessage (cleared per-game by newGame()/undo()), this records
-  // an engine launch failure for the rest of the session — the launch is
-  // never retried, so the title screen keeps warning even after a game
-  // that didn't need the engine clears the per-game error.
-  engineLaunchError: string | null;
   // Tracked apart from status so a game that doesn't need the engine (human
-  // mode) is playable while it's still booting.
-  engineReady: boolean;
+  // mode) is playable while it's still booting. "failed" lasts for the rest
+  // of the session — the launch is never retried, so the title screen keeps
+  // warning even after an unrelated game clears the per-game errorMessage.
+  engine: EngineState;
   settings: Settings;
 }
 
@@ -169,8 +170,7 @@ function createGameStore() {
     pendingPromotion: null,
     status: initialStatus,
     errorMessage: null,
-    engineLaunchError: null,
-    engineReady: false,
+    engine: "booting",
     settings: initial.settings,
   });
 
@@ -369,12 +369,8 @@ function createGameStore() {
   function cancelPromotion() {
     const pending = state.pendingPromotion;
     if (!pending) return;
-    const selection: Selection = { kind: "square", square: pending.from };
-    setState({
-      pendingPromotion: null,
-      selection,
-      legalTargets: legalTargetsFor(selection),
-    });
+    setState({ pendingPromotion: null });
+    selectOwnSquare(pending.from);
   }
 
   function newGame(): void {
@@ -388,9 +384,7 @@ function createGameStore() {
     // "loading" so startEngine picks it up once the boot settles, instead of
     // letting a move reach an engine that can't answer.
     const awaitingEngine =
-      state.settings.mode === "engine" &&
-      !state.engineReady &&
-      !state.engineLaunchError;
+      state.settings.mode === "engine" && state.engine === "booting";
     setState({
       position: createInitialPosition(),
       records: [],
@@ -430,9 +424,7 @@ function createGameStore() {
     const lastRecord = result.records[result.records.length - 1];
     // Same boot wait as newGame().
     const awaitingEngine =
-      state.settings.mode === "engine" &&
-      !state.engineReady &&
-      !state.engineLaunchError;
+      state.settings.mode === "engine" && state.engine === "booting";
     setState({
       position: result.position,
       records: result.records,
@@ -454,10 +446,7 @@ function createGameStore() {
   async function startEngine(): Promise<void> {
     // The engine is always launched (mode may switch to "engine" later in
     // the session, and that switch never retries a launch). A launch failure
-    // is recorded for the rest of the session in engineLaunchError (which,
-    // unlike errorMessage, survives newGame()/undo()) so the title screen can
-    // warn whenever engine mode is picked, but it only blocks the current
-    // game if that game is waiting on the engine.
+    // only blocks the current game if that game is waiting on the engine.
     let launchError: unknown = null;
     try {
       await engine.launch();
@@ -466,24 +455,20 @@ function createGameStore() {
     }
 
     if (launchError) {
-      const errorMessage =
-        launchError instanceof Error
-          ? launchError.message
-          : String(launchError);
       // The UI only shows a generic Japanese message, so the cause (e.g.
       // missing cross-origin isolation headers) goes to the console.
       console.error("Engine launch failed:", launchError);
-      setState({ engineLaunchError: errorMessage });
+      setState({ engine: "failed" });
       if (state.status === "loading") {
         setState({
           status: "error",
-          errorMessage: "エンジンを起動できませんでした",
+          errorMessage: ENGINE_LAUNCH_FAILED_MESSAGE,
         });
       }
       return;
     }
 
-    setState({ engineReady: true });
+    setState({ engine: "ready" });
     if (state.settings.mode === "engine") {
       engine.configure(difficultyLevelById(state.settings.difficultyLevel));
       engine.newGame();

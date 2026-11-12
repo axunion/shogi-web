@@ -15,9 +15,10 @@
     calc((100svh - var(--vertical-fixed)) / 12.752),
     64px
   );
-  /* Re-derived here from the overridden --square-size: the :root copies in
-     index.css resolve against :root's own fixed size and ignore it. The
-     coordinate font keeps a floor so it stays readable on small phones. */
+  /* Derived here rather than on :root, where they would resolve against
+     :root's own --square-size and ignore this override. The coordinate font
+     has a floor so it stays readable on small phones and a cap so it fits
+     the coordinate band. */
   --piece-font-size: calc(var(--square-size) * 0.5);
   --coord-font-size: clamp(0.625rem, calc(var(--square-size) * 0.24), 0.75rem);
   --board-line-width: max(1px, calc(var(--square-size) * 0.018));
@@ -81,10 +82,11 @@
 @media (orientation: landscape) and (width < 64rem) {
   .layout {
     --hand-direction: column;
+    --side-col: 7rem;
     /* Board rows 9 + the coordinate band; same grid-gap/border correction
        as above (9 -> 9.252), plus 4px for the 1px floor on grid lines,
-       which outgrows that ratio at these small sizes. Horizontally, the two
-       fixed 7rem side columns, their gaps and the notch insets are reserved. */
+       which outgrows that ratio at these small sizes. Horizontally, the
+       two fixed side columns, their gaps and the notch insets are reserved. */
     --square-size: min(
       calc(
         (
@@ -103,7 +105,8 @@
           env(safe-area-inset-left) -
           env(safe-area-inset-right) -
           var(--coord-band) -
-          14rem -
+          var(--side-col) *
+          2 -
           var(--gap) *
           2
         ) /
@@ -113,7 +116,7 @@
     );
     /* Fixed side columns: sized by content, the turn text (which changes
        every ply) would resize its column and shift the centred board. */
-    grid-template-columns: 7rem auto 7rem;
+    grid-template-columns: var(--side-col) auto var(--side-col);
     grid-template-rows: 1fr auto;
     /* Tight so the opponent's hand plus a wrapped game result still fit
        beside the board on the shortest phones (568x320). */

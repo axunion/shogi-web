@@ -51,6 +51,21 @@ beforeEach(() => {
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
+// A launch the test settles by hand, to act while the engine is booting.
+function deferredLaunch() {
+  let resolve = () => {};
+  let reject: (error: Error) => void = () => {};
+  const promise = new Promise<void>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return {
+    launch: () => promise,
+    resolve: () => resolve(),
+    reject: (error: Error) => reject(error),
+  };
+}
+
 afterEach(() => {
   vi.restoreAllMocks();
   vi.doUnmock("../engine/usiEngine");
@@ -111,35 +126,29 @@ describe("resuming before the engine is ready", () => {
   });
 
   it("keeps a resumed engine game waiting until the engine is ready", async () => {
-    let finishLaunch = () => {};
+    const boot = deferredLaunch();
     const store = await loadStore({
       settings: { mode: "engine" },
       usiMoves: ["7g7f", "3c3d"],
-      launch: () =>
-        new Promise<void>((resolve) => {
-          finishLaunch = resolve;
-        }),
+      launch: boot.launch,
     });
 
     expect(store.state.status).toBe("loading");
-    expect(store.state.engineReady).toBe(false);
+    expect(store.state.engine).toBe("booting");
     const started = store.startEngine();
-    finishLaunch();
+    boot.resolve();
     await started;
 
-    expect(store.state.engineReady).toBe(true);
+    expect(store.state.engine).toBe("ready");
     expect(store.state.status).toBe("playerTurn");
   });
 
   it("keeps an engine game undone during boot waiting for the engine", async () => {
-    let finishLaunch = () => {};
+    const boot = deferredLaunch();
     const store = await loadStore({
       settings: { mode: "engine" },
       usiMoves: ["7g7f", "3c3d"],
-      launch: () =>
-        new Promise<void>((resolve) => {
-          finishLaunch = resolve;
-        }),
+      launch: boot.launch,
     });
 
     const started = store.startEngine();
@@ -147,20 +156,17 @@ describe("resuming before the engine is ready", () => {
     expect(store.usiMoves()).toEqual([]);
     expect(store.state.status).toBe("loading");
 
-    finishLaunch();
+    boot.resolve();
     await started;
     expect(store.state.status).toBe("playerTurn");
   });
 
   it("keeps an engine game restarted during boot waiting for the engine", async () => {
-    let finishLaunch = () => {};
+    const boot = deferredLaunch();
     const store = await loadStore({
       settings: { mode: "engine" },
       usiMoves: ["7g7f", "3c3d"],
-      launch: () =>
-        new Promise<void>((resolve) => {
-          finishLaunch = resolve;
-        }),
+      launch: boot.launch,
     });
 
     const started = store.startEngine();
@@ -168,44 +174,38 @@ describe("resuming before the engine is ready", () => {
     expect(store.usiMoves()).toEqual([]);
     expect(store.state.status).toBe("loading");
 
-    finishLaunch();
+    boot.resolve();
     await started;
     expect(store.state.status).toBe("playerTurn");
   });
 
   it("blocks an engine game undone during boot when the launch then fails", async () => {
-    let failLaunch = () => {};
+    const boot = deferredLaunch();
     const store = await loadStore({
       settings: { mode: "engine" },
       usiMoves: ["7g7f", "3c3d"],
-      launch: () =>
-        new Promise<void>((_, reject) => {
-          failLaunch = () => reject(new Error("boom"));
-        }),
+      launch: boot.launch,
     });
 
     const started = store.startEngine();
     store.undo();
-    failLaunch();
+    boot.reject(new Error("boom"));
     await started;
 
     expect(store.state.status).toBe("error");
   });
 
   it("does not overwrite a resignation made while the engine boots", async () => {
-    let finishLaunch = () => {};
+    const boot = deferredLaunch();
     const store = await loadStore({
       settings: { mode: "human" },
       usiMoves: ["7g7f"],
-      launch: () =>
-        new Promise<void>((resolve) => {
-          finishLaunch = resolve;
-        }),
+      launch: boot.launch,
     });
 
     const started = store.startEngine();
     store.resign();
-    finishLaunch();
+    boot.resolve();
     await started;
 
     expect(store.state.status).toBe("whiteResigned");
@@ -220,8 +220,7 @@ describe("resuming before the engine is ready", () => {
     await store.startEngine();
 
     expect(store.state.status).toBe("playerTurn");
-    expect(store.state.engineReady).toBe(false);
-    expect(store.state.engineLaunchError).toBe("boom");
+    expect(store.state.engine).toBe("failed");
   });
 
   it("blocks a resumed engine game when the engine fails to launch", async () => {
