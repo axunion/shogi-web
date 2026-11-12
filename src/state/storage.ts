@@ -3,9 +3,12 @@ import type { Settings } from "./gameStore";
 
 const GAME_KEY = "shogi-web:game";
 const SETTINGS_KEY = "shogi-web:settings";
+const SCREEN_KEY = "shogi-web:screen";
 const SCHEMA_VERSION = 1;
 
 const USI_MOVE_RE = /^(?:[1-9][a-i][1-9][a-i]\+?|[PLNSGBR]\*[1-9][a-i])$/;
+
+export type Screen = "title" | "game";
 
 export type ResignedBy = "player" | "black" | "white" | "engine" | "engineWin";
 
@@ -106,6 +109,11 @@ export function parseSavedSettings(
   return result;
 }
 
+/** Pure: validates a saved screen value. Returns null when unusable. */
+export function parseSavedScreen(raw: string | null): Screen | null {
+  return raw === "title" || raw === "game" ? raw : null;
+}
+
 export function loadGame(): ParsedSavedGame | null {
   try {
     return parseSavedGame(localStorage.getItem(GAME_KEY));
@@ -147,6 +155,22 @@ export function loadSettings(): Partial<Settings> | null {
 export function saveSettings(settings: Settings): void {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    // best-effort, see saveGame
+  }
+}
+
+export function loadScreen(): Screen | null {
+  try {
+    return parseSavedScreen(localStorage.getItem(SCREEN_KEY));
+  } catch {
+    return null;
+  }
+}
+
+export function saveScreen(screen: Screen): void {
+  try {
+    localStorage.setItem(SCREEN_KEY, screen);
   } catch {
     // best-effort, see saveGame
   }

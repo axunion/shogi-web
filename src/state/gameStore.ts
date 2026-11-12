@@ -489,6 +489,9 @@ function createGameStore() {
 
   return {
     state,
+    // Whether a saved game (possibly with zero moves) was restored, so App can
+    // put the player back on the game screen they reloaded from.
+    resumedFromSave: hasReplayedGame,
     usiMoves,
     checkedKingSquare,
     startEngine,
