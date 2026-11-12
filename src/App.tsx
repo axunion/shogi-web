@@ -14,6 +14,8 @@ import { squareIndex } from "./domain/sfen";
 import type { Color, MoveRecord, PieceType } from "./domain/types";
 import type { GameMode } from "./state/gameStore";
 import { gameStore, isGameOver } from "./state/gameStore";
+import type { Screen } from "./state/storage";
+import { loadScreen, saveScreen } from "./state/storage";
 import { applyColorScheme } from "./theme/colorScheme";
 import { lishogiKanjiLightTheme } from "./theme/lishogiKanjiLightTheme";
 import { pieceThemeById } from "./theme/registry";
@@ -37,12 +39,16 @@ function App() {
     resign,
     undo,
     setSettings,
+    resumedFromSave,
   } = gameStore;
 
   const hasResumableGame = () => state.records.length > 0;
-  const [screen, setScreen] = createSignal<"title" | "game">(
-    hasResumableGame() && !isGameOver(state.status) ? "game" : "title",
+  // Reload returns to the screen the player was last on. Without a restored
+  // save there's no game to show, so the title screen is the only option.
+  const [screen, setScreen] = createSignal<Screen>(
+    resumedFromSave && loadScreen() === "game" ? "game" : "title",
   );
+  createEffect(() => saveScreen(screen()));
 
   function handleStart(mode: GameMode, difficultyLevel: number) {
     setSettings({ mode, difficultyLevel });

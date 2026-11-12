@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { DIFFICULTY_LEVELS } from "../engine/difficulty";
-import { parseSavedGame, parseSavedSettings } from "./storage";
+import {
+  parseSavedGame,
+  parseSavedScreen,
+  parseSavedSettings,
+} from "./storage";
 
 const SCHEMA_VERSION = 1;
 
@@ -150,5 +154,22 @@ describe("parseSavedSettings", () => {
     expect(
       parseSavedSettings(JSON.stringify({ colorScheme: "invalid" })),
     ).toEqual({});
+  });
+});
+
+describe("parseSavedScreen", () => {
+  it("accepts the title and game screens", () => {
+    expect(parseSavedScreen("title")).toBe("title");
+    expect(parseSavedScreen("game")).toBe("game");
+  });
+
+  it("returns null when nothing is saved", () => {
+    expect(parseSavedScreen(null)).toBeNull();
+  });
+
+  it("rejects unknown values", () => {
+    expect(parseSavedScreen("")).toBeNull();
+    expect(parseSavedScreen("Game")).toBeNull();
+    expect(parseSavedScreen('"game"')).toBeNull();
   });
 });
