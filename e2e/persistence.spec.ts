@@ -42,6 +42,20 @@ test("stays on the title screen on reload after leaving a game for it", async ({
 
   await page.reload();
 
+  await page.getByRole("button", { name: "対局を始める" }).click();
+  await page.getByRole("button", { name: "続きから" }).click();
+  await expect(page.getByText("▲7六歩")).toBeVisible();
+});
+
+test("shows the title screen when the game screen was saved without a game", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("shogi-web:screen", "game");
+  });
+
+  await page.goto("/");
+
   await expect(
     page.getByRole("button", { name: "対局を始める" }),
   ).toBeVisible();
