@@ -35,6 +35,19 @@ const RESULT_REASON: Partial<Record<GameStatus, string>> = {
   whiteResigned: "後手が投了しました",
 };
 
+type Outcome = "win" | "lose" | "neutral";
+
+// Face-to-face games have no "you", so they get the neutral stamp.
+const OUTCOME: Partial<Record<GameStatus, Outcome>> = {
+  engineResigned: "win",
+  engineMated: "win",
+  playerMated: "lose",
+  playerResigned: "lose",
+  engineDeclaredWin: "lose",
+};
+
+const STAMP: Record<Outcome, string> = { win: "勝", lose: "負", neutral: "終" };
+
 export function ResultOverlay(props: ResultOverlayProps) {
   const [open, setOpen] = createSignal(false);
 
@@ -47,6 +60,8 @@ export function ResultOverlay(props: ResultOverlayProps) {
     ),
   );
 
+  const outcome = (): Outcome => OUTCOME[props.status] ?? "neutral";
+
   function handleRematch() {
     setOpen(false);
     props.onRematch();
@@ -57,7 +72,16 @@ export function ResultOverlay(props: ResultOverlayProps) {
       <Dialog.Portal>
         <Dialog.Overlay class={dialogStyles.overlay} />
         <div class={dialogStyles.positioner}>
-          <Dialog.Content class={styles.dialog}>
+          <Dialog.Content
+            class={styles.dialog}
+            classList={{
+              [styles.win]: outcome() === "win",
+              [styles.lose]: outcome() === "lose",
+            }}
+          >
+            <span class={styles.stamp} aria-hidden="true">
+              {STAMP[outcome()]}
+            </span>
             <Dialog.Title class={styles.title}>
               {RESULT_LABEL[props.status]}
             </Dialog.Title>
