@@ -1,58 +1,8 @@
 /* Game screen grid. Four arrangements (see docs/ui-design.md):
-   portrait < 64rem, landscape < 64rem, 64–80rem, and >= 80rem. Each one sets
-   --square-size from the space left after its fixed chrome, so the board
-   always takes whatever room the other parts don't need.
-
-   The board's 9 rows/columns grow slightly faster than --square-size
-   (Board.module.css's grid gap and border scale with it: 8 gaps * 0.018 +
-   2 borders * 0.045 = +0.234 per square); 9.252 keeps a little slack. */
+   portrait < 64rem, landscape < 64rem, 64–80rem, and >= 80rem. The board
+   size and other custom properties they rely on come from
+   LayoutSizing.module.css, applied to the same root element. */
 .layout {
-  --gap: var(--space-2);
-  --hand-piece-scale: 0.8;
-  /* Row-mode plate: one slot tall plus padding and border. */
-  --plate-chrome: calc(var(--space-2) * 2 + 2px);
-  --header-height: calc(var(--tap-size) + var(--space-1) * 2);
-  --actions-height: 4rem;
-  /* Height of the portrait kifu strip; 0 where it isn't shown. */
-  --kifu-strip-height: 0px;
-  --square-size: min(
-    calc((100vw - var(--space-4) - var(--coord-band)) / 9.252),
-    calc(
-      (
-        100svh -
-        var(--header-height) -
-        var(--actions-height) -
-        var(--gap) *
-        7 -
-        var(--coord-band) -
-        var(--plate-chrome) *
-        2 -
-        var(--kifu-strip-height) -
-        env(safe-area-inset-top) -
-        max(var(--space-2), env(safe-area-inset-bottom))
-      ) /
-      10.852
-    ),
-    64px
-  );
-  --piece-font-size: calc(var(--square-size) * 0.5);
-  --coord-font-size: clamp(0.625rem, calc(var(--square-size) * 0.24), 0.75rem);
-  --board-line-width: max(1px, calc(var(--square-size) * 0.018));
-  --board-edge-width: max(2px, calc(var(--square-size) * 0.045));
-  /* The board's full outer width, coordinate band included, so row-mode
-     plates line up exactly with its edges. */
-  --board-outer-width: calc(
-    var(--square-size) *
-    9 +
-    var(--board-line-width) *
-    8 +
-    var(--board-edge-width) *
-    2 +
-    var(--coord-band)
-  );
-  --hand-direction: row;
-  --plate-width: var(--board-outer-width);
-
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto 1fr auto auto auto auto 1fr auto;
@@ -151,10 +101,6 @@
 /* Tall portrait screens have room to spare below the board: a one-line
    strip of recent moves uses it (the full list stays behind 棋譜). */
 @media (orientation: portrait) and (height >= 44rem) and (width < 64rem) {
-  .layout {
-    --kifu-strip-height: 2.25rem;
-  }
-
   .kifu {
     --kifu-flow: row;
     --kifu-empty-padding: 0 var(--space-2);
@@ -178,43 +124,6 @@
    hand in a column to its right. */
 @media (orientation: landscape) and (width < 64rem) {
   .layout {
-    --hand-direction: column;
-    --hand-wrap: wrap;
-    --side-col: 7rem;
-    --plate-width: var(--side-col);
-    /* Board rows 9 + the coordinate band; plus 4px for the 1px floor on
-       grid lines, which outgrows the 9.252 ratio at these small sizes.
-       Horizontally, the two side columns, their gaps and the notch insets
-       are reserved. */
-    --square-size: min(
-      calc(
-        (
-          100svh -
-          var(--space-4) -
-          4px -
-          var(--coord-band) -
-          env(safe-area-inset-top) -
-          env(safe-area-inset-bottom)
-        ) /
-        9.252
-      ),
-      calc(
-        (
-          100vw -
-          var(--space-4) -
-          env(safe-area-inset-left) -
-          env(safe-area-inset-right) -
-          var(--coord-band) -
-          var(--side-col) *
-          2 -
-          var(--gap) *
-          2
-        ) /
-        9.252
-      ),
-      64px
-    );
-
     grid-template-columns: var(--side-col) auto var(--side-col);
     grid-template-rows: auto 1fr auto;
     grid-template-areas:
@@ -260,33 +169,6 @@
    status, kifu, and actions on the right. */
 @media (width >= 64rem) {
   .layout {
-    --gap: var(--space-3);
-    --side-width: 18rem;
-    --header-height: 3.5rem;
-    --square-size: min(
-      calc(
-        (100vw - var(--side-width) - var(--space-5) * 3 - var(--coord-band)) /
-        9.252
-      ),
-      calc(
-        (
-          100svh -
-          var(--header-height) -
-          var(--space-4) -
-          var(--gap) *
-          5 -
-          var(--coord-band) -
-          var(--plate-chrome) *
-          2
-        ) /
-        10.852
-      ),
-      96px
-    );
-    /* Larger squares need a relatively bigger glyph to avoid looking
-       sparse — the mobile ratio (0.5) leaves visible dead space here. */
-    --piece-font-size: calc(var(--square-size) * 0.6);
-
     grid-template-columns: minmax(0, 1fr) var(--side-width);
     grid-template-rows: auto 1fr auto auto auto 1fr;
     grid-template-areas:
@@ -345,40 +227,6 @@
    the traditional places, which lets the board grow taller. */
 @media (width >= 80rem) {
   .layout {
-    --side-width: 20rem;
-    --hand-direction: column;
-    --hand-wrap: wrap;
-    --plate-width: calc(var(--square-size) * 1.75 + var(--space-4) + 2px);
-    --square-size: min(
-      calc(
-        (
-          100vw -
-          var(--side-width) -
-          var(--space-5) *
-          2 -
-          var(--space-4) *
-          5 -
-          var(--coord-band) -
-          var(--space-4) *
-          2 -
-          4px
-        ) /
-        12.752
-      ),
-      calc(
-        (
-          100svh -
-          var(--header-height) -
-          var(--space-4) -
-          var(--gap) *
-          4 -
-          var(--coord-band)
-        ) /
-        9.252
-      ),
-      96px
-    );
-
     grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr) var(
         --side-width
       );

@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js";
 import styles from "./Layout.module.css";
+import sizing from "./LayoutSizing.module.css";
 
 interface LayoutProps {
   header: JSX.Element;
@@ -13,7 +14,7 @@ interface LayoutProps {
 
 export function Layout(props: LayoutProps) {
   return (
-    <div class={styles.layout}>
+    <div class={`${styles.layout} ${sizing.sizing}`}>
       <header class={styles.header}>{props.header}</header>
       <div class={styles.opponentHand}>{props.opponentHand}</div>
       <main class={styles.board}>{props.board}</main>
