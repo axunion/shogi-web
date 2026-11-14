@@ -51,7 +51,14 @@ const STAMP: Record<Outcome, string> = { win: "勝", lose: "負", neutral: "終"
 
 export function ResultOverlay(props: ResultOverlayProps) {
   const [open, setOpen] = createSignal(false);
-  const returnFocus = createFocusReturn(open);
+  // The result usually opens from a control the ending itself removed (the
+  // resign confirmation, the promotion dialog), so fall back to the action
+  // bar, whose first enabled button is then もう一局.
+  const returnFocus = createFocusReturn(open, () =>
+    document.querySelector<HTMLElement>(
+      '[aria-label="対局操作"] button:not(:disabled)',
+    ),
+  );
 
   createEffect(
     on(

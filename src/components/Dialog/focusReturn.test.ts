@@ -9,6 +9,21 @@ function button(label: string): HTMLButtonElement {
   return element;
 }
 
+function closeEvent(): Event {
+  return new Event("close", { cancelable: true });
+}
+
+// Runs `fn` in a reactive root that is disposed even if an assertion throws.
+function inRoot(fn: () => void) {
+  createRoot((dispose) => {
+    try {
+      fn();
+    } finally {
+      dispose();
+    }
+  });
+}
+
 afterEach(() => {
   document.body.replaceChildren();
 });
@@ -19,19 +34,43 @@ describe("createFocusReturn", () => {
     const inside = button("inside");
     opener.focus();
 
-    createRoot((dispose) => {
+    inRoot(() => {
       const [open, setOpen] = createSignal(false);
       const onCloseAutoFocus = createFocusReturn(open);
 
       setOpen(true);
       inside.focus();
       setOpen(false);
-      const event = new Event("close", { cancelable: true });
+      const event = closeEvent();
       onCloseAutoFocus(event);
 
       expect(document.activeElement).toBe(opener);
       expect(event.defaultPrevented).toBe(true);
-      dispose();
+    });
+  });
+
+  it("returns to the latest opener when reopened from another element", () => {
+    const first = button("first");
+    const second = button("second");
+    const inside = button("inside");
+
+    inRoot(() => {
+      const [open, setOpen] = createSignal(false);
+      const onCloseAutoFocus = createFocusReturn(open);
+
+      first.focus();
+      setOpen(true);
+      inside.focus();
+      setOpen(false);
+      onCloseAutoFocus(closeEvent());
+
+      second.focus();
+      setOpen(true);
+      inside.focus();
+      setOpen(false);
+      onCloseAutoFocus(closeEvent());
+
+      expect(document.activeElement).toBe(second);
     });
   });
 
@@ -39,32 +78,50 @@ describe("createFocusReturn", () => {
     const opener = button("opener");
     opener.focus();
 
-    createRoot((dispose) => {
+    inRoot(() => {
       const [open, setOpen] = createSignal(false);
       const onCloseAutoFocus = createFocusReturn(open);
 
       setOpen(true);
       opener.remove();
-      const event = new Event("close", { cancelable: true });
+      const event = closeEvent();
       onCloseAutoFocus(event);
 
       expect(event.defaultPrevented).toBe(false);
-      dispose();
+      expect(document.activeElement).not.toBe(opener);
     });
   });
 
-  it("refocuses the opener when unmounted while still open", async () => {
+  it("uses the fallback when the opener is gone", () => {
     const opener = button("opener");
-    const inside = button("inside");
+    const fallback = button("fallback");
     opener.focus();
 
-    createRoot((dispose) => {
-      createFocusReturn(() => true);
-      inside.focus();
-      dispose();
-    });
-    await Promise.resolve();
+    inRoot(() => {
+      const [open, setOpen] = createSignal(false);
+      const onCloseAutoFocus = createFocusReturn(open, () => fallback);
 
-    expect(document.activeElement).toBe(opener);
+      setOpen(true);
+      opener.remove();
+      const event = closeEvent();
+      onCloseAutoFocus(event);
+
+      expect(document.activeElement).toBe(fallback);
+      expect(event.defaultPrevented).toBe(true);
+    });
+  });
+
+  it("uses the fallback when nothing had focus at open", () => {
+    const fallback = button("fallback");
+
+    inRoot(() => {
+      const [open, setOpen] = createSignal(false);
+      const onCloseAutoFocus = createFocusReturn(open, () => fallback);
+
+      setOpen(true);
+      onCloseAutoFocus(closeEvent());
+
+      expect(document.activeElement).toBe(fallback);
+    });
   });
 });
