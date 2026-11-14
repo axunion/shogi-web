@@ -53,7 +53,8 @@ export function ResultOverlay(props: ResultOverlayProps) {
   const [open, setOpen] = createSignal(false);
   // The result usually opens from a control the ending itself removed (the
   // resign confirmation, the promotion dialog), so fall back to the action
-  // bar, whose first enabled button is then もう一局.
+  // bar's first enabled button: もう一局 after 閉じる, or the new game's first
+  // available action after もう一局.
   const returnFocus = createFocusReturn(open, () =>
     document.querySelector<HTMLElement>(
       '[aria-label="対局操作"] button:not(:disabled)',

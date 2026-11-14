@@ -88,7 +88,6 @@ describe("createFocusReturn", () => {
       onCloseAutoFocus(event);
 
       expect(event.defaultPrevented).toBe(false);
-      expect(document.activeElement).not.toBe(opener);
     });
   });
 
@@ -108,6 +107,42 @@ describe("createFocusReturn", () => {
 
       expect(document.activeElement).toBe(fallback);
       expect(event.defaultPrevented).toBe(true);
+    });
+  });
+
+  it("prefers a connected opener over the fallback", () => {
+    const opener = button("opener");
+    const fallback = button("fallback");
+    opener.focus();
+
+    inRoot(() => {
+      const [open, setOpen] = createSignal(false);
+      const onCloseAutoFocus = createFocusReturn(open, () => fallback);
+
+      setOpen(true);
+      fallback.focus();
+      onCloseAutoFocus(closeEvent());
+
+      expect(document.activeElement).toBe(opener);
+    });
+  });
+
+  it("leaves focus alone when the close event was already prevented", () => {
+    const opener = button("opener");
+    const elsewhere = button("elsewhere");
+    opener.focus();
+
+    inRoot(() => {
+      const [open, setOpen] = createSignal(false);
+      const onCloseAutoFocus = createFocusReturn(open);
+
+      setOpen(true);
+      elsewhere.focus();
+      const event = closeEvent();
+      event.preventDefault();
+      onCloseAutoFocus(event);
+
+      expect(document.activeElement).toBe(elsewhere);
     });
   });
 

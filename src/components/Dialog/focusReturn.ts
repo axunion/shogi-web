@@ -28,6 +28,9 @@ export function createFocusReturn(
   return (event: Event) => {
     const recorded = opener;
     opener = null;
+    // Kobalte pre-prevents this when focus already moved somewhere else on
+    // purpose (e.g. into a dialog that opened as this one closed).
+    if (event.defaultPrevented) return;
     const target = recorded?.isConnected ? recorded : (fallback?.() ?? null);
     if (!target) return;
     event.preventDefault();
