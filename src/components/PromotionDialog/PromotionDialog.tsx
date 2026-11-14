@@ -23,7 +23,13 @@ export function PromotionDialog(props: PromotionDialogProps) {
       <Dialog.Portal>
         <Dialog.Overlay class={dialogStyles.overlay} />
         <div class={dialogStyles.positioner}>
-          <Dialog.Content class={styles.dialog} onCloseAutoFocus={returnFocus}>
+          <Dialog.Content
+            class={styles.dialog}
+            // Explicit: rendered without it, Kobalte exposes this content
+            // as an alertdialog, which is for interruptive warnings.
+            role="dialog"
+            onCloseAutoFocus={returnFocus}
+          >
             <Dialog.Title class={styles.title}>成りますか?</Dialog.Title>
             <div class={styles.actions}>
               <DialogButton onClick={() => props.onChoose(false)}>

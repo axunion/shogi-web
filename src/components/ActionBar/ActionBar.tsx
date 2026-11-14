@@ -105,6 +105,9 @@ export function ActionBar(props: ActionBarProps) {
           <Dialog.Overlay class={styles.sheetOverlay} />
           <Dialog.Content
             class={styles.sheet}
+            // Explicit: rendered without it, Kobalte exposes this content
+            // as an alertdialog, which is for interruptive warnings.
+            role="dialog"
             onCloseAutoFocus={returnFocusFromKifu}
           >
             <div class={styles.sheetHeader}>

@@ -84,6 +84,9 @@ export function ResultOverlay(props: ResultOverlayProps) {
         <div class={dialogStyles.positioner}>
           <Dialog.Content
             class={styles.dialog}
+            // Explicit: rendered without it, Kobalte exposes this content
+            // as an alertdialog, which is for interruptive warnings.
+            role="dialog"
             onCloseAutoFocus={returnFocus}
             classList={{
               [styles.win]: outcome() === "win",
