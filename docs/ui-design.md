@@ -25,16 +25,24 @@ interaction decisions; `inspector` runs and reviews judge the UI against it.
 
 | Viewport | Structure |
 | --- | --- |
-| Portrait, < 64rem | Header → status → opponent plate → board → own plate → bottom action bar (fixed, thumb reach). Kifu opens as a bottom sheet. |
+| Portrait, < 64rem | Header (status centred in it) → opponent plate → board → own plate → bottom action bar (thumb reach). Tall screens add a one-line strip of recent moves; the full kifu opens as a bottom sheet. |
 | Landscape, < 64rem | Three columns: left = compact header, opponent plate, status; centre = board; right = action buttons, own plate. |
 | 64rem – 80rem | Header across the top; main column stacks opponent plate, board, own plate; right side panel holds status card, kifu, actions. |
 | ≥ 80rem | Same as above, but plates stand beside the board in the traditional places (opponent top-left, own bottom-right). |
 
-The header holds: back to title (with confirmation), mode and level, sound toggle,
-and the settings popover (color scheme, piece theme) shared with the title screen.
+The header holds: back to title (with confirmation), mode and level, and the
+settings popover (color scheme, piece theme, sound) shared with the title screen.
+Sound is a setting rather than an action, so it lives there instead of the bar.
 
 The status shows whose turn it is, check, errors, and the latest move
 (`12手目 ▲7六歩`).
+
+## Title screen
+
+A centred column (emblem, mode, difficulty, start); short landscape phones put
+the emblem in its own column beside the rest so nothing scrolls. A saved game in
+progress gets a visible 続きから button instead of being reachable only through
+the dialog that 対局を始める opens.
 
 ## Out of scope
 

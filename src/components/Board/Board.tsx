@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For, Show } from "solid-js";
+import { createEffect, createSignal, For, on, Show } from "solid-js";
 import { sameSquare } from "../../domain/moves";
 import { colorLabel, RANK_KANJI } from "../../domain/notation";
 import { squareIndex } from "../../domain/sfen";
@@ -22,6 +22,9 @@ interface BoardProps {
   lastMove?: LastMove | null;
   checkSquare?: Square | null;
   flipped?: boolean;
+  /** Bumped by the caller each time a move gives check; replays the 王手
+      banner even when consecutive moves both check. */
+  checkAnnouncement?: number;
   onSquareClick?: (square: Square) => void;
 }
 
@@ -77,6 +80,16 @@ function squareAriaLabel(square: Square, piece: Piece | null): string {
 export function Board(props: BoardProps) {
   const orderedFiles = () => (props.flipped ? [...FILES].reverse() : FILES);
   const orderedRanks = () => (props.flipped ? [...RANKS].reverse() : RANKS);
+
+  // Local copy so the banner can clear itself once its animation ends.
+  const [checkBanner, setCheckBanner] = createSignal(0);
+  createEffect(
+    on(
+      () => props.checkAnnouncement ?? 0,
+      (count) => setCheckBanner(count),
+      { defer: true },
+    ),
+  );
 
   return (
     <div class={styles.wrapper}>
@@ -184,6 +197,15 @@ export function Board(props: BoardProps) {
           )}
         </For>
       </div>
+      <Show when={checkBanner()} keyed>
+        <div
+          class={styles.checkBanner}
+          aria-hidden="true"
+          onAnimationEnd={() => setCheckBanner(0)}
+        >
+          王手
+        </div>
+      </Show>
       <div class={styles.rankLabels}>
         <For each={orderedRanks()}>
           {(rank) => <div class={styles.rankLabel}>{RANK_KANJI[rank - 1]}</div>}

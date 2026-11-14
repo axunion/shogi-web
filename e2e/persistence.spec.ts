@@ -1,4 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
+
+// The move appears in both the kifu list and the status line, so assertions
+// are scoped to the kifu section to keep them unambiguous.
+function kifuMove(page: Page, notation: string) {
+  return page
+    .getByRole("region", { name: "棋譜" })
+    .getByText(notation, { exact: true });
+}
 
 // Regression coverage for a real past bug (see "Fix stale engine bestmoves,
 // lost saves, and kifu panel scroll" in git history): a reload used to lose
@@ -13,11 +21,11 @@ test("restores an in-progress game after reload", async ({ page }) => {
   await page.getByRole("button", { name: "7七 先手 歩" }).click();
   await page.getByRole("button", { name: "7六 空" }).click();
 
-  await expect(page.getByText("▲7六歩")).toBeVisible();
+  await expect(kifuMove(page, "▲7六歩")).toBeVisible();
 
   await page.reload();
 
-  await expect(page.getByText("▲7六歩")).toBeVisible();
+  await expect(kifuMove(page, "▲7六歩")).toBeVisible();
   await expect(page.getByRole("button", { name: "7六 先手 歩" })).toBeVisible();
 });
 
@@ -31,11 +39,12 @@ test("stays on the title screen on reload after leaving a game for it", async ({
 
   await page.getByRole("button", { name: "7七 先手 歩" }).click();
   await page.getByRole("button", { name: "7六 空" }).click();
-  await expect(page.getByText("▲7六歩")).toBeVisible();
+  await expect(kifuMove(page, "▲7六歩")).toBeVisible();
 
-  await page.getByRole("button", { name: "メニュー" }).click();
-  await page.getByRole("button", { name: "タイトルへ戻る" }).click();
-  await page.getByRole("button", { name: "タイトルへ戻る" }).last().click();
+  await page.getByRole("button", { name: "タイトルへ", exact: true }).click();
+  await page
+    .getByRole("button", { name: "タイトルへ戻る", exact: true })
+    .click();
   await expect(
     page.getByRole("button", { name: "対局を始める" }),
   ).toBeVisible();
@@ -43,8 +52,11 @@ test("stays on the title screen on reload after leaving a game for it", async ({
   await page.reload();
 
   await page.getByRole("button", { name: "対局を始める" }).click();
-  await page.getByRole("button", { name: "続きから" }).click();
-  await expect(page.getByText("▲7六歩")).toBeVisible();
+  await page
+    .getByRole("alertdialog")
+    .getByRole("button", { name: "続きから" })
+    .click();
+  await expect(kifuMove(page, "▲7六歩")).toBeVisible();
 });
 
 test("shows the title screen when the game screen was saved without a game", async ({
@@ -100,7 +112,9 @@ test("stays on the game screen on reload after the game ended", async ({
   await expect(
     page.getByRole("heading", { name: "後手の勝ちです" }),
   ).toBeVisible();
-  await expect(page.getByText("▲7六歩")).toBeVisible();
+  // The result dialog is modal, so role queries skip the kifu panel behind it;
+  // the status line still shows the last move.
+  await expect(page.getByText("1手目 ▲7六歩", { exact: true })).toBeVisible();
 });
 
 test("keeps the resumable game when starting a new one is declined", async ({
@@ -113,11 +127,12 @@ test("keeps the resumable game when starting a new one is declined", async ({
 
   await page.getByRole("button", { name: "7七 先手 歩" }).click();
   await page.getByRole("button", { name: "7六 空" }).click();
-  await expect(page.getByText("▲7六歩")).toBeVisible();
+  await expect(kifuMove(page, "▲7六歩")).toBeVisible();
 
-  await page.getByRole("button", { name: "メニュー" }).click();
-  await page.getByRole("button", { name: "タイトルへ戻る" }).click();
-  await page.getByRole("button", { name: "タイトルへ戻る" }).last().click();
+  await page.getByRole("button", { name: "タイトルへ", exact: true }).click();
+  await page
+    .getByRole("button", { name: "タイトルへ戻る", exact: true })
+    .click();
 
   await page.getByRole("button", { name: "対局を始める" }).click();
   await expect(
@@ -126,8 +141,11 @@ test("keeps the resumable game when starting a new one is declined", async ({
     ),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "続きから" }).click();
-  await expect(page.getByText("▲7六歩")).toBeVisible();
+  await page
+    .getByRole("alertdialog")
+    .getByRole("button", { name: "続きから" })
+    .click();
+  await expect(kifuMove(page, "▲7六歩")).toBeVisible();
 });
 
 test("discards the resumable game when starting a new one is confirmed", async ({
@@ -140,16 +158,17 @@ test("discards the resumable game when starting a new one is confirmed", async (
 
   await page.getByRole("button", { name: "7七 先手 歩" }).click();
   await page.getByRole("button", { name: "7六 空" }).click();
-  await expect(page.getByText("▲7六歩")).toBeVisible();
+  await expect(kifuMove(page, "▲7六歩")).toBeVisible();
 
-  await page.getByRole("button", { name: "メニュー" }).click();
-  await page.getByRole("button", { name: "タイトルへ戻る" }).click();
-  await page.getByRole("button", { name: "タイトルへ戻る" }).last().click();
+  await page.getByRole("button", { name: "タイトルへ", exact: true }).click();
+  await page
+    .getByRole("button", { name: "タイトルへ戻る", exact: true })
+    .click();
 
   await page.getByRole("button", { name: "対局を始める" }).click();
   await page.getByRole("button", { name: "新しく始める" }).click();
 
-  await expect(page.getByText("▲7六歩")).not.toBeVisible();
+  await expect(kifuMove(page, "▲7六歩")).not.toBeVisible();
 });
 
 // The engine is irrelevant to a face-to-face game, so a resumed one must be
@@ -180,5 +199,5 @@ test("lets a resumed face-to-face game be played while the engine boots", async 
   await page.getByRole("button", { name: "3三 後手 歩" }).click();
   await page.getByRole("button", { name: "3四 空" }).click();
 
-  await expect(page.getByText("△3四歩")).toBeVisible();
+  await expect(kifuMove(page, "△3四歩")).toBeVisible();
 });

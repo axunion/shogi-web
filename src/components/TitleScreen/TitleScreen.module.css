@@ -25,62 +25,6 @@
   color: var(--page-text);
 }
 
-/* Icon-only, no pill/border — the corner utility control stays out of the
-   way of the otherwise unboxed hero composition. */
-.settingsButton {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  padding: 0;
-  color: var(--page-text);
-  background: none;
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  opacity: 0.55;
-  transition:
-    opacity 0.15s,
-    background-color 0.15s;
-}
-
-.settingsButton:hover {
-  opacity: 0.85;
-  background: color-mix(in srgb, var(--page-text) 10%, transparent);
-}
-
-.settingsButton:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
-.settingsButtonActive {
-  opacity: 1;
-  background: color-mix(in srgb, var(--page-text) 12%, transparent);
-}
-
-.settingsPanel {
-  display: flex;
-  flex-direction: column;
-  min-width: 13rem;
-  padding: 1.3rem 1rem;
-  background: var(--panel-bg);
-  color: var(--dialog-text);
-  border: 1px solid var(--panel-border);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
-}
-
-.settingsColorOptions {
-  display: flex;
-  justify-content: center;
-  gap: 0.6rem;
-}
-
 /* Legend text is kept for screen readers but hidden visually — icons and
    layout carry the meaning, so a visible caption would just repeat it. */
 .srOnly {
@@ -95,51 +39,11 @@
   border: 0;
 }
 
-/* Each settings group carries its own top/bottom spacing (rather than a
-   shared flex gap) so a border can sit cleanly between the two without
-   double-spacing. Legends are sr-only, so this line is the only visual
-   separator between "color scheme" and "piece style". */
-.settingsPanel fieldset {
-  padding-bottom: 1.1rem;
-}
-
-.settingsPanel fieldset + fieldset {
-  padding-top: 1.1rem;
-  padding-bottom: 0;
-  border-top: 1px solid var(--panel-border);
-}
-
-.colorSchemeButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  color: var(--panel-text);
-  background: none;
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  opacity: 0.55;
-  transition:
-    opacity 0.15s,
-    background-color 0.15s;
-}
-
-.colorSchemeButton:hover {
-  opacity: 0.85;
-  background: color-mix(in srgb, var(--panel-text) 10%, transparent);
-}
-
-.colorSchemeButton:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
-.colorSchemeButtonActive {
-  opacity: 1;
-  background: color-mix(in srgb, var(--panel-text) 12%, transparent);
+.topBar {
+  position: absolute;
+  top: max(var(--space-3), env(safe-area-inset-top));
+  right: max(var(--space-3), env(safe-area-inset-right));
+  color: var(--page-text);
 }
 
 .hero {
@@ -204,37 +108,6 @@
   opacity: 0.35;
 }
 
-/* Shared "underline toggle" behavior for the piece-theme thumbnail choices:
-   dimmed at rest, an underline plus full opacity marks the active pick. */
-.toggleButton {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  opacity: 0.55;
-  transition:
-    opacity 0.15s,
-    border-color 0.15s;
-}
-
-.toggleButton:hover:not(:disabled) {
-  opacity: 0.85;
-}
-
-.toggleButton:disabled {
-  cursor: default;
-}
-
-.toggleButton:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
-.toggleButtonActive {
-  opacity: 1;
-  border-bottom-color: var(--board-bg);
-}
-
 .modeCards {
   display: flex;
   gap: 1rem;
@@ -263,7 +136,7 @@
   border: 1px solid var(--panel-border);
   border-radius: 0.5rem;
   cursor: pointer;
-  opacity: 0.65;
+  opacity: 0.8;
   transition:
     opacity 0.15s,
     border-color 0.15s,
@@ -381,26 +254,6 @@
   border-color: var(--board-edge);
 }
 
-.themeOptions {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-}
-
-.themeButton {
-  display: flex;
-  padding: 0.2rem;
-}
-
-.themePieceBox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  --piece-font-size: 1.5rem;
-}
-
 .actions {
   display: flex;
   flex-direction: column;
@@ -416,12 +269,15 @@
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.1em;
-  color: #1a1206;
-  background: linear-gradient(180deg, #e8c766, var(--board-bg));
-  border: 1px solid var(--board-edge);
-  border-radius: 0.5rem;
+  color: var(--accent-text);
+  background: linear-gradient(180deg, var(--accent-top), var(--accent-bottom));
+  border: 1px solid var(--accent-edge);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
   cursor: pointer;
-  transition: filter 0.15s;
+  transition:
+    filter var(--duration-fast),
+    scale var(--duration-fast) var(--ease-out);
 }
 
 .startButton:hover:not(:disabled) {
@@ -439,23 +295,42 @@
   outline-offset: 2px;
 }
 
+.continueButton {
+  width: 100%;
+  min-height: var(--tap-size);
+  padding: var(--space-2) var(--space-5);
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--page-text);
+  cursor: pointer;
+  background: var(--surface-raised);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  transition:
+    background-color var(--duration-fast),
+    scale var(--duration-fast) var(--ease-out);
+}
+
+.continueButton:hover {
+  background: color-mix(in srgb, var(--board-bg) 14%, var(--panel-bg));
+}
+
+.startButton:active:not(:disabled),
+.continueButton:active {
+  scale: 0.97;
+}
+
+.continueButton:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .engineError {
   margin: 0;
   font-size: 0.85rem;
   color: var(--error-text);
   text-align: center;
-}
-
-.pieceCredit {
-  margin: 0.9rem 0 0;
-  padding: 0;
-  font-size: 0.7rem;
-  text-align: center;
-  color: var(--label-color);
-}
-
-.pieceCredit a {
-  color: inherit;
 }
 
 @keyframes emblem-in {
@@ -477,5 +352,46 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Phones held sideways: too short for the stacked column, so the hero
+   moves to a column of its own beside the choices and start button. */
+@media (orientation: landscape) and (height < 30rem) {
+  .screen {
+    display: grid;
+    grid-template-columns: auto min(22rem, 50%);
+    grid-template-areas:
+      "hero choices"
+      "hero actions";
+    align-content: center;
+    justify-content: center;
+    column-gap: var(--space-6);
+    row-gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .hero {
+    grid-area: hero;
+    align-self: center;
+  }
+
+  .emblem {
+    width: 4rem;
+  }
+
+  .title {
+    font-size: 2.25rem;
+  }
+
+  .choices {
+    grid-area: choices;
+    width: 100%;
+    gap: var(--space-3);
+  }
+
+  .actions {
+    grid-area: actions;
+    width: 100%;
   }
 }

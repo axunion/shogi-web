@@ -1,16 +1,5 @@
-import { Popover } from "@kobalte/core/popover";
-import {
-  Bot,
-  ChevronLeft,
-  ChevronRight,
-  Monitor,
-  Moon,
-  Settings,
-  Sun,
-  Users,
-} from "lucide-solid";
-import { createSignal, For } from "solid-js";
-import type { Piece } from "../../domain/types";
+import { Bot, ChevronLeft, ChevronRight, Users } from "lucide-solid";
+import { createSignal, For, Show } from "solid-js";
 import {
   DIFFICULTY_LEVELS,
   difficultyLevelById,
@@ -25,43 +14,13 @@ import {
   ENGINE_LAUNCH_FAILED_MESSAGE,
   isGameOver,
 } from "../../state/gameStore";
-import { lishogiKanjiLightTheme } from "../../theme/lishogiKanjiLightTheme";
-import { textTheme } from "../../theme/textTheme";
-import type { PieceTheme } from "../../theme/types";
-import { PieceView } from "../Board/PieceView";
 import { ConfirmDialog } from "../Dialog/ConfirmDialog";
+import { SettingsMenu } from "../SettingsMenu/SettingsMenu";
 import styles from "./TitleScreen.module.css";
 
 const MODE_OPTIONS: { value: GameMode; label: string; Icon: typeof Bot }[] = [
   { value: "engine", label: "AI対戦", Icon: Bot },
   { value: "human", label: "対面対局", Icon: Users },
-];
-
-// A pawn is the most familiar piece, so it reads clearly as "a sample piece"
-// rather than anything tied to a specific role on the board.
-const SAMPLE_PIECE: Piece = { type: "P", color: "black" };
-
-const PIECE_THEME_OPTIONS: {
-  value: string;
-  label: string;
-  theme: PieceTheme;
-}[] = [
-  {
-    value: lishogiKanjiLightTheme.id,
-    label: "画像駒",
-    theme: lishogiKanjiLightTheme,
-  },
-  { value: textTheme.id, label: "文字駒", theme: textTheme },
-];
-
-const COLOR_SCHEME_OPTIONS: {
-  value: SettingsState["colorScheme"];
-  label: string;
-  Icon: typeof Monitor;
-}[] = [
-  { value: "system", label: "システム", Icon: Monitor },
-  { value: "light", label: "ライト", Icon: Sun },
-  { value: "dark", label: "ダーク", Icon: Moon },
 ];
 
 interface TitleScreenProps {
@@ -72,6 +31,8 @@ interface TitleScreenProps {
   engine: EngineState;
   hasResumableGame: boolean;
   colorScheme: SettingsState["colorScheme"];
+  soundEnabled: boolean;
+  onSoundEnabledChange: (soundEnabled: boolean) => void;
   onColorSchemeChange: (colorScheme: SettingsState["colorScheme"]) => void;
   onPieceThemeChange: (pieceTheme: string) => void;
   onStart: (mode: GameMode, difficultyLevel: number) => void;
@@ -83,13 +44,6 @@ export function TitleScreen(props: TitleScreenProps) {
   const [selectedDifficulty, setSelectedDifficulty] = createSignal(
     props.difficultyLevel,
   );
-  const [settingsOpen, setSettingsOpen] = createSignal(false);
-  // A native <button>'s click event has detail:0 when fired by keyboard
-  // activation (Enter/Space) rather than an actual pointer click — used
-  // below to only auto-focus into the popover for keyboard users, so a
-  // mouse click doesn't show a focus ring nobody asked for, while Tab still
-  // reaches the popover's contents for keyboard-only navigation.
-  const [openedViaKeyboard, setOpenedViaKeyboard] = createSignal(false);
   const [resumeChoiceOpen, setResumeChoiceOpen] = createSignal(false);
 
   const engineNotReady = () =>
@@ -97,8 +51,10 @@ export function TitleScreen(props: TitleScreenProps) {
   const engineError = () =>
     selectedMode() === "engine" && props.engine === "failed";
 
+  const canContinue = () => props.hasResumableGame && !isGameOver(props.status);
+
   function handleStartClick() {
-    if (props.hasResumableGame && !isGameOver(props.status)) {
+    if (canContinue()) {
       setResumeChoiceOpen(true);
       return;
     }
@@ -107,90 +63,16 @@ export function TitleScreen(props: TitleScreenProps) {
 
   return (
     <div class={styles.screen}>
-      <Popover
-        open={settingsOpen()}
-        onOpenChange={setSettingsOpen}
-        modal={false}
-        placement="bottom-end"
-        gutter={8}
-      >
-        <Popover.Trigger
-          class={`${styles.settingsButton} ${settingsOpen() ? styles.settingsButtonActive : ""}`}
-          aria-label="設定"
-          onClick={(event) => setOpenedViaKeyboard(event.detail === 0)}
-        >
-          <Settings size={18} />
-        </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Content
-            class={styles.settingsPanel}
-            onOpenAutoFocus={(event) => {
-              if (!openedViaKeyboard()) event.preventDefault();
-            }}
-          >
-            <fieldset class={styles.choiceRow}>
-              <legend class={styles.srOnly}>配色</legend>
-              <div class={styles.settingsColorOptions}>
-                <For each={COLOR_SCHEME_OPTIONS}>
-                  {(option) => (
-                    <button
-                      type="button"
-                      class={styles.colorSchemeButton}
-                      classList={{
-                        [styles.colorSchemeButtonActive]:
-                          props.colorScheme === option.value,
-                      }}
-                      aria-pressed={props.colorScheme === option.value}
-                      aria-label={option.label}
-                      onClick={() => props.onColorSchemeChange(option.value)}
-                    >
-                      <option.Icon size={16} />
-                    </button>
-                  )}
-                </For>
-              </div>
-            </fieldset>
-
-            <fieldset class={styles.choiceRow}>
-              <legend class={styles.srOnly}>駒の種類</legend>
-              <div class={styles.themeOptions}>
-                <For each={PIECE_THEME_OPTIONS}>
-                  {(option) => (
-                    <button
-                      type="button"
-                      class={`${styles.toggleButton} ${styles.themeButton}`}
-                      classList={{
-                        [styles.toggleButtonActive]:
-                          props.pieceTheme === option.value,
-                      }}
-                      aria-pressed={props.pieceTheme === option.value}
-                      aria-label={option.label}
-                      onClick={() => props.onPieceThemeChange(option.value)}
-                    >
-                      <span class={styles.themePieceBox}>
-                        <PieceView piece={SAMPLE_PIECE} theme={option.theme} />
-                      </span>
-                    </button>
-                  )}
-                </For>
-              </div>
-            </fieldset>
-
-            <p class={styles.pieceCredit}>
-              {lishogiKanjiLightTheme.attribution.name} by{" "}
-              {lishogiKanjiLightTheme.attribution.author} (
-              <a
-                href={lishogiKanjiLightTheme.attribution.licenseUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {lishogiKanjiLightTheme.attribution.licenseName}
-              </a>
-              )
-            </p>
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover>
+      <div class={styles.topBar}>
+        <SettingsMenu
+          pieceTheme={props.pieceTheme}
+          colorScheme={props.colorScheme}
+          soundEnabled={props.soundEnabled}
+          onSoundEnabledChange={props.onSoundEnabledChange}
+          onColorSchemeChange={props.onColorSchemeChange}
+          onPieceThemeChange={props.onPieceThemeChange}
+        />
+      </div>
 
       <div class={styles.hero}>
         <img
@@ -288,6 +170,15 @@ export function TitleScreen(props: TitleScreenProps) {
         >
           {engineNotReady() ? "エンジン起動中…" : "対局を始める"}
         </button>
+        <Show when={canContinue()}>
+          <button
+            type="button"
+            class={styles.continueButton}
+            onClick={props.onContinue}
+          >
+            続きから
+          </button>
+        </Show>
         {engineError() && (
           <p class={styles.engineError}>
             {`${ENGINE_LAUNCH_FAILED_MESSAGE}。ページを再読み込みするか、対面対局をお試しください。`}

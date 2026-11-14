@@ -13,6 +13,33 @@
      would create a circular reference). */
   --coord-band: 1.3rem;
 
+  /* Design tokens shared by every component (see docs/ui-design.md). */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-full: 999px;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 12%), 0 1px 4px rgb(0 0 0 / 8%);
+  --shadow-2: 0 2px 6px rgb(0 0 0 / 14%), 0 6px 18px rgb(0 0 0 / 10%);
+  --shadow-3: 0 8px 24px rgb(0 0 0 / 22%), 0 16px 48px rgb(0 0 0 / 16%);
+  --font-xs: 0.75rem;
+  --font-sm: 0.875rem;
+  --font-md: 1rem;
+  --font-lg: 1.25rem;
+  --font-xl: 1.75rem;
+  --font-display: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+  --duration-slow: 420ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --tap-size: 2.75rem;
+
   /* Colors: light */
   --page-bg: #e9e2d4;
   --page-bg-accent: #d9cfba;
@@ -47,6 +74,14 @@
   --dialog-bg: var(--panel-bg);
   --dialog-text: var(--panel-text);
   --focus-ring: #1a73e8;
+  /* Gold accent of the primary call-to-action (start, rematch). */
+  --accent-top: #e8c766;
+  --accent-bottom: #dcb35c;
+  --accent-text: #1a1206;
+  --accent-edge: #6b4b23;
+  --surface-raised: color-mix(in srgb, var(--panel-bg) 88%, transparent);
+  --win-color: #b8860b;
+  --lose-color: #6b7280;
 
   /* Colors: dark. Defined once as raw values here (rather than inline in
      each of the two selectors below that apply them) so the OS-driven and

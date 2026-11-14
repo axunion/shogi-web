@@ -70,9 +70,10 @@ test("still warns about a prior engine failure after playing a face-to-face game
 
   await page.getByRole("button", { name: "対面対局" }).click();
   await page.getByRole("button", { name: "対局を始める" }).click();
-  await page.getByRole("button", { name: "メニュー" }).click();
-  await page.getByRole("button", { name: "タイトルへ戻る" }).click();
-  await page.getByRole("button", { name: "タイトルへ戻る" }).last().click();
+  await page.getByRole("button", { name: "タイトルへ", exact: true }).click();
+  await page
+    .getByRole("button", { name: "タイトルへ戻る", exact: true })
+    .click();
 
   await page.getByRole("button", { name: "AI対戦" }).click();
   await expect(page.getByText(ENGINE_ERROR)).toBeVisible();
