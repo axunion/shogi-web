@@ -169,8 +169,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: var(--tap-size);
+  height: var(--tap-size);
   padding: 0;
   color: var(--page-text);
   background: none;
@@ -206,19 +206,22 @@
   letter-spacing: 0.05em;
 }
 
+/* No gap: the eight dots split the row between them, so each tap target
+   is as wide as the row allows (about 35px at 320px) and full height. */
 .difficultyDots {
   display: flex;
   justify-content: center;
-  gap: 0.4rem;
-  margin-top: 0.3rem;
+  width: 100%;
+  max-width: 20rem;
 }
 
 .difficultyDot {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  flex: 1;
+  max-width: var(--tap-size);
+  height: var(--tap-size);
   padding: 0;
   background: none;
   border: none;

@@ -19,7 +19,9 @@ interaction decisions; `inspector` runs and reviews judge the UI against it.
    banner over the board, the result arrives with a stamp animation, buttons press
    in. Everything respects `prefers-reduced-motion`.
 6. **Accessibility doesn't regress.** Tap targets ≥ 44px on touch layouts, visible
-   focus rings, Japanese accessible names, light and dark themes.
+   focus rings, Japanese accessible names, light and dark themes. Dense grids
+   whose size is set by the screen (board squares, pieces in hand, difficulty
+   dots) take the largest size that fits instead.
 
 ## Game screen layouts
 
