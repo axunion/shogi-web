@@ -2,30 +2,63 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.15rem;
-  min-height: var(--info-height, 2.75rem);
+  gap: 0.125rem;
+  min-width: 0;
   text-align: center;
+  line-height: 1.35;
 }
 
+/* Layout sets --info-white-space to nowrap where the status shares the
+   portrait header row; the ellipsis then keeps a long status to one line. */
 .info p {
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: var(--info-white-space, normal);
+}
+
+.primary {
+  font-weight: 700;
 }
 
 .secondary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* min-height, not height: a long error wraps in the narrow landscape
-     column instead of spilling out of the line. */
-  min-height: 1.2rem;
+  font-size: var(--font-xs);
+  color: var(--label-color);
+  font-variant-numeric: tabular-nums;
 }
 
+/* Check reads as an alert, not a footnote: bigger, red, and it pops in. */
 .check {
+  font-size: var(--font-sm);
+  font-weight: 700;
   color: var(--check-color);
-  font-weight: 600;
+  animation: check-in var(--duration-normal) var(--ease-spring);
 }
 
-.error {
+@keyframes check-in {
+  from {
+    scale: 1.6;
+    opacity: 0;
+  }
+}
+
+/* An error message is shown nowhere else, so it always wraps in full. */
+.info .error {
   color: var(--error-text);
-  font-size: 0.85rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (width >= 64rem) {
+  .info {
+    gap: var(--space-1);
+  }
+
+  .primary {
+    font-size: var(--font-lg);
+  }
+
+  .secondary {
+    font-size: var(--font-sm);
+  }
 }

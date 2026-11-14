@@ -1,17 +1,19 @@
 import { createEffect, createSignal, on, onMount, Show } from "solid-js";
 import { ensureAudioContext, playPieceSound } from "./audio/sfx";
+import { ActionBar } from "./components/ActionBar/ActionBar";
 import { Board } from "./components/Board/Board";
-import { Controls } from "./components/Controls/Controls";
+import { GameHeader } from "./components/GameHeader/GameHeader";
 import { GameInfo } from "./components/GameInfo/GameInfo";
-import { Hand } from "./components/Hand/Hand";
+import { Hand, type PlateBadge } from "./components/Hand/Hand";
 import { KifuList } from "./components/Kifu/KifuList";
 import { Layout } from "./components/Layout/Layout";
 import { PromotionDialog } from "./components/PromotionDialog/PromotionDialog";
 import { ResultOverlay } from "./components/ResultOverlay/ResultOverlay";
 import { TitleScreen } from "./components/TitleScreen/TitleScreen";
-import { colorLabel, colorSymbol } from "./domain/notation";
+import { colorLabel, colorSymbol, formatMove } from "./domain/notation";
 import { squareIndex } from "./domain/sfen";
 import type { Color, MoveRecord, PieceType } from "./domain/types";
+import { difficultyLevelById } from "./engine/difficulty";
 import type { GameMode } from "./state/gameStore";
 import { gameStore, isGameOver } from "./state/gameStore";
 import type { Screen } from "./state/storage";
@@ -74,6 +76,31 @@ function App() {
   const opponentColor = (): Color => (flipped() ? "black" : "white");
   const ownColor = (): Color => (flipped() ? "white" : "black");
 
+  const difficultyLabel = () =>
+    difficultyLevelById(state.settings.difficultyLevel).label;
+
+  const headerTitle = () =>
+    state.settings.mode === "engine"
+      ? `AI対戦 · ${difficultyLabel()}`
+      : "対面対局";
+
+  // Engine games always seat the player as black (先手).
+  function playerName(color: Color): string {
+    if (state.settings.mode === "human") return colorLabel(color);
+    return color === "black" ? "あなた" : `AI ${difficultyLabel()}`;
+  }
+
+  function plateBadge(color: Color): PlateBadge {
+    if (isGameOver(state.status)) return null;
+    if (state.position.sideToMove !== color) return null;
+    return state.status === "thinking" ? "thinking" : "turn";
+  }
+
+  const lastMoveText = () => {
+    const record = state.records[state.records.length - 1];
+    return record ? formatMove(record.positionBefore, record.move) : null;
+  };
+
   function handClickable(color: Color): boolean {
     return state.status === "playerTurn" && state.position.sideToMove === color;
   }
@@ -96,11 +123,19 @@ function App() {
 
   createEffect(() => applyColorScheme(state.settings.colorScheme));
 
+  // Counts checking moves for the board's 王手 banner. Only a newly played
+  // move announces check — not undo, a reload, or the mating move (the result
+  // dialog covers that).
+  const [checkAnnouncement, setCheckAnnouncement] = createSignal(0);
+
   createEffect(
     on(
       () => state.records.length,
       (length, previousLength) => {
         if (previousLength === undefined || length <= previousLength) return;
+        if (checkedKingSquare() !== null && !isGameOver(state.status)) {
+          setCheckAnnouncement((count) => count + 1);
+        }
         if (!state.settings.soundEnabled) return;
         const record = state.records[state.records.length - 1];
         if (!record) return;
@@ -136,6 +171,8 @@ function App() {
           engine={state.engine}
           hasResumableGame={hasResumableGame()}
           colorScheme={state.settings.colorScheme}
+          soundEnabled={state.settings.soundEnabled}
+          onSoundEnabledChange={(soundEnabled) => setSettings({ soundEnabled })}
           onColorSchemeChange={(colorScheme) => setSettings({ colorScheme })}
           onPieceThemeChange={(pieceTheme) => setSettings({ pieceTheme })}
           onStart={handleStart}
@@ -144,6 +181,22 @@ function App() {
       </Show>
       <Show when={screen() === "game"}>
         <Layout
+          header={
+            <GameHeader
+              title={headerTitle()}
+              pieceTheme={state.settings.pieceTheme}
+              colorScheme={state.settings.colorScheme}
+              soundEnabled={state.settings.soundEnabled}
+              onSoundEnabledChange={(soundEnabled) =>
+                setSettings({ soundEnabled })
+              }
+              onColorSchemeChange={(colorScheme) =>
+                setSettings({ colorScheme })
+              }
+              onPieceThemeChange={(pieceTheme) => setSettings({ pieceTheme })}
+              onReturnToTitle={handleReturnToTitle}
+            />
+          }
           info={
             <GameInfo
               status={state.status}
@@ -151,6 +204,8 @@ function App() {
               sideToMove={state.position.sideToMove}
               errorMessage={state.errorMessage}
               checked={checkedKingSquare() !== null}
+              moveCount={state.records.length}
+              lastMove={lastMoveText()}
             />
           }
           opponentHand={
@@ -158,11 +213,9 @@ function App() {
               color={opponentColor()}
               pieces={state.position.hands[opponentColor()]}
               theme={selectedTheme()}
-              label={`${colorSymbol(opponentColor())}${colorLabel(opponentColor())}`}
-              active={
-                !isGameOver(state.status) &&
-                state.position.sideToMove === opponentColor()
-              }
+              symbol={colorSymbol(opponentColor())}
+              name={playerName(opponentColor())}
+              badge={plateBadge(opponentColor())}
               selectedPiece={selectedPieceFor(opponentColor())}
               onSelectPiece={
                 handClickable(opponentColor())
@@ -185,6 +238,7 @@ function App() {
               lastMove={state.lastMove}
               checkSquare={checkedKingSquare()}
               flipped={flipped()}
+              checkAnnouncement={checkAnnouncement()}
               onSquareClick={handleSquareClick}
             />
           }
@@ -193,11 +247,9 @@ function App() {
               color={ownColor()}
               pieces={state.position.hands[ownColor()]}
               theme={selectedTheme()}
-              label={`${colorSymbol(ownColor())}${colorLabel(ownColor())}`}
-              active={
-                !isGameOver(state.status) &&
-                state.position.sideToMove === ownColor()
-              }
+              symbol={colorSymbol(ownColor())}
+              name={playerName(ownColor())}
+              badge={plateBadge(ownColor())}
               selectedPiece={selectedPieceFor(ownColor())}
               onSelectPiece={
                 handClickable(ownColor()) ? handleHandPieceClick : undefined
@@ -205,24 +257,19 @@ function App() {
               rotated={handRotated(ownColor())}
             />
           }
-          controls={
-            <Controls
+          actions={
+            <ActionBar
               status={state.status}
               canUndo={state.records.length > 0}
-              soundEnabled={state.settings.soundEnabled}
               mode={state.settings.mode}
               boardFlip={state.settings.boardFlip}
               records={state.records}
               onUndo={undo}
               onResign={resign}
               onRematch={newGame}
-              onToggleSound={() =>
-                setSettings({ soundEnabled: !state.settings.soundEnabled })
-              }
               onToggleBoardFlip={() =>
                 setSettings({ boardFlip: !state.settings.boardFlip })
               }
-              onReturnToTitle={handleReturnToTitle}
             />
           }
           kifu={<KifuList records={state.records} />}
