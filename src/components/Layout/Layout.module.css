@@ -116,7 +116,8 @@
 /* Portrait: the status sits centred in the header row, between the back
    and settings buttons, instead of costing a row of its own. Its lines stay
    on one line (see --info-white-space in GameInfo) so the header keeps the
-   height the board formula reserved. */
+   height the board formula reserved; only an error message, shown nowhere
+   else, wraps and may push the action bar down while it's shown. */
 .info {
   --info-white-space: nowrap;
 
@@ -242,10 +243,10 @@
   }
 
   .info {
-    grid-area: info;
-    align-self: end;
     --info-white-space: normal;
 
+    grid-area: info;
+    align-self: end;
     max-width: none;
     font-size: var(--font-xs);
   }

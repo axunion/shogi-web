@@ -46,6 +46,7 @@
 .info .error {
   color: var(--error-text);
   white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 @media (width >= 64rem) {
