@@ -8,7 +8,8 @@ interaction decisions; `inspector` runs and reviews judge the UI against it.
 
 1. **Frequent actions are always visible.** 待った, 投了 / 盤面回転, 棋譜 and
    もう一局 sit directly on screen. No hamburger menu on any viewport; only
-   destructive actions go through a confirmation dialog.
+   destructive or game-leaving actions (投了, back to title) go through a
+   confirmation dialog.
 2. **Boxes hug their content.** Piece stands (駒台) size to the pieces in hand
    with a one-slot minimum so the layout doesn't jump; spare space goes to the board.
 3. **Player plates carry identity.** Each side has one plate: side symbol, name

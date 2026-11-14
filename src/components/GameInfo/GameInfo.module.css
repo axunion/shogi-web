@@ -8,8 +8,13 @@
   line-height: 1.35;
 }
 
+/* Layout sets --info-white-space to nowrap where the status shares the
+   portrait header row; the ellipsis then keeps a long status to one line. */
 .info p {
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: var(--info-white-space, normal);
 }
 
 .primary {
@@ -37,8 +42,10 @@
   }
 }
 
-.error {
+/* An error message is shown nowhere else, so it always wraps in full. */
+.info .error {
   color: var(--error-text);
+  white-space: normal;
 }
 
 @media (width >= 64rem) {

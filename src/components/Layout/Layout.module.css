@@ -114,20 +114,16 @@
 }
 
 /* Portrait: the status sits centred in the header row, between the back
-   and settings buttons, instead of costing a row of its own. Each line is
-   kept to one line so the header stays the height the board formula
-   reserved; the result dialog spells out anything truncated. */
+   and settings buttons, instead of costing a row of its own. Its lines stay
+   on one line (see --info-white-space in GameInfo) so the header keeps the
+   height the board formula reserved. */
 .info {
+  --info-white-space: nowrap;
+
   grid-area: header;
   align-self: center;
   max-width: calc(100% - var(--tap-size) * 2 - var(--space-4));
   z-index: 1;
-}
-
-.info p {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .kifu {
@@ -248,12 +244,10 @@
   .info {
     grid-area: info;
     align-self: end;
+    --info-white-space: normal;
+
     max-width: none;
     font-size: var(--font-xs);
-  }
-
-  .info p {
-    white-space: normal;
   }
 
   .actions {
@@ -326,12 +320,10 @@
   }
 
   .info {
+    --info-white-space: normal;
+
     align-self: stretch;
     font-size: var(--font-md);
-  }
-
-  .info p {
-    white-space: normal;
   }
 
   .kifu {
