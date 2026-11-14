@@ -63,8 +63,8 @@
 }
 
 /* The 7rem side column leaves about 37px per button, too narrow for a
-   label, so the buttons go icon-only; the label stays as their accessible
-   name. */
+   label, so the buttons go icon-only (each button carries an aria-label,
+   so its name doesn't depend on this hidden text). */
 @media (orientation: landscape) and (width < 64rem) {
   .bar {
     grid-auto-flow: row;

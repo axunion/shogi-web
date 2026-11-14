@@ -96,6 +96,7 @@
   --dark-count-bg: #2a251e;
   --dark-count-text: #ece4d6;
   --dark-focus-ring: #8ab4f8;
+  --dark-error-text: #ff8a80;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -111,6 +112,7 @@
     --count-bg: var(--dark-count-bg);
     --count-text: var(--dark-count-text);
     --focus-ring: var(--dark-focus-ring);
+    --error-text: var(--dark-error-text);
   }
 }
 
@@ -127,6 +129,7 @@
   --count-bg: var(--dark-count-bg);
   --count-text: var(--dark-count-text);
   --focus-ring: var(--dark-focus-ring);
+  --error-text: var(--dark-error-text);
 }
 
 :root[data-theme="light"] {

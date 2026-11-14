@@ -33,6 +33,7 @@ export function ActionBar(props: ActionBarProps) {
       <Show when={isGameOver(props.status)}>
         <button
           type="button"
+          aria-label="もう一局"
           class={`${button} ${styles.rematch}`}
           onClick={props.onRematch}
         >
@@ -43,6 +44,7 @@ export function ActionBar(props: ActionBarProps) {
 
       <button
         type="button"
+        aria-label="待った"
         class={button}
         disabled={!props.canUndo}
         onClick={props.onUndo}
@@ -54,6 +56,7 @@ export function ActionBar(props: ActionBarProps) {
       <Show when={props.mode === "engine" && !isGameOver(props.status)}>
         <button
           type="button"
+          aria-label="投了"
           class={`${button} ${styles.resign}`}
           disabled={props.status !== "playerTurn"}
           onClick={() => setConfirmResign(true)}
@@ -66,6 +69,7 @@ export function ActionBar(props: ActionBarProps) {
       <Show when={props.mode === "human"}>
         <button
           type="button"
+          aria-label="盤面回転"
           class={button}
           classList={{ [styles.pressed]: props.boardFlip }}
           aria-pressed={props.boardFlip}
@@ -78,6 +82,7 @@ export function ActionBar(props: ActionBarProps) {
 
       <button
         type="button"
+        aria-label="棋譜"
         class={`${button} ${styles.kifuButton}`}
         onClick={() => setKifuOpen(true)}
       >
