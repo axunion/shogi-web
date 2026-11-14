@@ -42,7 +42,7 @@
   animation: dialog-in var(--duration-normal) var(--ease-out);
 }
 
-/* Shared by every dialog's content box. */
+/* Shared by ConfirmDialog and PromotionDialog (via composes). */
 @keyframes dialog-in {
   from {
     opacity: 0;

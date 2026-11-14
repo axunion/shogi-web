@@ -124,7 +124,7 @@
   }
 }
 
-.slot:hover:not(:disabled) {
+.slot:hover:not(:disabled, .selected) {
   background: rgb(255 255 255 / 18%);
 }
 

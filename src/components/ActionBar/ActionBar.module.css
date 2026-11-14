@@ -72,10 +72,6 @@
     height: auto;
   }
 
-  .bar .action {
-    min-height: var(--tap-size);
-  }
-
   .label {
     position: absolute;
     width: 1px;

@@ -161,6 +161,9 @@
   .kifu {
     --kifu-flow: row;
     --kifu-empty-padding: 0 var(--space-2);
+    --kifu-item-padding: 0 var(--space-2);
+    --kifu-scrollbar-gutter: auto;
+    align-items: center;
     display: flex;
     height: var(--kifu-strip-height);
     padding: var(--space-1);
@@ -273,8 +276,7 @@
         (
           100svh -
           var(--header-height) -
-          var(--space-4) *
-          2 -
+          var(--space-4) -
           var(--gap) *
           5 -
           var(--coord-band) -
@@ -373,8 +375,7 @@
         (
           100svh -
           var(--header-height) -
-          var(--space-4) *
-          2 -
+          var(--space-4) -
           var(--gap) *
           4 -
           var(--coord-band)

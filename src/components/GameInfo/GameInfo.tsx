@@ -10,7 +10,6 @@ interface GameInfoProps {
   sideToMove: Color;
   errorMessage: string | null;
   checked: boolean;
-  /** Number of moves played so far. */
   moveCount: number;
   /** The latest move in notation, e.g. ▲7六歩; null before the first. */
   lastMove: string | null;
