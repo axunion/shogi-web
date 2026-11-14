@@ -20,6 +20,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Chromium makes a scrollable list keyboard-focusable; give it the same
+   ring as every other control instead of the faint default. */
+.list:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .list li {
   display: flex;
   align-items: baseline;

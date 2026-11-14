@@ -4,6 +4,7 @@ import type { GameStatus } from "../../state/gameStore";
 import { isGameOver } from "../../state/gameStore";
 import dialogStyles from "../Dialog/Dialog.module.css";
 import { DialogButton } from "../Dialog/DialogButton";
+import { createFocusReturn } from "../Dialog/focusReturn";
 import styles from "./ResultOverlay.module.css";
 
 interface ResultOverlayProps {
@@ -50,6 +51,7 @@ const STAMP: Record<Outcome, string> = { win: "勝", lose: "負", neutral: "終"
 
 export function ResultOverlay(props: ResultOverlayProps) {
   const [open, setOpen] = createSignal(false);
+  const returnFocus = createFocusReturn(open);
 
   createEffect(
     on(
@@ -74,6 +76,7 @@ export function ResultOverlay(props: ResultOverlayProps) {
         <div class={dialogStyles.positioner}>
           <Dialog.Content
             class={styles.dialog}
+            onCloseAutoFocus={returnFocus}
             classList={{
               [styles.win]: outcome() === "win",
               [styles.lose]: outcome() === "lose",

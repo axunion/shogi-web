@@ -6,6 +6,7 @@ import type { GameMode, GameStatus } from "../../state/gameStore";
 import { isGameOver } from "../../state/gameStore";
 import buttonStyles from "../Button/Button.module.css";
 import { ConfirmDialog } from "../Dialog/ConfirmDialog";
+import { createFocusReturn } from "../Dialog/focusReturn";
 import { KifuList } from "../Kifu/KifuList";
 import styles from "./ActionBar.module.css";
 
@@ -26,6 +27,7 @@ interface ActionBarProps {
 export function ActionBar(props: ActionBarProps) {
   const [confirmResign, setConfirmResign] = createSignal(false);
   const [kifuOpen, setKifuOpen] = createSignal(false);
+  const returnFocusFromKifu = createFocusReturn(kifuOpen);
   const button = `${buttonStyles.button} ${styles.action}`;
 
   return (
@@ -101,7 +103,10 @@ export function ActionBar(props: ActionBarProps) {
       <Dialog open={kifuOpen()} onOpenChange={setKifuOpen}>
         <Dialog.Portal>
           <Dialog.Overlay class={styles.sheetOverlay} />
-          <Dialog.Content class={styles.sheet}>
+          <Dialog.Content
+            class={styles.sheet}
+            onCloseAutoFocus={returnFocusFromKifu}
+          >
             <div class={styles.sheetHeader}>
               <Dialog.Title class={styles.sheetTitle}>
                 棋譜
