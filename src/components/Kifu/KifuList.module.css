@@ -1,6 +1,7 @@
 /* Layout's --kifu-* variables turn the list into a one-line strip of the
-   latest moves on tall portrait phones (row flow, tighter items, no
-   reserved scrollbar gutter); elsewhere it's a vertical list. */
+   latest moves on tall portrait phones: row flow, tighter items, and no
+   gutter or scrollbar (the latest move scrolls into view on its own).
+   Elsewhere it's a vertical list. */
 .list {
   display: flex;
   flex-direction: var(--kifu-flow, column);
@@ -13,6 +14,7 @@
   min-height: 0;
   overflow: auto;
   scrollbar-gutter: var(--kifu-scrollbar-gutter, stable);
+  scrollbar-width: var(--kifu-scrollbar-width, auto);
   color: inherit;
   font-size: var(--font-sm);
   font-variant-numeric: tabular-nums;
