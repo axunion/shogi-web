@@ -1,41 +1,26 @@
+/* Game screen grid. Four arrangements (see docs/ui-design.md):
+   portrait < 64rem, landscape < 64rem, 64–80rem, and >= 80rem. The board
+   size and other custom properties they rely on come from
+   LayoutSizing.module.css, applied to the same root element. */
 .layout {
-  --gap: 0.4rem;
-  --info-height: 2.75rem;
-  --hand-piece-scale: 0.8;
-  --hand-direction: row;
-  /* Vertical rows that scale with --square-size: board 9 + coord band 0.5 +
-     two hand rows 1.5 each = 12.5. The 9 board rows grow slightly faster
-     than --square-size (Board.module.css's grid gap and border also scale
-     with it: 9 row-gaps * 0.018 + 2 border-widths * 0.045 = +0.252 per row),
-     so the divisor is 12.752 rather than the naive 12.5. Same correction
-     applies to the width divisor below (9 -> 9.252). */
-  --vertical-fixed: calc(var(--info-height) + var(--gap) * 3 + 1rem);
-  --square-size: min(
-    calc((100vw - 1rem - var(--coord-band)) / 9.252),
-    calc((100svh - var(--vertical-fixed)) / 12.752),
-    64px
-  );
-  /* Derived here rather than on :root, where they would resolve against
-     :root's own --square-size and ignore this override. The coordinate font
-     has a floor so it stays readable on small phones and a cap so it fits
-     the coordinate band. */
-  --piece-font-size: calc(var(--square-size) * 0.5);
-  --coord-font-size: clamp(0.625rem, calc(var(--square-size) * 0.24), 0.75rem);
-  --board-line-width: max(1px, calc(var(--square-size) * 0.018));
-  --board-edge-width: max(2px, calc(var(--square-size) * 0.045));
-
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto auto auto auto 1fr auto;
   grid-template-areas:
-    "info"
+    "header"
+    "."
     "opponentHand"
     "board"
-    "ownHand";
+    "ownHand"
+    "kifu"
+    "."
+    "actions";
   justify-items: center;
-  gap: var(--gap);
-  padding: 0.5rem;
-  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-  min-height: 100svh;
-  align-content: center;
+  row-gap: var(--gap);
+  height: 100svh;
+  padding: env(safe-area-inset-top) var(--space-2)
+    max(var(--space-2), env(safe-area-inset-bottom));
+  overflow: hidden;
   background:
     radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 10%) 100%),
     repeating-linear-gradient(
@@ -45,10 +30,19 @@
       var(--page-bg-accent) 2px,
       var(--page-bg-accent) 3px
     );
+  animation: screen-in var(--duration-slow) var(--ease-out);
 }
 
-.info {
-  grid-area: info;
+@keyframes screen-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.header {
+  grid-area: header;
+  justify-self: stretch;
+  min-width: 0;
 }
 
 .opponentHand {
@@ -63,71 +57,90 @@
   grid-area: ownHand;
 }
 
-/* Mobile: no wrapper box — props.controls (a fixed-position corner button
-   plus portaled popover/dialog content, contributing nothing in-flow) and
-   .kifu (hidden) behave exactly as if they were direct children of .layout. */
+/* Portrait/landscape mobile: no wrapper box, so the info, kifu, and actions
+   become grid items of .layout and are placed by its areas directly. */
 .sidePanel {
   display: contents;
 }
 
+/* Portrait: the status sits centred in the header row, between the back
+   and settings buttons, instead of costing a row of its own. Its lines stay
+   on one line (see --info-white-space in GameInfo) so the header keeps the
+   height the board formula reserved; only an error message, shown nowhere
+   else, wraps and may push the action bar down while it's shown. */
+.info {
+  --info-white-space: nowrap;
+
+  grid-area: header;
+  align-self: center;
+  max-width: calc(100% - var(--tap-size) * 2 - var(--space-4));
+  z-index: 1;
+}
+
 .kifu {
+  grid-area: kifu;
   display: none;
+  width: var(--board-outer-width);
+  min-width: 0;
+}
+
+.kifuTitle {
+  display: none;
+  margin: 0;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--label-color);
+}
+
+.actions {
+  grid-area: actions;
+  justify-self: stretch;
+  min-width: 0;
+}
+
+/* Tall portrait screens have room to spare below the board: a one-line
+   strip of recent moves uses it (the full list stays behind 棋譜). */
+@media (orientation: portrait) and (height >= 44rem) and (width < 64rem) {
+  .kifu {
+    --kifu-flow: row;
+    --kifu-empty-padding: 0 var(--space-2);
+    --kifu-item-padding: 0 var(--space-2);
+    --kifu-scrollbar-gutter: auto;
+    --kifu-scrollbar-width: none;
+    align-items: center;
+    display: flex;
+    height: var(--kifu-strip-height);
+    padding: var(--space-1);
+    background: var(--surface-raised);
+    color: var(--panel-text);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-md);
+  }
 }
 
 /* Landscape below the desktop breakpoint (phones held sideways, small
-   tablets): height is the scarce axis, so the hands stand in columns beside
-   the board instead of rows above and below it, and the kifu stays behind
-   the menu as on portrait mobile. The turn indicator sits under the
-   opponent's hand, clear of the fixed menu button in the top-right corner. */
+   tablets): height is the scarce axis, so header, status, and the
+   opponent's hand stand in a column left of the board, actions and the own
+   hand in a column to its right. */
 @media (orientation: landscape) and (width < 64rem) {
   .layout {
-    --hand-direction: column;
-    --side-col: 7rem;
-    /* Board rows 9 + the coordinate band; same grid-gap/border correction
-       as above (9 -> 9.252), plus 4px for the 1px floor on grid lines,
-       which outgrows that ratio at these small sizes. Horizontally, the
-       two fixed side columns, their gaps and the notch insets are reserved. */
-    --square-size: min(
-      calc(
-        (
-          100svh -
-          1rem -
-          4px -
-          var(--coord-band) -
-          env(safe-area-inset-bottom)
-        ) /
-        9.252
-      ),
-      calc(
-        (
-          100vw -
-          1rem -
-          env(safe-area-inset-left) -
-          env(safe-area-inset-right) -
-          var(--coord-band) -
-          var(--side-col) *
-          2 -
-          var(--gap) *
-          2
-        ) /
-        9.252
-      ),
-      64px
-    );
-    /* Fixed side columns: sized by content, the turn text (which changes
-       every ply) would resize its column and shift the centred board. */
     grid-template-columns: var(--side-col) auto var(--side-col);
-    grid-template-rows: 1fr auto;
-    /* Tight so the opponent's hand plus a wrapped game result still fit
-       beside the board on the shortest phones (568x320). */
-    row-gap: 0.15rem;
+    grid-template-rows: auto 1fr auto;
     grid-template-areas:
-      "opponentHand board ownHand"
+      "header       board actions"
+      "opponentHand board actions"
       "info         board ownHand";
     justify-content: center;
     align-items: center;
-    padding-left: max(0.5rem, env(safe-area-inset-left));
-    padding-right: max(0.5rem, env(safe-area-inset-right));
+    column-gap: var(--gap);
+    padding: max(var(--space-2), env(safe-area-inset-top))
+      max(var(--space-2), env(safe-area-inset-right))
+      max(var(--space-2), env(safe-area-inset-bottom))
+      max(var(--space-2), env(safe-area-inset-left));
+  }
+
+  .header {
+    align-self: start;
   }
 
   .opponentHand {
@@ -138,46 +151,93 @@
     align-self: end;
   }
 
-  /* Long statuses (e.g. a game result) wrap within the column. */
   .info {
+    --info-white-space: normal;
+
+    grid-area: info;
     align-self: end;
-    font-size: 0.75rem;
+    max-width: none;
+    font-size: var(--font-xs);
+  }
+
+  .actions {
+    align-self: start;
   }
 }
 
+/* Desktop: header across the top, play area on the left, a side panel with
+   status, kifu, and actions on the right. */
 @media (width >= 64rem) {
   .layout {
-    /* Bound the grid to the viewport so the "1fr" kifu row has a definite
-       height to distribute instead of growing with the move list — without
-       this, an indefinite-height grid container sizes "1fr" tracks by
-       content (like max-content), so a long kifu list would keep expanding
-       the whole page instead of scrolling inside its own panel. */
-    height: 100svh;
-    --gap: 1rem;
-    --hand-piece-scale: 1;
-    --hand-direction: column;
-    /* Same board grid-gap/border correction as the mobile formula above:
-       divisors are 10.252 / 12.252 instead of 10 / 12. The vertical reserve
-       (5.7rem, close to the ~5.5rem measured fixed chrome) keeps short
-       windows from overflowing; that leaves 1440x900 at ~79px per square,
-       just under the 80px target — preferred over a scrollbar. */
-    --square-size: min(
-      calc((100svh - 5.7rem) / 10.252),
-      calc((100vw - 22rem) / 12.252),
-      96px
-    );
-    /* Larger squares at desktop width need a relatively bigger glyph to
-       avoid looking sparse — the mobile ratio (0.5) reads fine at small
-       sizes but leaves visible dead space once squares grow this large. */
-    --piece-font-size: calc(var(--square-size) * 0.6);
-    grid-template-columns: auto auto auto minmax(16rem, 22rem);
-    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(0, 1fr) var(--side-width);
+    grid-template-rows: auto 1fr auto auto auto 1fr;
     grid-template-areas:
-      "info         info  info     kifu"
-      "opponentHand board ownHand  kifu";
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
+      "header header"
+      ".            side"
+      "opponentHand side"
+      "board        side"
+      "ownHand      side"
+      ".            side";
+    column-gap: var(--space-5);
+    padding: 0 var(--space-5) var(--space-4);
+  }
+
+  .sidePanel {
+    grid-area: side;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    justify-self: stretch;
+    min-height: 0;
+  }
+
+  .info,
+  .kifu {
+    max-width: none;
+    padding: var(--space-4);
+    background: var(--panel-bg);
+    color: var(--panel-text);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+  }
+
+  .info {
+    --info-white-space: normal;
+
+    align-self: stretch;
+    font-size: var(--font-md);
+  }
+
+  .kifu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+    width: auto;
+    min-height: 0;
+  }
+
+  .kifuTitle {
+    display: block;
+  }
+}
+
+/* Wide desktop: the hands leave the column and stand beside the board in
+   the traditional places, which lets the board grow taller. */
+@media (width >= 80rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr) var(
+        --side-width
+      );
+    grid-template-rows: auto 1fr auto auto 1fr;
+    grid-template-areas:
+      "header header       header header  header header"
+      ".      .            .      .       .      side"
+      ".      opponentHand board  .       .      side"
+      ".      .            board  ownHand .      side"
+      ".      .            .      .       .      side";
+    column-gap: var(--space-4);
   }
 
   .opponentHand {
@@ -186,27 +246,5 @@
 
   .ownHand {
     align-self: end;
-  }
-
-  /* Desktop: the kifu history panel fills the whole "kifu" track (info row
-     + board row, no extra grid row), so it can't grow the page height and
-     force a scrollbar. align-self: stretch is required here because
-     .layout sets align-items: center for the row-2 track, which would
-     otherwise shrink this panel to its content height (letting it grow
-     move-by-move as the list fills in) instead of claiming the full
-     track height up front. */
-  .sidePanel {
-    display: flex;
-    flex-direction: column;
-    grid-area: kifu;
-    align-self: stretch;
-    min-height: 0;
-  }
-
-  .kifu {
-    display: block;
-    flex: 1;
-    min-height: 0;
-    padding-top: 0.5rem;
   }
 }

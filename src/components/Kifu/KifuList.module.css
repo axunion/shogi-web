@@ -1,33 +1,64 @@
+/* Layout's --kifu-* variables turn the list into a one-line strip of the
+   latest moves on tall portrait phones: row flow, tighter items, and no
+   gutter or scrollbar (the latest move scrolls into view on its own).
+   Elsewhere it's a vertical list. */
 .list {
+  display: flex;
+  flex-direction: var(--kifu-flow, column);
+  align-items: stretch;
+  gap: 0.125rem;
   list-style: none;
   margin: 0;
-  padding: 0.5rem;
-  width: 100%;
-  height: 100%;
+  padding: 0;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-  background: var(--panel-bg);
-  color: var(--panel-text);
-  border: 1px solid var(--panel-border);
-  border-radius: 0.3rem;
-  font-size: 0.9rem;
+  overflow: auto;
+  scrollbar-gutter: var(--kifu-scrollbar-gutter, stable);
+  scrollbar-width: var(--kifu-scrollbar-width, auto);
+  color: inherit;
+  font-size: var(--font-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Chromium makes a scrollable list keyboard-focusable; give it the same
+   ring as every other control instead of the faint default. */
+.list:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .list li {
-  padding: 0.15rem 0.3rem;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  padding: var(--kifu-item-padding, var(--space-1) var(--space-2));
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.list li:nth-child(even):not(.latest) {
+  background: color-mix(in srgb, currentcolor 4%, transparent);
+}
+
+.number {
+  min-width: 2ch;
+  font-size: var(--font-xs);
+  text-align: right;
+  color: var(--label-color);
 }
 
 .latest {
-  background: var(--selected-bg);
-  border-radius: 0.2rem;
-  font-weight: 600;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--board-bg) 35%, transparent);
+  box-shadow: inset 3px 0 0 var(--board-edge);
 }
 
-.empty {
-  padding: 0.6rem 0.3rem;
-  color: var(--panel-text);
-  opacity: 0.6;
-  font-style: italic;
+.list li.empty {
+  justify-content: center;
+  /* Layout shrinks this in the one-line strip so the strip keeps its
+     height when the first move arrives. */
+  padding: var(--kifu-empty-padding, var(--space-4) var(--space-2));
+  color: var(--label-color);
+  background: none;
 }

@@ -1,9 +1,11 @@
-import { Dialog } from "@kobalte/core/dialog";
+import * as Dialog from "@kobalte/core/dialog";
 import { createEffect, createSignal, on } from "solid-js";
 import type { GameStatus } from "../../state/gameStore";
 import { isGameOver } from "../../state/gameStore";
+import { ACTION_BAR_LABEL } from "../ActionBar/ActionBar";
 import dialogStyles from "../Dialog/Dialog.module.css";
 import { DialogButton } from "../Dialog/DialogButton";
+import { createFocusReturn } from "../Dialog/focusReturn";
 import styles from "./ResultOverlay.module.css";
 
 interface ResultOverlayProps {
@@ -35,8 +37,35 @@ const RESULT_REASON: Partial<Record<GameStatus, string>> = {
   whiteResigned: "後手が投了しました",
 };
 
+type Outcome = "win" | "lose" | "neutral";
+
+// Face-to-face games have no "you", so they get the neutral stamp.
+const OUTCOME: Partial<Record<GameStatus, Outcome>> = {
+  engineResigned: "win",
+  engineMated: "win",
+  playerMated: "lose",
+  playerResigned: "lose",
+  engineDeclaredWin: "lose",
+};
+
+const STAMP: Record<Outcome, string> = { win: "勝", lose: "負", neutral: "終" };
+
 export function ResultOverlay(props: ResultOverlayProps) {
   const [open, setOpen] = createSignal(false);
+  // The result usually opens from a control the ending itself removed (the
+  // resign confirmation, the promotion dialog), so fall back to the action
+  // bar's first enabled button: もう一局 after 閉じる, or the new game's first
+  // available action after もう一局. Buttons hidden at this viewport (e.g.
+  // 棋譜 on desktop) have no client rects and can't take focus.
+  const returnFocus = createFocusReturn(
+    open,
+    () =>
+      Array.from(
+        document.querySelectorAll<HTMLElement>(
+          `[aria-label="${ACTION_BAR_LABEL}"] button:not(:disabled)`,
+        ),
+      ).find((button) => button.getClientRects().length > 0) ?? null,
+  );
 
   createEffect(
     on(
@@ -47,17 +76,29 @@ export function ResultOverlay(props: ResultOverlayProps) {
     ),
   );
 
+  const outcome = (): Outcome => OUTCOME[props.status] ?? "neutral";
+
   function handleRematch() {
     setOpen(false);
     props.onRematch();
   }
 
   return (
-    <Dialog open={open()} onOpenChange={setOpen}>
+    <Dialog.Root open={open()} onOpenChange={setOpen}>
       <Dialog.Portal>
         <Dialog.Overlay class={dialogStyles.overlay} />
         <div class={dialogStyles.positioner}>
-          <Dialog.Content class={styles.dialog}>
+          <Dialog.Content
+            class={styles.dialog}
+            onCloseAutoFocus={returnFocus}
+            classList={{
+              [styles.win]: outcome() === "win",
+              [styles.lose]: outcome() === "lose",
+            }}
+          >
+            <span class={styles.stamp} aria-hidden="true">
+              {STAMP[outcome()]}
+            </span>
             <Dialog.Title class={styles.title}>
               {RESULT_LABEL[props.status]}
             </Dialog.Title>
@@ -81,6 +122,6 @@ export function ResultOverlay(props: ResultOverlayProps) {
           </Dialog.Content>
         </div>
       </Dialog.Portal>
-    </Dialog>
+    </Dialog.Root>
   );
 }

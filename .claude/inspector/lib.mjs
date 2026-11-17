@@ -18,8 +18,12 @@ export async function waitForServer(url, timeoutMs = 30000) {
   throw new Error(`Dev server did not answer at ${url} within ${timeoutMs}ms`);
 }
 
+// PW_CHROMIUM_PATH points at a preinstalled Chromium when the one matching
+// this project's Playwright version isn't downloaded (e.g. cloud containers).
 export async function withBrowser(fn) {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({
+    executablePath: process.env.PW_CHROMIUM_PATH || undefined,
+  });
   try {
     return await fn(browser);
   } finally {

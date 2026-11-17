@@ -12,6 +12,11 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:5173",
     trace: "retain-on-failure",
+    // See .claude/inspector/lib.mjs: lets environments without the matching
+    // browser download use a preinstalled Chromium instead.
+    launchOptions: {
+      executablePath: process.env.PW_CHROMIUM_PATH || undefined,
+    },
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {

@@ -10,6 +10,8 @@ interface GameInfoProps {
   sideToMove: Color;
   errorMessage: string | null;
   checked: boolean;
+  /** The latest move with its number, e.g. 1手目 ▲7六歩; null before the first. */
+  lastMove: string | null;
 }
 
 const STATUS_LABEL: Record<GameStatus, string> = {
@@ -40,9 +42,15 @@ export function GameInfo(props: GameInfoProps) {
       ? turnLabel(props.sideToMove)
       : STATUS_LABEL[props.status];
 
+  const secondary = () => {
+    if (isChecked()) return "王手!";
+    if (hasError()) return props.errorMessage;
+    return props.lastMove ?? "対局開始";
+  };
+
   return (
     <div class={styles.info} aria-live="polite">
-      <p>{label()}</p>
+      <p class={styles.primary}>{label()}</p>
       <p
         class={styles.secondary}
         classList={{
@@ -50,7 +58,7 @@ export function GameInfo(props: GameInfoProps) {
           [styles.error]: hasError(),
         }}
       >
-        {isChecked() ? "王手!" : hasError() ? props.errorMessage : ""}
+        {secondary()}
       </p>
     </div>
   );

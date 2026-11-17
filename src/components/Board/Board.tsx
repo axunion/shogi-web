@@ -22,6 +22,9 @@ interface BoardProps {
   lastMove?: LastMove | null;
   checkSquare?: Square | null;
   flipped?: boolean;
+  /** Bumped by the caller each time a move gives check; replays the 王手
+      banner even when consecutive moves both check. */
+  checkAnnouncement?: number;
   onSquareClick?: (square: Square) => void;
 }
 
@@ -77,6 +80,14 @@ function squareAriaLabel(square: Square, piece: Piece | null): string {
 export function Board(props: BoardProps) {
   const orderedFiles = () => (props.flipped ? [...FILES].reverse() : FILES);
   const orderedRanks = () => (props.flipped ? [...RANKS].reverse() : RANKS);
+
+  // The banner shows each announcement until its animation ends. Starting
+  // from the count at mount keeps a remounted board from replaying an old one.
+  const [dismissed, setDismissed] = createSignal(props.checkAnnouncement ?? 0);
+  const checkBanner = () => {
+    const count = props.checkAnnouncement ?? 0;
+    return count !== dismissed() ? count : 0;
+  };
 
   return (
     <div class={styles.wrapper}>
@@ -184,6 +195,15 @@ export function Board(props: BoardProps) {
           )}
         </For>
       </div>
+      <Show when={checkBanner()} keyed>
+        <div
+          class={styles.checkBanner}
+          aria-hidden="true"
+          onAnimationEnd={() => setDismissed(props.checkAnnouncement ?? 0)}
+        >
+          王手
+        </div>
+      </Show>
       <div class={styles.rankLabels}>
         <For each={orderedRanks()}>
           {(rank) => <div class={styles.rankLabel}>{RANK_KANJI[rank - 1]}</div>}

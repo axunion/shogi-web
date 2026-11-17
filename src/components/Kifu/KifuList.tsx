@@ -28,7 +28,8 @@ export function KifuList(props: KifuListProps) {
                 [styles.latest]: index() === props.records.length - 1,
               }}
             >
-              {index() + 1} {formatMove(record.positionBefore, record.move)}
+              <span class={styles.number}>{index() + 1}</span>
+              <span>{formatMove(record.positionBefore, record.move)}</span>
             </li>
           )}
         </For>

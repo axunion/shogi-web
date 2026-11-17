@@ -1,16 +1,11 @@
 .dialog {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem;
-  max-width: min(24rem, calc(100vw - 2rem));
-  background: var(--dialog-bg);
-  color: var(--dialog-text);
-  border-radius: 0.5rem;
+  composes: content from "../Dialog/Dialog.module.css";
+  align-items: center;
 }
 
 .title {
   margin: 0;
+  font-size: var(--font-lg);
   text-align: center;
 }
 
@@ -20,5 +15,5 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 1rem;
+  gap: var(--space-3);
 }

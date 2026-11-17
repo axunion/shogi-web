@@ -1,0 +1,67 @@
+/* Shared button looks for the header, action bar, and settings. Every
+   pressable control shrinks slightly while held, which is most of what makes
+   them feel physical rather than flat links. */
+.iconButton,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background-color var(--duration-fast),
+    border-color var(--duration-fast),
+    opacity var(--duration-fast),
+    scale var(--duration-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.iconButton:active:not(:disabled),
+.button:active:not(:disabled) {
+  scale: 0.95;
+}
+
+.iconButton:focus-visible,
+.button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.iconButton:disabled,
+.button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.iconButton {
+  width: var(--tap-size);
+  height: var(--tap-size);
+  padding: 0;
+  background: none;
+  border-radius: var(--radius-full);
+}
+
+.iconButton:hover:not(:disabled),
+.iconButtonActive {
+  background: color-mix(in srgb, currentcolor 10%, transparent);
+}
+
+.button {
+  min-height: var(--tap-size);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--panel-bg);
+  color: var(--panel-text);
+  border-color: var(--panel-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1);
+}
+
+.button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--board-bg) 14%, var(--panel-bg));
+}

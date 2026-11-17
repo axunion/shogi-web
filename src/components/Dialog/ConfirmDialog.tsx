@@ -1,7 +1,11 @@
-import { AlertDialog } from "@kobalte/core/alert-dialog";
+// Namespace imports, here and for @kobalte/core/dialog: in Kobalte 0.13 the
+// named Dialog and AlertDialog exports are one function object, so whichever
+// module loads last decides what Dialog.Content and AlertDialog.Content are.
+import * as AlertDialog from "@kobalte/core/alert-dialog";
 import type { JSX } from "solid-js";
 import styles from "./Dialog.module.css";
 import { DialogButton, type DialogButtonVariant } from "./DialogButton";
+import { createFocusReturn } from "./focusReturn";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -17,6 +21,8 @@ interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
+  const returnFocus = createFocusReturn(() => props.open);
+
   // Routed through a single function so onCancel also fires when the dialog
   // is dismissed via Escape or an outside click, not just the cancel button
   // — those close the dialog through this same onOpenChange(false).
@@ -26,12 +32,15 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
   }
 
   return (
-    <AlertDialog open={props.open} onOpenChange={handleOpenChange}>
+    <AlertDialog.Root open={props.open} onOpenChange={handleOpenChange}>
       {props.trigger?.()}
       <AlertDialog.Portal>
         <AlertDialog.Overlay class={styles.overlay} />
         <div class={styles.positioner}>
-          <AlertDialog.Content class={styles.content}>
+          <AlertDialog.Content
+            class={styles.content}
+            onCloseAutoFocus={returnFocus}
+          >
             <AlertDialog.Title class={styles.title}>
               {props.title}
             </AlertDialog.Title>
@@ -52,6 +61,6 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
           </AlertDialog.Content>
         </div>
       </AlertDialog.Portal>
-    </AlertDialog>
+    </AlertDialog.Root>
   );
 }

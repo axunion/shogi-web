@@ -2,7 +2,15 @@
   position: fixed;
   inset: 0;
   z-index: 15;
-  background: rgb(0 0 0 / 40%);
+  background: rgb(0 0 0 / 45%);
+  backdrop-filter: blur(2px);
+  animation: overlay-in var(--duration-normal) ease-out;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .positioner {
@@ -12,21 +20,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: var(--space-4);
 }
 
 .title {
   margin: 0;
+  font-size: var(--font-lg);
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem;
+  gap: var(--space-4);
+  padding: var(--space-5);
   max-width: min(24rem, calc(100vw - 2rem));
   background: var(--dialog-bg);
   color: var(--dialog-text);
-  border-radius: 0.5rem;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-3);
+  animation: dialog-in var(--duration-normal) var(--ease-out);
+}
+
+/* Shared by ConfirmDialog and PromotionDialog (via composes). */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    scale: 0.94;
+    translate: 0 0.5rem;
+  }
 }
 
 /* wrap-reverse (not wrap): keeps source order for tab/focus order — the
@@ -37,7 +59,7 @@
   display: flex;
   flex-wrap: wrap-reverse;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 /* Shared by ConfirmDialog, ResultOverlay, and PromotionDialog (via
@@ -48,22 +70,30 @@
    smaller basis lets that label's text overflow the button's edges. */
 .actionButton {
   min-width: 9rem;
+  min-height: var(--tap-size);
   flex: 1 1 9rem;
-  padding: 0.5em 1.25em;
+  padding: var(--space-2) var(--space-5);
   font: inherit;
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
   background: var(--panel-bg);
   color: var(--panel-text);
   border: 1px solid var(--panel-border);
-  border-radius: 0.3rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1);
   transition:
-    background-color 0.15s,
-    border-color 0.15s;
+    background-color var(--duration-fast),
+    filter var(--duration-fast),
+    scale var(--duration-fast) var(--ease-out);
 }
 
 .actionButton:hover {
-  background: var(--page-bg-accent);
+  background: color-mix(in srgb, var(--board-bg) 14%, var(--panel-bg));
+}
+
+.actionButton:active {
+  scale: 0.96;
 }
 
 .actionButton:focus-visible {
@@ -71,15 +101,27 @@
   outline-offset: 2px;
 }
 
-/* Primary: the recommended/affirmative choice (e.g. 成る, もう一局). */
-.primary {
-  color: var(--focus-ring);
-  border-color: color-mix(in srgb, var(--focus-ring) 45%, var(--panel-border));
+/* Primary: the recommended/affirmative choice (e.g. 成る, もう一局) — the
+   same gold as the title screen's start button. */
+.primary,
+.primary:hover {
+  color: var(--accent-text);
+  background: linear-gradient(180deg, var(--accent-top), var(--accent-bottom));
+  border-color: var(--accent-edge);
 }
 
-/* Danger: ends or discards something, mirrors Controls.module.css's
-   .menuItemDanger tint so the two danger cues stay consistent. */
-.danger {
-  color: var(--check-color);
-  border-color: color-mix(in srgb, var(--check-color) 45%, var(--panel-border));
+.primary:hover {
+  filter: brightness(1.06);
+}
+
+/* Danger: ends or discards something (投了する, 新しく始める). */
+.danger,
+.danger:hover {
+  color: #fff;
+  background: var(--check-color);
+  border-color: color-mix(in srgb, var(--check-color) 70%, #000);
+}
+
+.danger:hover {
+  filter: brightness(1.08);
 }

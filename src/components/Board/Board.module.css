@@ -1,11 +1,20 @@
 .wrapper {
+  position: relative;
   display: grid;
+  animation: board-in var(--duration-slow) var(--ease-out);
   grid-template-columns: max-content var(--coord-band);
   grid-template-rows: var(--coord-band) max-content;
   grid-template-areas:
     "files corner"
     "board ranks";
   width: fit-content;
+}
+
+@keyframes board-in {
+  from {
+    opacity: 0;
+    scale: 0.97;
+  }
 }
 
 .fileLabels {
@@ -105,7 +114,13 @@
   cursor: pointer;
 }
 
-.square:hover,
+/* Hover is a quiet light rim, so the square under the pointer after a click
+   doesn't read as selected; the strong ring is for keyboard focus only. */
+.square:hover {
+  outline: 2px solid rgb(255 255 255 / 45%);
+  outline-offset: -2px;
+}
+
 .square:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: -2px;
@@ -220,4 +235,50 @@
   justify-content: center;
   font-size: var(--coord-font-size);
   color: var(--label-color);
+}
+
+/* Sits over the board's centre on each checking move, then fades. Purely
+   decorative: GameInfo announces 王手 to screen readers. */
+.checkBanner {
+  position: absolute;
+  top: calc(var(--coord-band) + var(--square-size) * 4.5);
+  left: calc((100% - var(--coord-band)) / 2);
+  translate: -50% -50%;
+  z-index: 2;
+  padding: calc(var(--square-size) * 0.1) calc(var(--square-size) * 0.6);
+  font-family: var(--font-display);
+  font-size: calc(var(--square-size) * 1.1);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: #fff;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--check-color) 88%, transparent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-3);
+  pointer-events: none;
+  animation: check-banner 1.1s var(--ease-out) forwards;
+}
+
+@keyframes check-banner {
+  0% {
+    opacity: 0;
+    scale: 1.8;
+  }
+
+  18% {
+    opacity: 1;
+    scale: 1;
+  }
+
+  75% {
+    opacity: 1;
+    scale: 1;
+  }
+
+  100% {
+    opacity: 0;
+    scale: 0.96;
+  }
 }
