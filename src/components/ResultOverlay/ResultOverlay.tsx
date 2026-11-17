@@ -2,6 +2,7 @@ import * as Dialog from "@kobalte/core/dialog";
 import { createEffect, createSignal, on } from "solid-js";
 import type { GameStatus } from "../../state/gameStore";
 import { isGameOver } from "../../state/gameStore";
+import { ACTION_BAR_LABEL } from "../ActionBar/ActionBar";
 import dialogStyles from "../Dialog/Dialog.module.css";
 import { DialogButton } from "../Dialog/DialogButton";
 import { createFocusReturn } from "../Dialog/focusReturn";
@@ -54,11 +55,16 @@ export function ResultOverlay(props: ResultOverlayProps) {
   // The result usually opens from a control the ending itself removed (the
   // resign confirmation, the promotion dialog), so fall back to the action
   // bar's first enabled button: もう一局 after 閉じる, or the new game's first
-  // available action after もう一局.
-  const returnFocus = createFocusReturn(open, () =>
-    document.querySelector<HTMLElement>(
-      '[aria-label="対局操作"] button:not(:disabled)',
-    ),
+  // available action after もう一局. Buttons hidden at this viewport (e.g.
+  // 棋譜 on desktop) have no client rects and can't take focus.
+  const returnFocus = createFocusReturn(
+    open,
+    () =>
+      Array.from(
+        document.querySelectorAll<HTMLElement>(
+          `[aria-label="${ACTION_BAR_LABEL}"] button:not(:disabled)`,
+        ),
+      ).find((button) => button.getClientRects().length > 0) ?? null,
   );
 
   createEffect(

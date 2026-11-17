@@ -10,8 +10,7 @@ interface GameInfoProps {
   sideToMove: Color;
   errorMessage: string | null;
   checked: boolean;
-  moveCount: number;
-  /** The latest move in notation, e.g. ▲7六歩; null before the first. */
+  /** The latest move with its number, e.g. 1手目 ▲7六歩; null before the first. */
   lastMove: string | null;
 }
 
@@ -46,9 +45,7 @@ export function GameInfo(props: GameInfoProps) {
   const secondary = () => {
     if (isChecked()) return "王手!";
     if (hasError()) return props.errorMessage;
-    return props.lastMove
-      ? `${props.moveCount}手目 ${props.lastMove}`
-      : "対局開始";
+    return props.lastMove ?? "対局開始";
   };
 
   return (

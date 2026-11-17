@@ -90,15 +90,20 @@ function App() {
     return color === "black" ? "あなた" : `AI ${difficultyLabel()}`;
   }
 
+  // Only a side that can actually move (or is thinking) gets a badge; error,
+  // loading, and finished games show none.
   function plateBadge(color: Color): PlateBadge {
-    if (isGameOver(state.status)) return null;
     if (state.position.sideToMove !== color) return null;
-    return state.status === "thinking" ? "thinking" : "turn";
+    if (state.status === "playerTurn") return "turn";
+    if (state.status === "thinking") return "thinking";
+    return null;
   }
 
   const lastMoveText = () => {
     const record = state.records[state.records.length - 1];
-    return record ? formatMove(record.positionBefore, record.move) : null;
+    return record
+      ? `${state.records.length}手目 ${formatMove(record.positionBefore, record.move)}`
+      : null;
   };
 
   function handClickable(color: Color): boolean {
@@ -204,7 +209,6 @@ function App() {
               sideToMove={state.position.sideToMove}
               errorMessage={state.errorMessage}
               checked={checkedKingSquare() !== null}
-              moveCount={state.records.length}
               lastMove={lastMoveText()}
             />
           }

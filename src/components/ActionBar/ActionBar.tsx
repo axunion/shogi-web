@@ -10,6 +10,9 @@ import { createFocusReturn } from "../Dialog/focusReturn";
 import { KifuList } from "../Kifu/KifuList";
 import styles from "./ActionBar.module.css";
 
+/** Accessible name of the action bar; ResultOverlay uses it to find a focus fallback. */
+export const ACTION_BAR_LABEL = "対局操作";
+
 interface ActionBarProps {
   status: GameStatus;
   canUndo: boolean;
@@ -31,7 +34,7 @@ export function ActionBar(props: ActionBarProps) {
   const button = `${buttonStyles.button} ${styles.action}`;
 
   return (
-    <fieldset class={styles.bar} aria-label="対局操作">
+    <fieldset class={styles.bar} aria-label={ACTION_BAR_LABEL}>
       <Show when={isGameOver(props.status)}>
         <button
           type="button"
