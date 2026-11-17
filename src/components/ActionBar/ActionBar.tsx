@@ -15,7 +15,6 @@ export const ACTION_BAR_LABEL = "対局操作";
 
 interface ActionBarProps {
   status: GameStatus;
-  canUndo: boolean;
   mode: GameMode;
   boardFlip: boolean;
   records: MoveRecord[];
@@ -49,7 +48,7 @@ export function ActionBar(props: ActionBarProps) {
       <button
         type="button"
         class={button}
-        disabled={!props.canUndo}
+        disabled={props.records.length === 0}
         onClick={props.onUndo}
       >
         <Undo2 size={20} />

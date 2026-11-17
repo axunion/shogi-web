@@ -1,8 +1,15 @@
 import { Popover } from "@kobalte/core/popover";
-import { Monitor, Moon, Settings, Sun, Volume2, VolumeX } from "lucide-solid";
-import { createSignal, For } from "solid-js";
+import {
+  Monitor,
+  Moon,
+  Settings as SettingsIcon,
+  Sun,
+  Volume2,
+  VolumeX,
+} from "lucide-solid";
+import { createSignal, For, type JSX } from "solid-js";
 import type { Piece } from "../../domain/types";
-import type { Settings as SettingsState } from "../../state/gameStore";
+import type { Settings } from "../../state/gameStore";
 import { lishogiKanjiLightTheme } from "../../theme/lishogiKanjiLightTheme";
 import { textTheme } from "../../theme/textTheme";
 import type { PieceTheme } from "../../theme/types";
@@ -14,46 +21,89 @@ import styles from "./SettingsMenu.module.css";
 // rather than anything tied to a specific role on the board.
 const SAMPLE_PIECE: Piece = { type: "P", color: "black" };
 
-const PIECE_THEME_OPTIONS: {
-  value: string;
+interface Option<T> {
+  value: T;
+  /** Visible caption; also the accessible name unless ariaLabel is given. */
   label: string;
-  theme: PieceTheme;
-}[] = [
+  ariaLabel?: string;
+  preview: () => JSX.Element;
+}
+
+const COLOR_SCHEME_OPTIONS: Option<Settings["colorScheme"]>[] = [
+  { value: "system", label: "システム", preview: () => <Monitor size={18} /> },
+  { value: "light", label: "ライト", preview: () => <Sun size={18} /> },
+  { value: "dark", label: "ダーク", preview: () => <Moon size={18} /> },
+];
+
+function pieceThemeOption(theme: PieceTheme, label: string): Option<string> {
+  return {
+    value: theme.id,
+    label,
+    preview: () => (
+      <span class={styles.pieceBox}>
+        <PieceView piece={SAMPLE_PIECE} theme={theme} />
+      </span>
+    ),
+  };
+}
+
+const PIECE_THEME_OPTIONS: Option<string>[] = [
+  pieceThemeOption(lishogiKanjiLightTheme, "画像駒"),
+  pieceThemeOption(textTheme, "文字駒"),
+];
+
+const SOUND_OPTIONS: Option<boolean>[] = [
   {
-    value: lishogiKanjiLightTheme.id,
-    label: "画像駒",
-    theme: lishogiKanjiLightTheme,
+    value: true,
+    label: "オン",
+    ariaLabel: "効果音オン",
+    preview: () => <Volume2 size={18} />,
   },
-  { value: textTheme.id, label: "文字駒", theme: textTheme },
+  {
+    value: false,
+    label: "オフ",
+    ariaLabel: "効果音オフ",
+    preview: () => <VolumeX size={18} />,
+  },
 ];
 
-const COLOR_SCHEME_OPTIONS: {
-  value: SettingsState["colorScheme"];
-  label: string;
-  Icon: typeof Monitor;
-}[] = [
-  { value: "system", label: "システム", Icon: Monitor },
-  { value: "light", label: "ライト", Icon: Sun },
-  { value: "dark", label: "ダーク", Icon: Moon },
-];
-
-const SOUND_OPTIONS: {
-  value: boolean;
-  label: string;
-  ariaLabel: string;
-  Icon: typeof Monitor;
-}[] = [
-  { value: true, label: "オン", ariaLabel: "効果音オン", Icon: Volume2 },
-  { value: false, label: "オフ", ariaLabel: "効果音オフ", Icon: VolumeX },
-];
+function OptionGroup<T>(props: {
+  legend: string;
+  options: Option<T>[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <fieldset class={styles.group}>
+      <legend class={styles.legend}>{props.legend}</legend>
+      <div class={styles.options}>
+        <For each={props.options}>
+          {(option) => (
+            <button
+              type="button"
+              class={styles.option}
+              classList={{
+                [styles.optionActive]: props.value === option.value,
+              }}
+              aria-pressed={props.value === option.value}
+              aria-label={option.ariaLabel ?? option.label}
+              onClick={() => props.onChange(option.value)}
+            >
+              {option.preview()}
+              <span class={styles.optionLabel} aria-hidden="true">
+                {option.label}
+              </span>
+            </button>
+          )}
+        </For>
+      </div>
+    </fieldset>
+  );
+}
 
 interface SettingsMenuProps {
-  pieceTheme: string;
-  colorScheme: SettingsState["colorScheme"];
-  soundEnabled: boolean;
-  onSoundEnabledChange: (soundEnabled: boolean) => void;
-  onColorSchemeChange: (colorScheme: SettingsState["colorScheme"]) => void;
-  onPieceThemeChange: (pieceTheme: string) => void;
+  settings: Settings;
+  onChange: (patch: Partial<Settings>) => void;
 }
 
 export function SettingsMenu(props: SettingsMenuProps) {
@@ -79,7 +129,7 @@ export function SettingsMenu(props: SettingsMenuProps) {
         aria-label="設定"
         onClick={(event) => setOpenedViaKeyboard(event.detail === 0)}
       >
-        <Settings size={20} />
+        <SettingsIcon size={20} />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
@@ -88,83 +138,24 @@ export function SettingsMenu(props: SettingsMenuProps) {
             if (!openedViaKeyboard()) event.preventDefault();
           }}
         >
-          <fieldset class={styles.group}>
-            <legend class={styles.legend}>配色</legend>
-            <div class={styles.options}>
-              <For each={COLOR_SCHEME_OPTIONS}>
-                {(option) => (
-                  <button
-                    type="button"
-                    class={styles.option}
-                    classList={{
-                      [styles.optionActive]: props.colorScheme === option.value,
-                    }}
-                    aria-pressed={props.colorScheme === option.value}
-                    aria-label={option.label}
-                    onClick={() => props.onColorSchemeChange(option.value)}
-                  >
-                    <option.Icon size={18} />
-                    <span class={styles.optionLabel} aria-hidden="true">
-                      {option.label}
-                    </span>
-                  </button>
-                )}
-              </For>
-            </div>
-          </fieldset>
-
-          <fieldset class={styles.group}>
-            <legend class={styles.legend}>駒の種類</legend>
-            <div class={styles.options}>
-              <For each={PIECE_THEME_OPTIONS}>
-                {(option) => (
-                  <button
-                    type="button"
-                    class={styles.option}
-                    classList={{
-                      [styles.optionActive]: props.pieceTheme === option.value,
-                    }}
-                    aria-pressed={props.pieceTheme === option.value}
-                    aria-label={option.label}
-                    onClick={() => props.onPieceThemeChange(option.value)}
-                  >
-                    <span class={styles.pieceBox}>
-                      <PieceView piece={SAMPLE_PIECE} theme={option.theme} />
-                    </span>
-                    <span class={styles.optionLabel} aria-hidden="true">
-                      {option.label}
-                    </span>
-                  </button>
-                )}
-              </For>
-            </div>
-          </fieldset>
-
-          <fieldset class={styles.group}>
-            <legend class={styles.legend}>効果音</legend>
-            <div class={styles.options}>
-              <For each={SOUND_OPTIONS}>
-                {(option) => (
-                  <button
-                    type="button"
-                    class={styles.option}
-                    classList={{
-                      [styles.optionActive]:
-                        props.soundEnabled === option.value,
-                    }}
-                    aria-pressed={props.soundEnabled === option.value}
-                    aria-label={option.ariaLabel}
-                    onClick={() => props.onSoundEnabledChange(option.value)}
-                  >
-                    <option.Icon size={18} />
-                    <span class={styles.optionLabel} aria-hidden="true">
-                      {option.label}
-                    </span>
-                  </button>
-                )}
-              </For>
-            </div>
-          </fieldset>
+          <OptionGroup
+            legend="配色"
+            options={COLOR_SCHEME_OPTIONS}
+            value={props.settings.colorScheme}
+            onChange={(colorScheme) => props.onChange({ colorScheme })}
+          />
+          <OptionGroup
+            legend="駒の種類"
+            options={PIECE_THEME_OPTIONS}
+            value={props.settings.pieceTheme}
+            onChange={(pieceTheme) => props.onChange({ pieceTheme })}
+          />
+          <OptionGroup
+            legend="効果音"
+            options={SOUND_OPTIONS}
+            value={props.settings.soundEnabled}
+            onChange={(soundEnabled) => props.onChange({ soundEnabled })}
+          />
 
           <p class={styles.credit}>
             {lishogiKanjiLightTheme.attribution.name} by{" "}

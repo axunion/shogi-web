@@ -1,21 +1,15 @@
 import { Bot, ChevronLeft, ChevronRight, Users } from "lucide-solid";
-import { createSignal, For, Show } from "solid-js";
+import { createSignal, For, type JSX, Show } from "solid-js";
 import {
   DIFFICULTY_LEVELS,
   difficultyLevelById,
 } from "../../engine/difficulty";
-import type {
-  EngineState,
-  GameMode,
-  GameStatus,
-  Settings as SettingsState,
-} from "../../state/gameStore";
+import type { EngineState, GameMode, GameStatus } from "../../state/gameStore";
 import {
   ENGINE_LAUNCH_FAILED_MESSAGE,
   isGameOver,
 } from "../../state/gameStore";
 import { ConfirmDialog } from "../Dialog/ConfirmDialog";
-import { SettingsMenu } from "../SettingsMenu/SettingsMenu";
 import styles from "./TitleScreen.module.css";
 
 const MODE_OPTIONS: { value: GameMode; label: string; Icon: typeof Bot }[] = [
@@ -26,15 +20,11 @@ const MODE_OPTIONS: { value: GameMode; label: string; Icon: typeof Bot }[] = [
 interface TitleScreenProps {
   mode: GameMode;
   difficultyLevel: number;
-  pieceTheme: string;
   status: GameStatus;
   engine: EngineState;
   hasResumableGame: boolean;
-  colorScheme: SettingsState["colorScheme"];
-  soundEnabled: boolean;
-  onSoundEnabledChange: (soundEnabled: boolean) => void;
-  onColorSchemeChange: (colorScheme: SettingsState["colorScheme"]) => void;
-  onPieceThemeChange: (pieceTheme: string) => void;
+  /** The shared SettingsMenu, built by App. */
+  settingsMenu: JSX.Element;
   onStart: (mode: GameMode, difficultyLevel: number) => void;
   onContinue: () => void;
 }
@@ -63,16 +53,7 @@ export function TitleScreen(props: TitleScreenProps) {
 
   return (
     <div class={styles.screen}>
-      <div class={styles.topBar}>
-        <SettingsMenu
-          pieceTheme={props.pieceTheme}
-          colorScheme={props.colorScheme}
-          soundEnabled={props.soundEnabled}
-          onSoundEnabledChange={props.onSoundEnabledChange}
-          onColorSchemeChange={props.onColorSchemeChange}
-          onPieceThemeChange={props.onPieceThemeChange}
-        />
-      </div>
+      <div class={styles.topBar}>{props.settingsMenu}</div>
 
       <div class={styles.hero}>
         <img

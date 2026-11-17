@@ -9,6 +9,7 @@ import { KifuList } from "./components/Kifu/KifuList";
 import { Layout } from "./components/Layout/Layout";
 import { PromotionDialog } from "./components/PromotionDialog/PromotionDialog";
 import { ResultOverlay } from "./components/ResultOverlay/ResultOverlay";
+import { SettingsMenu } from "./components/SettingsMenu/SettingsMenu";
 import { TitleScreen } from "./components/TitleScreen/TitleScreen";
 import { colorLabel, colorSymbol, formatMove } from "./domain/notation";
 import { squareIndex } from "./domain/sfen";
@@ -78,6 +79,10 @@ function App() {
 
   const difficultyLabel = () =>
     difficultyLevelById(state.settings.difficultyLevel).label;
+
+  const settingsMenu = () => (
+    <SettingsMenu settings={state.settings} onChange={setSettings} />
+  );
 
   const headerTitle = () =>
     state.settings.mode === "engine"
@@ -171,15 +176,10 @@ function App() {
         <TitleScreen
           mode={state.settings.mode}
           difficultyLevel={state.settings.difficultyLevel}
-          pieceTheme={state.settings.pieceTheme}
           status={state.status}
           engine={state.engine}
           hasResumableGame={hasResumableGame()}
-          colorScheme={state.settings.colorScheme}
-          soundEnabled={state.settings.soundEnabled}
-          onSoundEnabledChange={(soundEnabled) => setSettings({ soundEnabled })}
-          onColorSchemeChange={(colorScheme) => setSettings({ colorScheme })}
-          onPieceThemeChange={(pieceTheme) => setSettings({ pieceTheme })}
+          settingsMenu={settingsMenu()}
           onStart={handleStart}
           onContinue={handleContinue}
         />
@@ -189,16 +189,7 @@ function App() {
           header={
             <GameHeader
               title={headerTitle()}
-              pieceTheme={state.settings.pieceTheme}
-              colorScheme={state.settings.colorScheme}
-              soundEnabled={state.settings.soundEnabled}
-              onSoundEnabledChange={(soundEnabled) =>
-                setSettings({ soundEnabled })
-              }
-              onColorSchemeChange={(colorScheme) =>
-                setSettings({ colorScheme })
-              }
-              onPieceThemeChange={(pieceTheme) => setSettings({ pieceTheme })}
+              settingsMenu={settingsMenu()}
               onReturnToTitle={handleReturnToTitle}
             />
           }
@@ -264,7 +255,6 @@ function App() {
           actions={
             <ActionBar
               status={state.status}
-              canUndo={state.records.length > 0}
               mode={state.settings.mode}
               boardFlip={state.settings.boardFlip}
               records={state.records}

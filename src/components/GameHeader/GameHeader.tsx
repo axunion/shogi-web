@@ -1,20 +1,14 @@
 import { ChevronLeft } from "lucide-solid";
-import { createSignal } from "solid-js";
-import type { Settings as SettingsState } from "../../state/gameStore";
+import { createSignal, type JSX } from "solid-js";
 import buttonStyles from "../Button/Button.module.css";
 import { ConfirmDialog } from "../Dialog/ConfirmDialog";
-import { SettingsMenu } from "../SettingsMenu/SettingsMenu";
 import styles from "./GameHeader.module.css";
 
 interface GameHeaderProps {
   /** e.g. "AI対戦 · 4級" or "対面対局". */
   title: string;
-  pieceTheme: string;
-  colorScheme: SettingsState["colorScheme"];
-  soundEnabled: boolean;
-  onSoundEnabledChange: (soundEnabled: boolean) => void;
-  onColorSchemeChange: (colorScheme: SettingsState["colorScheme"]) => void;
-  onPieceThemeChange: (pieceTheme: string) => void;
+  /** The shared SettingsMenu, built by App. */
+  settingsMenu: JSX.Element;
   onReturnToTitle: () => void;
 }
 
@@ -37,16 +31,7 @@ export function GameHeader(props: GameHeaderProps) {
 
       <h1 class={styles.title}>{props.title}</h1>
 
-      <div class={styles.end}>
-        <SettingsMenu
-          pieceTheme={props.pieceTheme}
-          colorScheme={props.colorScheme}
-          soundEnabled={props.soundEnabled}
-          onSoundEnabledChange={props.onSoundEnabledChange}
-          onColorSchemeChange={props.onColorSchemeChange}
-          onPieceThemeChange={props.onPieceThemeChange}
-        />
-      </div>
+      <div class={styles.end}>{props.settingsMenu}</div>
 
       <ConfirmDialog
         open={confirmOpen()}

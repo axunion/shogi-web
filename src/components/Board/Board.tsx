@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For, on, Show } from "solid-js";
+import { createEffect, createSignal, For, Show } from "solid-js";
 import { sameSquare } from "../../domain/moves";
 import { colorLabel, RANK_KANJI } from "../../domain/notation";
 import { squareIndex } from "../../domain/sfen";
@@ -81,15 +81,13 @@ export function Board(props: BoardProps) {
   const orderedFiles = () => (props.flipped ? [...FILES].reverse() : FILES);
   const orderedRanks = () => (props.flipped ? [...RANKS].reverse() : RANKS);
 
-  // Local copy so the banner can clear itself once its animation ends.
-  const [checkBanner, setCheckBanner] = createSignal(0);
-  createEffect(
-    on(
-      () => props.checkAnnouncement ?? 0,
-      (count) => setCheckBanner(count),
-      { defer: true },
-    ),
-  );
+  // The banner shows each announcement until its animation ends. Starting
+  // from the count at mount keeps a remounted board from replaying an old one.
+  const [dismissed, setDismissed] = createSignal(props.checkAnnouncement ?? 0);
+  const checkBanner = () => {
+    const count = props.checkAnnouncement ?? 0;
+    return count !== dismissed() ? count : 0;
+  };
 
   return (
     <div class={styles.wrapper}>
@@ -201,7 +199,7 @@ export function Board(props: BoardProps) {
         <div
           class={styles.checkBanner}
           aria-hidden="true"
-          onAnimationEnd={() => setCheckBanner(0)}
+          onAnimationEnd={() => setDismissed(props.checkAnnouncement ?? 0)}
         >
           王手
         </div>
