@@ -1,4 +1,7 @@
-import { AlertDialog } from "@kobalte/core/alert-dialog";
+// Namespace imports, here and for @kobalte/core/dialog: in Kobalte 0.13 the
+// named Dialog and AlertDialog exports are one function object, so whichever
+// module loads last decides what Dialog.Content and AlertDialog.Content are.
+import * as AlertDialog from "@kobalte/core/alert-dialog";
 import type { JSX } from "solid-js";
 import styles from "./Dialog.module.css";
 import { DialogButton, type DialogButtonVariant } from "./DialogButton";
@@ -29,7 +32,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
   }
 
   return (
-    <AlertDialog open={props.open} onOpenChange={handleOpenChange}>
+    <AlertDialog.Root open={props.open} onOpenChange={handleOpenChange}>
       {props.trigger?.()}
       <AlertDialog.Portal>
         <AlertDialog.Overlay class={styles.overlay} />
@@ -58,6 +61,6 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
           </AlertDialog.Content>
         </div>
       </AlertDialog.Portal>
-    </AlertDialog>
+    </AlertDialog.Root>
   );
 }

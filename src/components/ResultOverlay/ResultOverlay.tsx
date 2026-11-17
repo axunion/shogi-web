@@ -1,4 +1,4 @@
-import { Dialog } from "@kobalte/core/dialog";
+import * as Dialog from "@kobalte/core/dialog";
 import { createEffect, createSignal, on } from "solid-js";
 import type { GameStatus } from "../../state/gameStore";
 import { isGameOver } from "../../state/gameStore";
@@ -78,15 +78,12 @@ export function ResultOverlay(props: ResultOverlayProps) {
   }
 
   return (
-    <Dialog open={open()} onOpenChange={setOpen}>
+    <Dialog.Root open={open()} onOpenChange={setOpen}>
       <Dialog.Portal>
         <Dialog.Overlay class={dialogStyles.overlay} />
         <div class={dialogStyles.positioner}>
           <Dialog.Content
             class={styles.dialog}
-            // Explicit: rendered without it, Kobalte exposes this content
-            // as an alertdialog, which is for interruptive warnings.
-            role="dialog"
             onCloseAutoFocus={returnFocus}
             classList={{
               [styles.win]: outcome() === "win",
@@ -119,6 +116,6 @@ export function ResultOverlay(props: ResultOverlayProps) {
           </Dialog.Content>
         </div>
       </Dialog.Portal>
-    </Dialog>
+    </Dialog.Root>
   );
 }

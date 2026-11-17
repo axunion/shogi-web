@@ -1,4 +1,4 @@
-import { Dialog } from "@kobalte/core/dialog";
+import * as Dialog from "@kobalte/core/dialog";
 import { Flag, RotateCcw, RotateCw, ScrollText, Undo2, X } from "lucide-solid";
 import { createSignal, Show } from "solid-js";
 import type { MoveRecord } from "../../domain/types";
@@ -100,14 +100,11 @@ export function ActionBar(props: ActionBarProps) {
         }}
       />
 
-      <Dialog open={kifuOpen()} onOpenChange={setKifuOpen}>
+      <Dialog.Root open={kifuOpen()} onOpenChange={setKifuOpen}>
         <Dialog.Portal>
           <Dialog.Overlay class={styles.sheetOverlay} />
           <Dialog.Content
             class={styles.sheet}
-            // Explicit: rendered without it, Kobalte exposes this content
-            // as an alertdialog, which is for interruptive warnings.
-            role="dialog"
             onCloseAutoFocus={returnFocusFromKifu}
           >
             <div class={styles.sheetHeader}>
@@ -125,7 +122,7 @@ export function ActionBar(props: ActionBarProps) {
             <KifuList records={props.records} />
           </Dialog.Content>
         </Dialog.Portal>
-      </Dialog>
+      </Dialog.Root>
     </fieldset>
   );
 }
