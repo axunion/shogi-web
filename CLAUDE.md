@@ -69,6 +69,17 @@ No confirmation needed to run it, but don't run it automatically for every non-t
 UI change either — it costs real minutes (dev server + browser), so it's a judgment
 call each time, made against the three cases above, not a default step.
 
-Verifying a known change is different from open-ended exploration of the UI for bugs,
-spec holes, and improvements — that is the `ui-sweep` skill (`/ui-sweep [scope]`), which
-drives `inspector` in explore mode, fixes what it finds, and re-checks.
+Verifying a known change is different from agreeing a direction for a UI goal and then
+implementing and refining it against the rendered screen with no plan written up front —
+that is the `ui-refine` skill (`/ui-refine [goal]`), which agrees a short brief with the
+user, then iterates with `inspector` until the brief's done-conditions hold.
+
+## Product character
+
+- A browser-only shogi game against a local WASM engine (YaneuraOu) or face to face on
+  one screen: no server, mobile and desktop layouts, light and dark themes.
+- Direction: calm Japanese tone — wood-grain board and pieces, a Mincho display font —
+  with console-game feel (moves slide, captures fade, the result arrives as a stamp).
+  `docs/ui-design.md` is the source of truth.
+- Avoids: hamburger menus, spacing/radius/motion values outside the tokens in
+  `src/index.css`, ignoring `prefers-reduced-motion`, tap targets under 44px on touch.

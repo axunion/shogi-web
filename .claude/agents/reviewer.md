@@ -17,9 +17,8 @@ conversation, which made the change, to address.
 2. **Simplicity**: is this the smallest change that solves the problem? Flag
    speculative abstractions, unused flexibility, or error handling for cases that can't
    happen here (this is a client-only local app with no server and no network calls after load).
-3. **Conventions**: naming that communicates intent, one concern per file, new files
-   kept under ~300 lines (don't flag pre-existing long files unless the diff grows
-   them), helpers only extracted at 3+ use sites, no commented-out code.
+3. **Conventions**: does the change follow the project rules in `CLAUDE.md`? It is
+   already in your context; cite the rule a finding breaks rather than restating it.
 4. **Vendored files**: `public/engine/**` must never appear in the diff — it's a copy of
    `@mizarjp/yaneuraou.k-p`'s GPL-3.0 build output, not source to hand-edit (see the
    README's "Vendored engine files" section).
@@ -28,14 +27,12 @@ conversation, which made the change, to address.
    `src/state/` (localStorage persistence, undo, restore) — these are easy to get subtly
    wrong (e.g. promotion rules, drop restrictions, notation edge cases, a save lost on
    reload).
-6. **Comments**: flag comments that explain *what* the code does (redundant with good
-   naming) — only comments explaining non-obvious *why* should survive.
 
 ## Output
 
 List every finding from the checks above, most severe first. For each: file, line if
 applicable, and what's wrong — plus a concrete failure scenario for correctness
-findings, or the rule it breaks for scope/simplicity/convention/comment findings. If
+findings, or the rule it breaks for scope/simplicity/convention findings. If
 there are no findings, say so plainly — don't invent findings to seem thorough.
 
 Do not comment on code outside the diff unless it's directly relevant to judging the

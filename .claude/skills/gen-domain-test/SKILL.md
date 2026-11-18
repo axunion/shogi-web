@@ -18,7 +18,7 @@ consistent style. Match it rather than inventing a new one.
 - **Local helpers**: small helpers like `targets(moves)` or `hasTarget(moves, square,
   promote?)` are defined at the top of the test file, not extracted to a shared
   test-utils module — only lift a helper out if it's already duplicated across 3+ test
-  files (per this repo's CLAUDE.md: extract at 3+ use sites, not before).
+  files.
 - **One behavior per `it`**: each test targets one rule or edge case (e.g. "pawn
   captures forward and is blocked by an own piece"), described in plain language in the
   title — not "test case 1".
