@@ -8,7 +8,8 @@ WebAssembly — no server, no network calls once the page has loaded.
 
 - Full shogi rules: legal move generation, drops, promotion, checkmate
   detection
-- New game / undo ("待った") / resign, adjustable engine thinking time, mute
+- Play the engine at one of 8 difficulty levels (10級 to 五段) or face to face
+  on one screen; new game / undo ("待った") / resign, mute
 - Kifu (move notation) panel, e.g. `▲7六歩`
 - Mobile and desktop layouts, dark mode, localStorage save/restore across
   reloads
@@ -27,14 +28,15 @@ pnpm dev
 
 ## Scripts
 
-| Command        | Description                              |
-| -------------- | ----------------------------------------- |
-| `pnpm dev`     | Start the dev server                     |
-| `pnpm build`   | Type-check and build for production      |
-| `pnpm preview` | Preview the production build             |
-| `pnpm test`    | Run tests (Vitest, node environment)     |
-| `pnpm check`   | Lint, format check, and type-check       |
-| `pnpm fix`     | Fix lint and format issues automatically |
+| Command         | Description                              |
+| --------------- | ---------------------------------------- |
+| `pnpm dev`      | Start the dev server                     |
+| `pnpm build`    | Type-check and build for production      |
+| `pnpm preview`  | Preview the production build             |
+| `pnpm test`     | Run unit tests (Vitest, happy-dom)       |
+| `pnpm test:e2e` | Run e2e tests (Playwright)               |
+| `pnpm check`    | Lint, format check, and type-check       |
+| `pnpm fix`      | Fix lint and format issues automatically |
 
 ## Deployment
 
