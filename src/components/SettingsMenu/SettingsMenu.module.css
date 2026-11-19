@@ -52,10 +52,8 @@
 
 .option {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
   min-height: var(--tap-size);
   padding: var(--space-2);
   font: inherit;
@@ -84,10 +82,6 @@
   opacity: 1;
   border-color: var(--board-edge);
   background: color-mix(in srgb, var(--board-bg) 22%, var(--panel-bg));
-}
-
-.optionLabel {
-  font-size: var(--font-xs);
 }
 
 .pieceBox {
