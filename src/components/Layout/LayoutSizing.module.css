@@ -67,8 +67,9 @@
 @media (orientation: landscape) and (width < 64rem) {
   .sizing {
     --hand-direction: column;
-    --hand-cols: 2;
-    --hand-rows: 4;
+    /* Phones held sideways can't fit a four-row stand under the header. */
+    --hand-cols: 3;
+    --hand-rows: 3;
     --side-col: 7rem;
     --plate-width: var(--side-col);
     /* Board rows 9 + the coordinate band; plus 4px for the 1px floor on
@@ -103,6 +104,14 @@
       ),
       64px
     );
+  }
+}
+
+/* Taller landscape screens have the height for two larger columns. */
+@media (orientation: landscape) and (width < 64rem) and (height >= 32rem) {
+  .sizing {
+    --hand-cols: 2;
+    --hand-rows: 4;
   }
 }
 
