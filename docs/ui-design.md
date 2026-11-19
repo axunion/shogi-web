@@ -10,8 +10,9 @@ interaction decisions; `inspector` runs and reviews judge the UI against it.
    もう一局 sit directly on screen. No hamburger menu on any viewport; only
    destructive or game-leaving actions (投了, back to title) go through a
    confirmation dialog.
-2. **Boxes hug their content.** Piece stands (駒台) size to the pieces in hand
-   with a one-slot minimum so the layout doesn't jump; spare space goes to the board.
+2. **Boxes don't resize as play goes on.** Piece stands (駒台) reserve room for
+   all seven kinds from the first move, like a real stand, so nothing jumps as
+   pieces are captured; spare space goes to the board.
 3. **Player plates carry identity.** Each side has one plate: side symbol, name
    (あなた / AI + level / 先手 / 後手), turn badge, and the pieces in hand.
 4. **One token set.** Spacing, radius, elevation, type scale, and motion durations
