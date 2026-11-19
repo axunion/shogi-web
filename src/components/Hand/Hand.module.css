@@ -1,9 +1,24 @@
-/* Layout sets --hand-direction and --hand-wrap: "row" puts identity and
-   pieces side by side in a plate as wide as the board; "column" stacks them
-   in a narrow plate whose pieces wrap. --plate-width comes from Layout too. */
+/* Layout sets --hand-direction: "row" puts identity and pieces side by side
+   in a plate as wide as the board; "column" stacks them in a narrow plate.
+   The pieces sit in a fixed --hand-cols x --hand-rows grid with room for all
+   seven kinds, so the stand keeps its size as pieces are captured, like a
+   real 駒台. Slots shrink below the board-relative size when a column-mode
+   plate is too narrow for its columns. --plate-width comes from Layout too. */
 .plate {
-  --slot-size: calc(var(--square-size) * var(--hand-piece-scale, 1));
   --slot-gap: calc(var(--square-size) * 0.06);
+  --slot-size: min(
+    calc(var(--square-size) * var(--hand-piece-scale, 1)),
+    calc(
+      (
+        var(--plate-width) -
+        var(--space-4) -
+        2px -
+        (var(--hand-cols) - 1) *
+        var(--slot-gap)
+      ) /
+      var(--hand-cols)
+    )
+  );
 
   position: relative;
   display: flex;
@@ -91,12 +106,11 @@
 }
 
 .slots {
-  display: flex;
-  flex-wrap: var(--hand-wrap, nowrap);
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(var(--hand-cols), var(--slot-size));
+  grid-template-rows: repeat(var(--hand-rows), var(--slot-size));
   gap: var(--slot-gap);
   min-width: 0;
-  min-height: var(--slot-size);
 }
 
 .slot {
@@ -111,7 +125,8 @@
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  --piece-box-scale: var(--hand-piece-scale, 1);
+  /* The glyph follows the slot, not the board square, for when it shrinks. */
+  --piece-font-size: calc(var(--slot-size) * var(--piece-font-ratio));
   animation: slot-in var(--duration-normal) var(--ease-spring);
   transition: background-color var(--duration-fast);
 }
@@ -141,10 +156,13 @@
   outline: 2px solid var(--highlight-color);
 }
 
-.empty {
-  font-size: var(--font-xs);
-  color: #3d2c17;
-  opacity: 0.6;
+/* An empty stand is plain wood to the eye; screen readers still hear it. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 

@@ -36,7 +36,8 @@
     ),
     64px
   );
-  --piece-font-size: calc(var(--square-size) * 0.5);
+  --piece-font-ratio: 0.5;
+  --piece-font-size: calc(var(--square-size) * var(--piece-font-ratio));
   --coord-font-size: clamp(0.625rem, calc(var(--square-size) * 0.24), 0.75rem);
   --board-line-width: max(1px, calc(var(--square-size) * 0.018));
   --board-edge-width: max(2px, calc(var(--square-size) * 0.045));
@@ -52,6 +53,8 @@
     var(--coord-band)
   );
   --hand-direction: row;
+  --hand-cols: 7;
+  --hand-rows: 1;
   --plate-width: var(--board-outer-width);
 }
 
@@ -64,7 +67,9 @@
 @media (orientation: landscape) and (width < 64rem) {
   .sizing {
     --hand-direction: column;
-    --hand-wrap: wrap;
+    /* Phones held sideways can't fit a four-row stand under the header. */
+    --hand-cols: 3;
+    --hand-rows: 3;
     --side-col: 7rem;
     --plate-width: var(--side-col);
     /* Board rows 9 + the coordinate band; plus 4px for the 1px floor on
@@ -102,6 +107,14 @@
   }
 }
 
+/* Taller landscape screens have the height for two larger columns. */
+@media (orientation: landscape) and (width < 64rem) and (height >= 32rem) {
+  .sizing {
+    --hand-cols: 2;
+    --hand-rows: 4;
+  }
+}
+
 @media (width >= 64rem) {
   .sizing {
     --gap: var(--space-3);
@@ -129,7 +142,7 @@
     );
     /* Larger squares need a relatively bigger glyph to avoid looking
        sparse — the mobile ratio (0.5) leaves visible dead space here. */
-    --piece-font-size: calc(var(--square-size) * 0.6);
+    --piece-font-ratio: 0.6;
   }
 }
 
@@ -137,7 +150,8 @@
   .sizing {
     --side-width: 20rem;
     --hand-direction: column;
-    --hand-wrap: wrap;
+    --hand-cols: 2;
+    --hand-rows: 4;
     --plate-width: calc(var(--square-size) * 1.75 + var(--space-4) + 2px);
     --square-size: min(
       calc(

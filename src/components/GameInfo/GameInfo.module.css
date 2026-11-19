@@ -54,7 +54,12 @@
     gap: var(--space-1);
   }
 
+  /* Two lines reserved so a long result message doesn't resize the card
+     (and the kifu below it) when the game ends. */
   .primary {
+    display: grid;
+    align-content: center;
+    min-height: 2lh;
     font-size: var(--font-lg);
   }
 

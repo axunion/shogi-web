@@ -93,11 +93,7 @@
 }
 
 .label {
-  font-size: calc(
-    var(--piece-font-size) *
-    var(--piece-scale, 1) *
-    var(--piece-box-scale, 1)
-  );
+  font-size: calc(var(--piece-font-size) * var(--piece-scale, 1));
   font-weight: 700;
   font-family:
     "Hiragino Mincho ProN", "YuMincho", "Yu Mincho", "MS PMincho",

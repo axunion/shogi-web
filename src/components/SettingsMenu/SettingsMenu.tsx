@@ -21,11 +21,10 @@ import styles from "./SettingsMenu.module.css";
 // rather than anything tied to a specific role on the board.
 const SAMPLE_PIECE: Piece = { type: "P", color: "black" };
 
+// Options show only their icon or sample piece; the label is the accessible name.
 interface Option<T> {
   value: T;
-  /** Visible caption; also the accessible name unless ariaLabel is given. */
   label: string;
-  ariaLabel?: string;
   preview: () => JSX.Element;
 }
 
@@ -55,14 +54,12 @@ const PIECE_THEME_OPTIONS: Option<string>[] = [
 const SOUND_OPTIONS: Option<boolean>[] = [
   {
     value: true,
-    label: "オン",
-    ariaLabel: "効果音オン",
+    label: "効果音オン",
     preview: () => <Volume2 size={18} />,
   },
   {
     value: false,
-    label: "オフ",
-    ariaLabel: "効果音オフ",
+    label: "効果音オフ",
     preview: () => <VolumeX size={18} />,
   },
 ];
@@ -86,13 +83,10 @@ function OptionGroup<T>(props: {
                 [styles.optionActive]: props.value === option.value,
               }}
               aria-pressed={props.value === option.value}
-              aria-label={option.ariaLabel ?? option.label}
+              aria-label={option.label}
               onClick={() => props.onChange(option.value)}
             >
               {option.preview()}
-              <span class={styles.optionLabel} aria-hidden="true">
-                {option.label}
-              </span>
             </button>
           )}
         </For>
