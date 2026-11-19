@@ -156,15 +156,6 @@
   outline: 2px solid var(--highlight-color);
 }
 
-.empty {
-  grid-area: 1 / 1 / -1 / -1;
-  place-self: center;
-  font-size: var(--font-xs);
-  color: #3d2c17;
-  opacity: 0.6;
-  white-space: nowrap;
-}
-
 /* Font derived from --slot-size: kept inside the slot, so at narrow widths
    the badge neither swallows its own piece nor spills over the next one. */
 .count {

@@ -51,10 +51,7 @@ export function Hand(props: HandProps) {
         )}
       </Show>
       <div class={styles.slots}>
-        <For
-          each={held()}
-          fallback={<span class={styles.empty}>持ち駒なし</span>}
-        >
+        <For each={held()}>
           {(type) => {
             const count = () => props.pieces[type] ?? 0;
             const piece: Piece = { type, color: props.color };
