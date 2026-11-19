@@ -2,8 +2,8 @@
    in a plate as wide as the board; "column" stacks them in a narrow plate.
    The pieces sit in a fixed --hand-cols x --hand-rows grid with room for all
    seven kinds, so the stand keeps its size as pieces are captured, like a
-   real 駒台. Slots shrink below the board-relative size when the plate is too
-   narrow for its columns. --plate-width comes from Layout too. */
+   real 駒台. Slots shrink below the board-relative size when a column-mode
+   plate is too narrow for its columns. --plate-width comes from Layout too. */
 .plate {
   --slot-gap: calc(var(--square-size) * 0.06);
   --slot-size: min(

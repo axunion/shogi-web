@@ -67,8 +67,8 @@
 @media (orientation: landscape) and (width < 64rem) {
   .sizing {
     --hand-direction: column;
-    --hand-cols: 3;
-    --hand-rows: 3;
+    --hand-cols: 2;
+    --hand-rows: 4;
     --side-col: 7rem;
     --plate-width: var(--side-col);
     /* Board rows 9 + the coordinate band; plus 4px for the 1px floor on
