@@ -156,6 +156,16 @@
   outline: 2px solid var(--highlight-color);
 }
 
+/* An empty stand is plain wood to the eye; screen readers still hear it. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Font derived from --slot-size: kept inside the slot, so at narrow widths
    the badge neither swallows its own piece nor spills over the next one. */
 .count {
